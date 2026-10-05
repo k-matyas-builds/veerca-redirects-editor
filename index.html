@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veerča – Redirects Editor</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%233B92FF'/><stop offset='1' stop-color='%23066FEF'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/><path d='M8.6 8.4 16 23.6 23.4 8.4' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<script>
+try { var themePref = localStorage.getItem('veerca-theme'); } catch (e) {}
+document.documentElement.dataset.theme = themePref === 'light' || themePref === 'dark' ? themePref
+  : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+</script>
+<style>
+:root{
+  color-scheme:dark;
+  --stage:#1C1D21;
+  --ambient:
+    radial-gradient(42% 46% at 22% 22%,rgba(6,111,239,.34),transparent 70%),
+    radial-gradient(46% 50% at 82% 84%,rgba(0,24,120,.6),transparent 72%),
+    radial-gradient(30% 32% at 70% 18%,rgba(70,190,230,.14),transparent 70%);
+  --ink:#F4F6FA;
+  --ink-2:rgba(236,240,247,.68);
+  --ink-3:rgba(236,240,247,.44);
+  --line:rgba(255,255,255,.09);
+  --well:rgba(255,255,255,.055);
+  --hover:rgba(255,255,255,.07);
+  --hover-2:rgba(255,255,255,.1);
+  --sep:rgba(255,255,255,.14);
+  --track:rgba(255,255,255,.16);
+  --scroll:rgba(255,255,255,.2);
+  --glass-bg:linear-gradient(180deg,rgba(68,71,80,.54),rgba(36,38,44,.64));
+  --glass-shadow:0 30px 60px -18px rgba(0,0,0,.6),0 2px 8px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.1);
+  --glass-rim:linear-gradient(155deg,rgba(255,255,255,.52),rgba(255,255,255,.1) 22%,rgba(255,255,255,.03) 55%,rgba(255,255,255,.07) 80%,rgba(255,255,255,.3));
+  --btn-bg:linear-gradient(180deg,rgba(255,255,255,.17),rgba(255,255,255,.07));
+  --btn-bg-hover:linear-gradient(180deg,rgba(255,255,255,.23),rgba(255,255,255,.1));
+  --btn-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 0 0 1px rgba(255,255,255,.07),0 1px 2px rgba(0,0,0,.3);
+  --field-bg:rgba(0,0,0,.24);
+  --field-shadow:inset 0 0 0 1px rgba(255,255,255,.1),inset 0 1px 2px rgba(0,0,0,.3);
+  --seg-bg:rgba(0,0,0,.25);
+  --seg-ring:inset 0 0 0 1px rgba(255,255,255,.07);
+  --seg-on:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.1));
+  --seg-on-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 1px 2px rgba(0,0,0,.3);
+  --solid-glass:rgba(34,36,41,.95);
+  --chip-bg:rgba(255,255,255,.08);
+  --veil:rgba(8,9,12,.45);
+  --link:#2997FF;
+  --accent:#066FEF;
+  --accent-2:#4B97FF;
+  --accent-soft:rgba(6,111,239,.26);
+  --accent-ring:inset 0 0 0 1px rgba(75,151,255,.45);
+  --hit:rgba(75,151,255,.32);
+  --ok:#4AD17F;
+  --warn:#FFB340;
+  --bad:#FF6A5F;
+  --note-warn-bg:rgba(255,179,64,.12); --note-warn-ink:#FFD18F;
+  --note-bad-bg:rgba(255,106,95,.14);  --note-bad-ink:#FFB3AC;
+  --gloss:linear-gradient(180deg,#3B92FF 0%,#066FEF 52%,#0563DA 100%);
+  --gap:12px;
+  --ease:cubic-bezier(.22,.9,.24,1);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Segoe UI Variable Text","Segoe UI",sans-serif;
+  --font-d:-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,"Segoe UI Variable Display","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --stage:#E3E4E7;
+  --ambient:
+    radial-gradient(42% 46% at 22% 22%,rgba(6,111,239,.16),transparent 70%),
+    radial-gradient(46% 50% at 82% 84%,rgba(120,160,255,.22),transparent 72%),
+    radial-gradient(30% 32% at 70% 18%,rgba(90,200,230,.16),transparent 70%);
+  --ink:#1D1D1F;
+  --ink-2:rgba(29,29,31,.66);
+  --ink-3:rgba(29,29,31,.46);
+  --line:rgba(0,0,0,.08);
+  --well:rgba(0,0,0,.035);
+  --hover:rgba(0,0,0,.05);
+  --hover-2:rgba(0,0,0,.07);
+  --sep:rgba(0,0,0,.12);
+  --track:rgba(0,0,0,.13);
+  --scroll:rgba(0,0,0,.22);
+  --glass-bg:linear-gradient(180deg,rgba(255,255,255,.95),rgba(248,249,251,.91));
+  --glass-shadow:0 26px 56px -18px rgba(0,0,0,.34),0 2px 8px rgba(0,0,0,.1),inset 0 1px 0 rgba(255,255,255,.95);
+  --glass-rim:linear-gradient(155deg,rgba(255,255,255,1),rgba(255,255,255,.5) 24%,rgba(0,0,0,.07) 58%,rgba(0,0,0,.04) 80%,rgba(255,255,255,.8));
+  --btn-bg:linear-gradient(180deg,#fff,rgba(255,255,255,.78));
+  --btn-bg-hover:linear-gradient(180deg,#fff,#fff);
+  --btn-shadow:inset 0 0 0 .5px rgba(0,0,0,.14),0 1px 2px rgba(0,0,0,.1),0 2px 6px -2px rgba(0,0,0,.08);
+  --field-bg:rgba(255,255,255,.75);
+  --field-shadow:inset 0 0 0 1px rgba(0,0,0,.11),inset 0 1px 2px rgba(0,0,0,.05);
+  --seg-bg:rgba(0,0,0,.06);
+  --seg-ring:inset 0 0 0 .5px rgba(0,0,0,.06);
+  --seg-on:#fff;
+  --seg-on-shadow:0 1px 3px rgba(0,0,0,.16),0 0 0 .5px rgba(0,0,0,.06);
+  --solid-glass:rgba(255,255,255,.97);
+  --chip-bg:rgba(0,0,0,.05);
+  --veil:rgba(30,34,44,.22);
+  --link:#0066CC;
+  --accent-2:#0A63D6;
+  --accent-soft:rgba(6,111,239,.12);
+  --accent-ring:inset 0 0 0 1px rgba(6,111,239,.38);
+  --hit:rgba(6,111,239,.18);
+  --ok:#34C759;
+  --warn:#FF9500;
+  --bad:#FF3B30;
+  --note-warn-bg:rgba(255,149,0,.12); --note-warn-ink:#8F4A00;
+  --note-bad-bg:rgba(255,59,48,.1);   --note-bad-ink:#C4281C;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:14px/1.45 var(--font);color:var(--ink);background:var(--stage);-webkit-font-smoothing:antialiased;overflow:hidden}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default}
+:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+.mono{font-family:var(--mono);font-size:12.5px}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+*{scrollbar-width:thin;scrollbar-color:var(--scroll) transparent}
+
+.ambient{position:fixed;inset:-10%;z-index:-1;pointer-events:none;background:var(--ambient);filter:blur(24px);transition:opacity .7s var(--ease)}
+#app:not(.welcome-mode) ~ .ambient{opacity:.55}
+
+/* ---------- Glass ---------- */
+.glass,.glass-strong{position:relative;background:var(--glass-bg);
+  -webkit-backdrop-filter:blur(28px) saturate(1.8);backdrop-filter:blur(28px) saturate(1.8);box-shadow:var(--glass-shadow)}
+.glass::before,.glass-strong::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:2;
+  background:var(--glass-rim);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+
+/* ---------- Buttons ---------- */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 14px;border:0;border-radius:999px;
+  font-size:13px;font-weight:500;color:var(--ink);white-space:nowrap;background:var(--btn-bg);box-shadow:var(--btn-shadow);
+  transition:background .15s,transform .12s,filter .15s}
+.btn:hover:not(:disabled){background:var(--btn-bg-hover)}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn:disabled{opacity:.4}
+.btn.primary{overflow:hidden;color:#fff;font-weight:600;background:var(--gloss);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 0 rgba(0,0,0,.18),0 6px 18px -6px rgba(6,111,239,.7),0 1px 2px rgba(0,0,0,.3)}
+.btn.primary::after{content:"";position:absolute;left:8%;right:8%;top:1px;height:48%;border-radius:999px 999px 60% 60%/100% 100% 40% 40%;
+  background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0));pointer-events:none}
+.btn.primary:hover:not(:disabled){background:var(--gloss);filter:brightness(1.08)}
+.btn.primary:disabled{opacity:.38;box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+.btn.lg{height:38px;padding:0 18px;font-size:14px}
+.btn.subtle,.btn.danger{background:none;box-shadow:none;color:var(--link)}
+.btn.danger{color:var(--note-bad-ink)}
+.btn.subtle:hover:not(:disabled),.btn.danger:hover:not(:disabled){background:var(--hover)}
+.btn.icon{width:32px;padding:0;flex:none}
+.link{padding:0;border:0;background:none;font:inherit;color:var(--link);text-align:left}
+.link:hover{text-decoration:underline;text-underline-offset:3px}
+.icon-btn{width:28px;height:28px;border:0;border-radius:50%;background:none;display:grid;place-items:center;color:var(--ink-3)}
+.icon-btn:hover{background:var(--hover-2);color:var(--ink)}
+.icon-btn svg{width:13px;height:13px}
+.theme-btn svg{display:none}
+.theme-btn[data-pref="auto"] .ti-auto,.theme-btn[data-pref="light"] .ti-light,.theme-btn[data-pref="dark"] .ti-dark{display:block}
+
+/* ---------- Fields ---------- */
+input[type=text],input[type=search],textarea{display:block;width:100%;height:36px;padding:0 11px;border:0;border-radius:10px;outline:none;
+  background:var(--field-bg);box-shadow:var(--field-shadow);font-size:14px;color:var(--ink)}
+textarea{height:auto;min-height:38px;padding:9px 11px;resize:vertical;line-height:1.45}
+input:focus,textarea:focus{box-shadow:inset 0 0 0 1px rgba(75,151,255,.8),0 0 0 3px rgba(75,151,255,.25)}
+input::placeholder,textarea::placeholder{color:var(--ink-3)}
+input.mono,textarea.mono{font-family:var(--mono);font-size:12.5px}
+.search{position:relative;display:block}
+.search svg{position:absolute;left:12px;top:50%;width:14px;height:14px;transform:translateY(-50%);color:var(--ink-3);pointer-events:none}
+.search input{height:34px;padding-left:33px;border-radius:999px}
+.field{display:flex;flex-direction:column;gap:5px;margin:0 0 14px}
+.field > span:first-child{font-size:11.5px;font-weight:600;color:var(--ink-3)}
+.hint{font-size:12px;color:var(--ink-3)}
+.form-msg{margin:0 0 12px;font-size:13px;color:var(--note-bad-ink)}
+.form-msg:empty{display:none}
+
+.seg{display:inline-flex;padding:3px;border-radius:999px;background:var(--seg-bg);box-shadow:var(--seg-ring)}
+.seg button{height:26px;padding:0 12px;border:0;border-radius:999px;background:none;font-size:12.5px;font-weight:500;color:var(--ink-2);
+  white-space:nowrap;transition:background .2s,color .2s}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-checked="true"],.seg button[aria-pressed="true"]{color:var(--ink);background:var(--seg-on);box-shadow:var(--seg-on-shadow)}
+
+.switch-row{display:flex;align-items:center;gap:12px;padding:10px 2px;border-top:1px solid var(--line);cursor:pointer}
+.switch-row:first-child{border-top:0}
+.sw-text{flex:1;display:flex;flex-direction:column;font-size:13.5px}
+.sw-text small{color:var(--ink-3);font-size:12px}
+.switch-row input{position:absolute;opacity:0;width:1px;height:1px}
+.sw{position:relative;flex:none;width:38px;height:22px;border-radius:11px;background:var(--track);transition:background .2s}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transition:transform .25s var(--ease)}
+.switch-row input:checked + .sw{background:var(--accent)}
+.switch-row input:checked + .sw::after{transform:translateX(16px)}
+.switch-row input:focus-visible + .sw{outline:2px solid var(--accent-2);outline-offset:2px}
+
+/* ---------- Brand ---------- */
+.mark{position:relative;display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:9px;overflow:hidden;background:var(--gloss);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(0,0,0,.18),0 4px 12px -4px rgba(6,111,239,.7)}
+.mark::after{content:"";position:absolute;left:6%;right:6%;top:1px;height:46%;border-radius:40% 40% 50% 50%/80% 80% 30% 30%;
+  background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0));pointer-events:none}
+.mark svg{width:72%;height:72%}
+.wordmark{display:block;color:var(--ink)}
+.wordmark .hacek{stroke:var(--accent-2)}
+.brand{display:flex;align-items:center;gap:11px}
+.brand .wordmark{height:17px;width:auto}
+.brand-sub{padding-left:11px;border-left:1px solid var(--sep);font-size:13px;font-weight:500;color:var(--ink-2);white-space:nowrap}
+
+/* ---------- Frame ---------- */
+#app{height:100vh;height:100dvh;display:grid;grid-template-rows:52px minmax(0,1fr);gap:var(--gap);padding:var(--gap)}
+#app.welcome-mode{grid-template-rows:minmax(0,1fr)}
+#app.welcome-mode .topbar{display:none}
+.topbar{display:flex;align-items:center;gap:12px;padding:0 8px 0 11px;border-radius:999px}
+.source{margin-left:auto;display:flex;align-items:center;gap:8px;min-width:0}
+.chip{display:inline-flex;align-items:center;height:26px;padding:0 11px;border-radius:999px;background:var(--chip-bg);
+  font-size:12.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.chip b{font-weight:600;color:var(--ink);margin-right:5px}
+.main{min-width:0;min-height:0;display:flex;flex-direction:column}
+.center{flex:1;display:grid;place-items:center;padding:24px;overflow:auto}
+.loading{display:flex;align-items:center;gap:10px;color:var(--ink-2)}
+.spinner{width:16px;height:16px;border-radius:50%;border:2px solid var(--accent-soft);border-top-color:var(--accent-2);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- Welcome ---------- */
+.welcome{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center}
+.w-theme{position:absolute;top:4px;right:4px}
+.w-mark{width:76px;height:76px;border-radius:22px;margin-bottom:30px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 0 rgba(0,0,0,.2),0 18px 40px -12px rgba(6,111,239,.75),0 2px 6px rgba(0,0,0,.25);
+  animation:markIn .7s var(--ease) both}
+.w-mark svg{width:70%;height:70%}
+@keyframes markIn{from{opacity:0;transform:translateY(8px) scale(.94)}}
+.w-word{height:62px;width:auto}
+.w-sub{margin:16px 0 0;font:500 19px/1.3 var(--font-d);letter-spacing:.01em;color:var(--ink-2)}
+.w-action{margin:44px 0 0;font:400 17px/1.47 var(--font);letter-spacing:-.022em;color:var(--ink)}
+.w-note{margin:8px 0 0;max-width:46ch;font:400 13px/1.42 var(--font);color:var(--ink-3)}
+.welcome .form-msg{margin:18px 0 0;max-width:52ch;padding:9px 14px;border-radius:12px;background:var(--note-bad-bg)}
+body.dragging::after{content:"Drop to open the policy";position:fixed;inset:16px;z-index:60;display:grid;place-items:center;border-radius:28px;pointer-events:none;
+  background:rgba(6,111,239,.16);box-shadow:inset 0 0 0 2px rgba(75,151,255,.8);font:600 17px var(--font-d);color:var(--ink)}
+
+/* ---------- Market view ---------- */
+.market{flex:1;min-height:0;display:flex;flex-direction:column;gap:var(--gap)}
+.market-head{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px 28px;padding:6px 8px 0}
+.mh-title h1{margin:0;font:600 28px/1.14 var(--font-d);letter-spacing:.004em}
+.mh-title a{color:var(--ink-2);text-decoration:none;font-size:13.5px}
+.mh-title a:hover{color:var(--link)}
+.mh-when{display:block;margin-top:1px;font-size:12px;color:var(--ink-3)}
+.mh-stats{display:flex;gap:4px}
+.stat{display:flex;flex-direction:column;justify-content:center;padding:4px 12px;border:0;border-radius:12px;background:none;text-align:left;line-height:1.2}
+.stat b{font:600 17px var(--font-d);font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--ink-3)}
+button.stat:hover{background:var(--hover)}
+.stat.is-err b{color:var(--bad)}
+.stat.is-warn b{color:var(--warn)}
+.mh-actions{margin-left:auto;display:flex;gap:8px}
+.mh-actions .btn{height:36px;padding:0 16px;font-size:13.5px}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:0 2px}
+.toolbar .search{flex:1 1 220px;max-width:380px}
+
+.split{flex:1;min-height:0;display:grid;grid-template-columns:minmax(300px,40%) minmax(0,1fr);gap:var(--gap)}
+.list-panel{display:flex;flex-direction:column;min-height:0;overflow:hidden;border-radius:26px}
+.list-count{padding:14px 18px 10px;font-size:12px;color:var(--ink-3);border-bottom:1px solid var(--line)}
+.rule-list{flex:1;overflow:auto;padding:6px}
+.rr{width:100%;display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:8px;align-items:start;padding:8px 10px 8px 4px;border:0;border-radius:12px;
+  background:none;text-align:left;transition:background .15s}
+.rr + .rr{margin-top:1px}
+.rr:hover{background:var(--hover)}
+.rr.sel{background:var(--accent-soft);box-shadow:var(--accent-ring)}
+.rr-pos{padding-top:2px;text-align:right;font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.rr-main{min-width:0;display:flex;flex-direction:column;gap:1px}
+.rr-name{font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rr-name em{font-weight:400;color:var(--ink-3)}
+.rr-target,.rr-hit{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rr-hit{color:var(--ink-2)}
+.rr-hit mark{background:var(--hit);color:inherit;border-radius:3px}
+.rr-side{display:flex;align-items:center;gap:7px;padding-top:2px}
+.rr-count{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.tag{height:18px;padding:0 7px;border-radius:999px;font-size:11px;font-weight:600;line-height:18px;background:var(--chip-bg);color:var(--ink-2)}
+.tag.amber{background:var(--note-warn-bg);color:var(--note-warn-ink)}
+.pin{width:12px;height:12px;color:var(--ink-3)}
+.dot{flex:none;display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent-2)}
+.sev{flex:none;width:8px;height:8px;border-radius:50%}
+.sev.error{background:var(--bad);box-shadow:0 0 8px rgba(255,106,95,.55)}
+.sev.warning{background:var(--warn);box-shadow:0 0 8px rgba(255,179,64,.55)}
+.sev.known{box-shadow:inset 0 0 0 1.5px var(--sep)}
+.list-empty{padding:32px 20px;text-align:center;color:var(--ink-2)}
+
+/* ---------- Rule detail ---------- */
+.detail-panel{display:flex;min-width:0;min-height:0;overflow:hidden;border-radius:26px}
+.detail{flex:1;min-width:0;overflow:auto;padding:22px 24px 18px}
+.detail-empty{height:100%;display:grid;place-items:center;text-align:center;color:var(--ink-2)}
+input.d-name{height:38px;margin-left:-8px;padding:0 8px;background:none;box-shadow:none;font:600 21px var(--font-d);letter-spacing:-.005em}
+input.d-name:hover{background:var(--hover)}
+input.d-name:focus{background:var(--field-bg);box-shadow:inset 0 0 0 1px rgba(75,151,255,.8),0 0 0 3px rgba(75,151,255,.25)}
+.d-sub{margin:2px 0 18px;font-size:12.5px;color:var(--ink-3)}
+.d-section{margin-top:24px}
+.d-section h2{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.d-section h2 .count{font-weight:500;color:var(--ink-3)}
+
+/* the route: vanity paths converging on one address */
+.route{display:grid;grid-template-columns:minmax(0,1fr) 76px minmax(0,1.15fr);align-items:center;padding:18px;border-radius:20px;
+  background:var(--well);box-shadow:inset 0 0 0 1px var(--line)}
+.route-from{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:0}
+.pchip{max-width:100%;height:30px;padding:0 11px;border-radius:9px;line-height:30px;background:var(--field-bg);box-shadow:var(--field-shadow);
+  font-family:var(--mono);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pchip.more{background:none;box-shadow:none;color:var(--ink-3);font-family:var(--font)}
+.pchip.none{background:none;box-shadow:inset 0 0 0 1px var(--sep);color:var(--ink-3);font-family:var(--font)}
+.route svg.wires{display:block;width:76px;overflow:visible}
+.wires path{fill:none;stroke:var(--accent-2);stroke-width:1.5;opacity:.7}
+.wires .head{fill:var(--accent-2);opacity:.9}
+.route-to{position:relative;min-width:0;padding:12px 14px;border-radius:15px;overflow:hidden;color:#fff;background:linear-gradient(180deg,#2F86F7,#066FEF 55%,#0560D4);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(0,0,0,.18),0 12px 26px -12px rgba(6,111,239,.8)}
+.rt-host{font-size:12px;color:rgba(255,255,255,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rt-path{margin:1px 0 8px;font-family:var(--mono);font-size:13px;font-weight:600;word-break:break-all}
+.rt-path.empty{font-family:var(--font);font-weight:400;color:rgba(255,255,255,.75)}
+.rt-meta{display:flex;flex-wrap:wrap;gap:5px;font-size:11.5px}
+.rt-meta span{padding:1px 8px;border-radius:999px;background:rgba(255,255,255,.18)}
+.route-next{grid-column:3;margin-top:8px;padding:9px 12px;border-radius:13px;font-size:12.5px;color:var(--ink-2);
+  background:var(--note-warn-bg);box-shadow:inset 0 0 0 1px rgba(255,179,64,.35)}
+.route-next .mono{word-break:break-all;color:var(--ink)}
+
+.problems{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.problem{display:grid;grid-template-columns:18px 1fr;gap:10px;padding:11px 13px;border-radius:14px}
+.problem.error{background:var(--note-bad-bg)}
+.problem.warning{background:var(--note-warn-bg)}
+.problem.known{background:var(--well);box-shadow:inset 0 0 0 1px var(--line)}
+.problem p{margin:0;font-size:13px;word-break:break-word}
+.p-icon{padding-top:1px}
+.p-icon svg{width:16px;height:16px}
+.problem.error .p-icon{color:var(--bad)}
+.problem.warning .p-icon{color:var(--warn)}
+.problem.known .p-icon{color:var(--ink-3)}
+.p-tag{display:inline-block;margin-top:3px;font-size:11.5px;color:var(--ink-3)}
+.p-actions{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px}
+.p-actions .link{font-size:12.5px}
+
+.status-desc{margin-top:4px;font-size:12px;color:var(--ink-3)}
+.switches{margin:4px 0 6px}
+details.adv{margin-top:6px;padding-top:10px;border-top:1px solid var(--line)}
+details.adv summary{padding:2px 0 10px;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer}
+.adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.adv-grid .field:first-child{grid-column:1 / -1}
+
+.paths-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.paths-head h2{margin:0 !important}
+.paths-head .search{width:210px;margin-left:auto}
+.add-paths{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px}
+.add-paths .btn{height:38px}
+.selbar{display:flex;align-items:center;gap:4px;margin-bottom:8px;padding:5px 6px 5px 14px;border-radius:14px;background:var(--accent-soft);box-shadow:var(--accent-ring);font-size:13px}
+.selbar span{margin-right:auto;font-weight:500}
+.path-list{margin:0;padding:0;list-style:none;border-radius:14px;background:var(--well);box-shadow:inset 0 0 0 1px var(--line)}
+.pl{display:flex;align-items:center;gap:8px;min-height:36px;padding:3px 6px 3px 12px;border-top:1px solid var(--line)}
+.pl:first-child{border-top:0}
+.pl input[type=checkbox]{flex:none;width:15px;height:15px;margin:0;accent-color:var(--accent)}
+.pl-text{flex:1;min-width:0;padding:4px 6px;border:0;border-radius:7px;background:none;text-align:left;font-family:var(--mono);font-size:12.5px;word-break:break-all}
+.pl-text:hover{background:var(--hover)}
+.pl-text em{font-family:var(--font);color:var(--ink-3)}
+.pl input.pl-edit{flex:1;height:30px;font-family:var(--mono);font-size:12.5px}
+.pl .icon-btn{opacity:.6}
+.pl:hover .icon-btn,.pl .icon-btn:focus-visible{opacity:1}
+.d-foot{display:flex;align-items:center;gap:8px;margin-top:24px;padding-top:14px;border-top:1px solid var(--line)}
+.d-foot .note{margin-right:auto;font-size:12.5px;color:var(--ink-3)}
+.d-foot .btn.danger{margin-left:auto}
+
+/* ---------- Dialogs ---------- */
+dialog{width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 48px);padding:0;border:0;border-radius:26px;color:var(--ink);overflow:visible;
+  background:var(--solid-glass);-webkit-backdrop-filter:blur(40px) saturate(1.4);backdrop-filter:blur(40px) saturate(1.4);box-shadow:var(--glass-shadow)}
+dialog::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;background:var(--glass-rim);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+dialog::backdrop{background:var(--veil);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+dialog[open]{animation:popIn .26s var(--ease)}
+@keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.985)}}
+.dlg{display:flex;flex-direction:column;max-height:calc(100vh - 48px);padding:24px 26px 20px}
+.dlg h2{margin:0 0 6px;font:600 19px var(--font-d);letter-spacing:-.01em}
+.dlg > p{margin:0 0 16px;color:var(--ink-2)}
+.dlg-body{margin:0 -26px;padding:4px 26px;overflow:auto}
+.dlg-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:18px}
+.dlg-actions .push{margin-right:auto}
+.dlg-actions .btn{height:36px;padding:0 16px;font-size:13.5px}
+.change-list{margin:0 0 14px;padding:0;list-style:none;border-radius:14px;background:var(--well);box-shadow:inset 0 0 0 1px var(--line)}
+.change-list li{padding:9px 13px;border-top:1px solid var(--line);font-size:13px;word-break:break-word}
+.change-list li:first-child{border-top:0}
+.blocker{margin-bottom:14px;padding:11px 13px;border-radius:12px;background:var(--note-bad-bg);color:var(--note-bad-ink);font-size:13px}
+.blocker ul{margin:6px 0 0;padding-left:18px}
+.warnnote{margin-bottom:14px;padding:10px 13px;border-radius:12px;background:var(--note-warn-bg);color:var(--note-warn-ink);font-size:13px}
+.mv-list{display:flex;flex-direction:column;gap:1px;max-height:46vh;margin-top:10px;overflow:auto}
+.mv-list button{padding:7px 10px;border:0;border-radius:11px;background:none;text-align:left}
+.mv-list button:hover{background:var(--accent-soft)}
+.mv-list small{display:block;font-family:var(--mono);font-size:11.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nr-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.nr-grid .full{grid-column:1 / -1}
+
+/* ---------- Toast ---------- */
+.toast{position:fixed;left:50%;top:18px;z-index:80;display:flex;align-items:center;gap:12px;max-width:min(600px,calc(100% - 32px));
+  padding:8px 8px 8px 16px;border-radius:18px;font-size:13.5px;line-height:1.4;
+  transform:translate(-50%,-12px);opacity:0;pointer-events:none;transition:opacity .25s,transform .35s var(--ease)}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast-dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.toast[data-kind="error"] .toast-dot{background:var(--bad)}
+.toast .btn{height:28px;font-size:12.5px}
+.toast a{color:var(--link);font-weight:500}
+
+@media (max-width:1180px){
+  .split{grid-template-columns:minmax(260px,42%) minmax(0,1fr)}
+  .route{grid-template-columns:minmax(0,1fr) 56px minmax(0,1.1fr);padding:14px}
+  .route svg.wires{width:56px}
+}
+@media (max-width:900px){
+  body{overflow:auto}
+  #app{height:auto;min-height:100vh;grid-template-rows:auto minmax(0,1fr)}
+  .topbar{flex-wrap:wrap;border-radius:22px;padding:8px 10px;height:auto}
+  .split{grid-template-columns:1fr}
+  .list-panel{max-height:50vh}
+  .mh-actions{width:100%;margin-left:0}
+  .brand-sub{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:0s !important;animation-duration:0s !important}
+}
+
+</style>
+</head>
+<body>
+<div id="app" class="welcome-mode">
+  <header class="topbar glass">
+    <div class="brand" aria-label="Veerča, Redirects Editor"><span class="mark" id="brand-mark"></span><span id="brand-word"></span><span class="brand-sub">Redirects Editor</span></div>
+    <div class="source" id="source"></div>
+    <button class="btn icon theme-btn" type="button" data-pref="auto"><svg class="ti-auto" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="5.75"/><path d="M8 2.25a5.75 5.75 0 0 1 0 11.5z" fill="currentColor" stroke="none"/></svg><svg class="ti-light" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.06 1.06M11.54 11.54l1.06 1.06M3.4 12.6l1.06-1.06M11.54 4.46l1.06-1.06"/></svg><svg class="ti-dark" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M13.25 9.6A5.75 5.75 0 1 1 6.4 2.75a4.6 4.6 0 0 0 6.85 6.85z"/></svg></button>
+  </header>
+  <main class="main" id="main"></main>
+</div>
+<div class="ambient" aria-hidden="true"></div>
+<input type="file" id="file-input" accept=".zip,.csv,text/csv,application/zip" hidden>
+<div class="toast glass" id="toast" role="status" aria-live="polite"><span class="toast-dot"></span><span id="toast-text"></span><button class="btn" id="toast-close" type="button">Dismiss</button></div>
+<script id="core">
+(function (root) {
+  'use strict';
+
+  const MARKETS = [
+    ['United Kingdom', 'www.ford.co.uk'], ['France', 'www.ford.fr'], ['Norway', 'www.ford.no'], ['Germany', 'www.ford.de'],
+    ['Ireland', 'www.ford.ie'], ['Belgium (NL)', 'www.nl.ford.be'], ['Belgium (FR)', 'www.fr.ford.be'],
+    ['Switzerland (FR)', 'www.fr.ford.ch'], ['Switzerland (DE)', 'www.de.ford.ch'], ['Switzerland (IT)', 'www.it.ford.ch'],
+    ['Austria', 'www.ford.at'], ['Czech Republic', 'www.ford.cz'], ['Denmark', 'www.ford.dk'], ['Finland', 'www.ford.fi'],
+    ['Greece', 'www.ford.gr'], ['Hungary', 'www.ford.hu'], ['Italy', 'www.ford.it'], ['Netherlands', 'www.ford.nl'],
+    ['Poland', 'www.ford.pl'], ['Portugal', 'www.ford.pt'], ['Romania', 'www.ford.ro'], ['Spain', 'www.ford.es'],
+    ['Luxembourg', 'www.ford.lu'],
+  ].map(([name, host]) => ({ name, host }));
+
+  const STATUS_CODES = [301, 302, 303, 307, 308];
+  const STATUS_LABELS = { 301: 'Permanent', 302: 'Temporary', 303: 'See other', 307: 'Temporary, keeps method', 308: 'Permanent, keeps method' };
+
+  // Column names as Akamai and Veera write them, and the field each one fills.
+  const COLUMNS = [
+    ['ruleName', 'name'], ['host', 'host'], ['path', 'path'], ['query', 'query'], ['scheme', 'scheme'],
+    ['matchURL', 'matchURL'], ['regex', 'regex'], ['result.useIncomingQueryString', 'useQueryString'],
+    ['result.redirectURL', 'redirectURL'], ['result.statusCode', 'statusCode'],
+  ];
+  const CSV_HEAD = COLUMNS.map((c) => c[0]);
+
+  const str = (v) => (v == null ? '' : String(v));
+
+  /* ---------- data model ---------- */
+
+  function normalizeRule(r) {
+    return {
+      id: str(r.id), name: str(r.name), host: str(r.host),
+      paths: Array.isArray(r.paths) ? r.paths.map(str) : [],
+      redirectURL: str(r.redirectURL), statusCode: Number(r.statusCode) || 0,
+      caseSensitive: !!r.caseSensitive, useQueryString: !!r.useQueryString,
+      regex: str(r.regex), query: str(r.query), scheme: str(r.scheme), matchURL: str(r.matchURL),
+      pinLast: !!r.pinLast, extra: Object.assign({}, r.extra || {}),
+    };
+  }
+
+  const snapshot = (m) => JSON.stringify(m.rules.map(normalizeRule));
+  const exportOrder = (rules) => rules.filter((r) => !r.pinLast).concat(rules.filter((r) => r.pinLast));
+
+  function newId() {
+    const bytes = new Uint8Array(12);
+    root.crypto.getRandomValues(bytes);
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  /* ---------- reading files ---------- */
+
+  function parseCSV(text, delim) {
+    const rows = [];
+    let row = [], field = '', q = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) {
+        if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; }
+        else field += c;
+      } else if (c === '"' && field === '') q = true;
+      else if (c === delim) { row.push(field); field = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && text[i + 1] === '\n') i++;
+        row.push(field); rows.push(row); row = []; field = '';
+      } else field += c;
+    }
+    if (field !== '' || row.length) { row.push(field); rows.push(row); }
+    return rows.filter((r) => !(r.length === 1 && r[0].trim() === ''));
+  }
+
+  function marketForHost(host) {
+    const m = MARKETS.find((x) => x.host === host);
+    return m ? m.name : '';
+  }
+
+  // Reads a policy file: Akamai's export (with its "#" header block) or a CSV exported by Veera.
+  function importPolicy(text, fileName) {
+    text = text.replace(/^\ufeff/, '');
+    const lines = text.split(/\r\n|\n|\r/);
+    const meta = {};
+    let k = 0;
+    while (k < lines.length && (lines[k].startsWith('#') || (k === 0 && !lines[k].trim()))) {
+      const m = lines[k].match(/^#\s*([^:]+?)\s*:\s*(.*)$/);
+      if (m) meta[m[1]] = m[2].trim();
+      k++;
+    }
+    const headerLine = lines.slice(k).find((l) => l.trim()) || '';
+    const delimiter = headerLine.split(';').length > headerLine.split(',').length ? ';' : ',';
+    const rows = parseCSV(lines.slice(k).join('\n'), delimiter);
+    if (!rows.length) throw new Error('This file is empty.');
+    const head = rows[0].map((h) => h.trim());
+    for (const need of ['ruleName', 'path', 'result.redirectURL']) {
+      if (!head.includes(need)) throw new Error('This doesn\u2019t look like a redirect policy: there\u2019s no \u201c' + need + '\u201d column.');
+    }
+    const extraCols = head.filter((h) => h && !CSV_HEAD.includes(h));
+    const rules = rows.slice(1).map((row, n) => {
+      const get = (col) => { const i = head.indexOf(col); return i < 0 ? '' : str(row[i]); };
+      let path = get('path');
+      const cs = path.startsWith(':');
+      if (cs) path = path.slice(1);
+      const extra = {};
+      for (const c of extraCols) extra[c] = get(c);
+      return normalizeRule({
+        id: 'r' + (n + 1), name: get('ruleName'), host: get('host'), paths: path === '' ? [] : path.split(' '),
+        redirectURL: get('result.redirectURL'), statusCode: get('result.statusCode'), caseSensitive: cs,
+        useQueryString: /^(1|true|yes)$/i.test(get('result.useIncomingQueryString').trim()),
+        regex: get('regex'), query: get('query'), scheme: get('scheme'), matchURL: get('matchURL'), extra,
+      });
+    });
+
+    // Veera always exported the first rule named "...trailing slash..." last. Keep doing that.
+    const ts = rules.find((r) => r.name.includes('trailing slash'));
+    if (ts) ts.pinLast = true;
+
+    const counts = new Map();
+    for (const r of rules) for (const h of r.host.trim().split(/\s+/)) if (h) counts.set(h, (counts.get(h) || 0) + 1);
+    const known = [...counts.keys()].filter(marketForHost);
+    const host = (known.length ? known : [...counts.keys()]).sort((a, b) => counts.get(b) - counts.get(a))[0] || '';
+    const policy = meta['Policy'] || str(fileName).replace(/\.(csv|zip)$/i, '');
+
+    return {
+      market: { name: marketForHost(host) || policy || host, host, extraCols, rules },
+      info: {
+        source: Object.keys(meta).length ? 'akamai' : 'csv',
+        policy, version: meta['Version'] || '', policyId: meta['Policy ID'] || '',
+        description: meta['Description'] || '', lastUpdate: meta['Last Update'] || '',
+        delimiter, extraCols, pinnedMoved: !!ts && rules[rules.length - 1] !== ts,
+      },
+    };
+  }
+
+  /* ---------- writing: the same bytes Veera's "Export Policy" produced ---------- */
+
+  function exportCSV(market) {
+    const cell = (v) => '"' + str(v).replace(/"/g, '""') + '"';
+    const extras = (market.extraCols || []).filter((c) => market.rules.some((r) => str(r.extra[c]) !== ''));
+    const rows = [CSV_HEAD.concat(extras)];
+    for (const r of exportOrder(market.rules)) {
+      const p = r.paths.join(' ');
+      rows.push([r.name, r.host, r.caseSensitive ? ':' + p : p, r.query, r.scheme, r.matchURL, r.regex,
+        r.useQueryString ? '1' : '', r.redirectURL, String(r.statusCode)].concat(extras.map((c) => r.extra[c])));
+    }
+    return '\ufeff' + rows.map((row) => row.map(cell).join(',')).join('\n');
+  }
+
+  /* ---------- input helpers ---------- */
+
+  function toPath(raw) {
+    let s = str(raw).trim();
+    if (!s) return '';
+    const m = s.match(/^(?:https?:\/\/)?((?:www|[a-z0-9-]+)\.[a-z0-9.-]+\.[a-z]{2,})(\/.*)?$/i);
+    if (m && (/^https?:\/\//i.test(s) || /^www\./i.test(s))) s = m[2] || '/';
+    if (!s.startsWith('/')) s = '/' + s;
+    return s;
+  }
+
+  function parseTarget(url) {
+    const u = str(url).trim();
+    if (!u || /\\\d/.test(u)) return null;
+    let m = u.match(/^https?:\/\/([^/?#]+)([^?#]*)/i);
+    if (m) return { host: m[1].toLowerCase(), path: m[2] || '/' };
+    m = u.match(/^([a-z0-9-]+(?:\.[a-z0-9-]+)+)(\/[^?#]*)?/i);
+    if (m && !u.startsWith('/')) return { host: m[1].toLowerCase(), path: m[2] || '/', noScheme: true };
+    if (u.startsWith('/')) return { host: null, path: u.split(/[?#]/)[0] };
+    return null;
+  }
+
+  // UTF-8 text that was read as Windows-1250/1252 at some point, e.g. "á" turned into "Ăˇ".
+  const GARBLED = /[\u00C3\u0102\u00C2\u0139\u00C4][\u0080-\u00BF\u02C7\u02D8\u02DD\u0141\u0142\u2018\u2019\u201A\u201C\u201D\u201E\u2020\u2021\u2026\u2030\u2039\u203A\u0160\u0161\u015A\u015B\u0164\u0165\u0179\u017A\u017D\u017E]/;
+  const hostsOf = (r) => { const h = r.host.trim().toLowerCase(); return h ? h.split(/\s+/) : null; };
+  const isPlain = (p) => p.startsWith('/') && !/[*?]/.test(p) && !p.includes('&!');
+
+  function buildIndex(ordered) {
+    const idx = new Map();
+    ordered.forEach((r, i) => {
+      if (r.regex) return;
+      const hosts = hostsOf(r);
+      for (const p of r.paths) {
+        if (!isPlain(p)) continue;
+        const k = p.toLowerCase();
+        if (!idx.has(k)) idx.set(k, []);
+        idx.get(k).push({ i, rule: r, path: p, cs: r.caseSensitive, hosts });
+      }
+    });
+    return idx;
+  }
+
+  /* ---------- checks ---------- */
+
+  function analyze(market) {
+    const issues = [];
+    const ordered = exportOrder(market.rules);
+    const idx = buildIndex(ordered);
+    const marketHost = market.host.toLowerCase();
+    const knownHosts = new Set([marketHost]);
+    ordered.forEach((r) => (hostsOf(r) || []).forEach((h) => knownHosts.add(h)));
+    const nameCount = new Map();
+    ordered.forEach((r) => { const k = r.name.trim(); if (k) nameCount.set(k, (nameCount.get(k) || 0) + 1); });
+
+    ordered.forEach((r, i) => {
+      const add = (severity, type, message, extra) => {
+        extra = extra || {};
+        issues.push(Object.assign({ severity, type, ruleId: r.id, message, key: type + '|' + r.id + '|' + str(extra.path) }, extra));
+      };
+
+      if (!r.name.trim()) add('error', 'noName', 'Give this rule a name.');
+      if (!r.redirectURL.trim()) add('error', 'noTarget', 'Add the address visitors should be sent to.');
+      if (!STATUS_CODES.includes(r.statusCode)) add('error', 'status', 'Choose a redirect status code: 301, 302, 303, 307 or 308.');
+      if (!r.paths.length) add('error', 'noPaths', 'Add at least one path. A rule without paths could catch every page on the site.');
+      for (const [field, label] of [['name', 'rule name'], ['host', 'hosts'], ['redirectURL', 'redirect address'], ['regex', 'regex'], ['query', 'query'], ['scheme', 'scheme'], ['matchURL', 'match URL']]) {
+        if (/["\r\n]/.test(r[field])) add('error', 'chars', 'The ' + label + ' contains a quote mark or a line break, which would break the file.', { path: field });
+      }
+      if (r.name.trim() && nameCount.get(r.name.trim()) > 1) add('warning', 'dupName', 'Another rule in this policy has the same name.');
+      const garbled = [r.redirectURL].concat(r.paths).find((s) => GARBLED.test(s));
+      if (garbled) add('warning', 'garbled', garbled + ' contains garbled characters, typical of a file once saved in the wrong encoding. It won\u2019t match the real address.');
+
+      const seen = new Set();
+      let empty = 0;
+      for (const p of r.paths) {
+        if (p === '') { empty++; continue; }
+        if (/[\s"]/.test(p)) {
+          add('error', 'pathChars', p + ' contains a space, tab or quote mark. Paths are separated by spaces in the file, so it would split in two.', { path: p, fix: 'removePath' });
+        } else if (!p.startsWith('/')) {
+          add('warning', 'pathSlash', '\u201c' + p + '\u201d doesn\u2019t start with /. It may be the leftover half of a path that contained a space.', { path: p, fix: 'removePath' });
+        }
+        const k = r.caseSensitive ? p : p.toLowerCase();
+        if (seen.has(k)) add('warning', 'pathTwice', p + ' is listed twice in this rule.', { path: p, fix: 'removeDuplicate' });
+        seen.add(k);
+
+        if (!r.regex && isPlain(p)) {
+          const rh = hostsOf(r);
+          for (const e of idx.get(p.toLowerCase()) || []) {
+            if (e.i >= i) break;
+            const covers = !e.hosts || (rh && rh.every((h) => e.hosts.includes(h)));
+            if (!covers) continue;
+            if (!e.cs || (r.caseSensitive && e.path === p)) {
+              add('error', 'shadowed', p + ' never takes effect: the rule \u201c' + e.rule.name + '\u201d comes earlier and already handles it.',
+                { path: p, otherId: e.rule.id, fix: 'removePath' });
+              issues.push({ severity: 'warning', type: 'overlap', ruleId: e.rule.id, path: p, otherId: r.id,
+                key: 'overlap|' + e.rule.id + '|' + p + '|' + r.id,
+                message: p + ' is also listed in \u201c' + r.name + '\u201d further down, where it never takes effect.' });
+              break;
+            }
+          }
+        }
+      }
+      if (empty) add('warning', 'emptyPath', empty === 1 ? 'This rule has an empty path entry.' : 'This rule has ' + empty + ' empty path entries.', { fix: 'removeEmpty' });
+
+      if (r.regex) return;
+      const t = parseTarget(r.redirectURL);
+      if (t && t.noScheme) {
+        add('warning', 'noScheme', 'The redirect address doesn\u2019t start with https://. Depending on how Akamai reads it, visitors could end up on a broken address.', { fix: 'addScheme' });
+      } else if (!t && r.redirectURL.trim() && !/\\\d/.test(r.redirectURL)) {
+        add('warning', 'oddTarget', 'The redirect address is neither a full address nor a path starting with /.');
+      }
+      if (!t) return;
+
+      const rh = hostsOf(r);
+      const targetHost = t.host || (rh ? rh[0] : marketHost);
+      const sameHost = !t.host || (rh ? rh.includes(targetHost) : targetHost === marketHost);
+      if (sameHost) {
+        const self = r.paths.find((p) => isPlain(p) && (r.caseSensitive ? p === t.path : p.toLowerCase() === t.path.toLowerCase()));
+        if (self) add('error', 'loop', self + ' sends visitors to its own address, so they would bounce in a loop.', { path: self, fix: 'removePath' });
+      }
+      if (!knownHosts.has(targetHost)) return;
+      for (const e of idx.get(t.path.toLowerCase()) || []) {
+        if (e.rule === r) continue;
+        if (e.hosts && !e.hosts.includes(targetHost)) continue;
+        if (e.cs && e.path !== t.path) continue;
+        const nextTarget = e.rule.redirectURL;
+        const canFlatten = !/\\\d/.test(nextTarget) && !!parseTarget(nextTarget);
+        add('warning', 'chain', 'Visitors land on ' + t.path + ', which the rule \u201c' + e.rule.name + '\u201d redirects again to ' + nextTarget + '.',
+          { otherId: e.rule.id, nextTarget, nextStatus: e.rule.statusCode, fix: canFlatten ? 'flatten' : null });
+        break;
+      }
+    });
+    return issues;
+  }
+
+  /* ---------- change summaries ---------- */
+
+  const FIELDS = [['name', 'name'], ['redirectURL', 'redirect address'], ['statusCode', 'status code'], ['host', 'hosts'],
+    ['caseSensitive', 'case-sensitive'], ['useQueryString', 'keep query string'], ['regex', 'regex'], ['query', 'query'],
+    ['scheme', 'scheme'], ['matchURL', 'match URL'], ['pinLast', 'always last']];
+
+  function diffMarket(a, b) {
+    const A = new Map(a.rules.map((r) => [r.id, r]));
+    const B = new Map(b.rules.map((r) => [r.id, r]));
+    const added = exportOrder(b.rules).filter((r) => !A.has(r.id));
+    const removed = a.rules.filter((r) => !B.has(r.id));
+    const changed = [];
+    for (const r of exportOrder(b.rules)) {
+      const o = A.get(r.id);
+      if (!o) continue;
+      const fields = FIELDS.filter(([k]) => o[k] !== r[k]).map(([k, label]) => ({ key: k, label, from: o[k], to: r[k] }));
+      const os = new Set(o.paths), ns = new Set(r.paths);
+      const pathsAdded = r.paths.filter((p) => !os.has(p));
+      const pathsRemoved = o.paths.filter((p) => !ns.has(p));
+      const tidied = !pathsAdded.length && !pathsRemoved.length && o.paths.join('\n') !== r.paths.join('\n');
+      if (fields.length || pathsAdded.length || pathsRemoved.length || tidied) changed.push({ rule: r, before: o, fields, pathsAdded, pathsRemoved, tidied });
+    }
+    const oa = exportOrder(a.rules).map((r) => r.id).filter((id) => B.has(id)).join();
+    const ob = exportOrder(b.rules).map((r) => r.id).filter((id) => A.has(id)).join();
+    return { added, removed, changed, orderChanged: oa !== ob, count: added.length + removed.length + changed.length };
+  }
+
+  const plural = (n, one, many) => n + ' ' + (n === 1 ? one : (many || one + 's'));
+  const showVal = (v) => (typeof v === 'boolean' ? (v ? 'yes' : 'no') : (v === '' ? '(empty)' : String(v)));
+  const showPaths = (ps) => ps.map((p) => (p === '' ? '(empty)' : p)).join(', ');
+
+  function describeDiff(d) {
+    const lines = [];
+    for (const r of d.added) lines.push('New rule \u201c' + r.name + '\u201d: ' + showPaths(r.paths) + ' \u2192 ' + r.redirectURL + ' (' + r.statusCode + ')');
+    for (const c of d.changed) {
+      const parts = c.fields.map((f) => f.label + ' changed from ' + showVal(f.from) + ' to ' + showVal(f.to));
+      if (c.pathsAdded.length) parts.push('added ' + showPaths(c.pathsAdded));
+      if (c.pathsRemoved.length) parts.push('removed ' + showPaths(c.pathsRemoved));
+      if (c.tidied) parts.push('tidied the path list');
+      lines.push('\u201c' + c.rule.name + '\u201d: ' + parts.join('; '));
+    }
+    for (const r of d.removed) lines.push('Deleted rule \u201c' + r.name + '\u201d (' + plural(r.paths.length, 'path') + ')');
+    if (d.orderChanged) lines.push('Rule order changed');
+    const bits = [];
+    if (d.added.length) bits.push(plural(d.added.length, 'new rule'));
+    if (d.changed.length) bits.push(plural(d.changed.length, 'rule') + ' changed');
+    if (d.removed.length) bits.push(plural(d.removed.length, 'rule') + ' deleted');
+    return { headline: bits.join(', ') || (d.orderChanged ? 'rule order changed' : 'no changes'), lines };
+  }
+
+  root.RedirectCore = {
+    MARKETS, STATUS_CODES, STATUS_LABELS, CSV_HEAD, normalizeRule, snapshot, exportOrder, newId,
+    parseCSV, importPolicy, exportCSV, toPath, parseTarget, analyze, diffMarket, describeDiff, plural,
+  };
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
+<script>
+(function () {
+  'use strict';
+  const C = window.RedirectCore;
+  const $ = (s, el) => (el || document).querySelector(s);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmt = (n) => n.toLocaleString('en-GB');
+  const fmtDate = (iso) => { const d = new Date(iso); return isNaN(d) ? iso : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); };
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  const today = () => new Date().toISOString().slice(0, 10);
+
+  const ICON = {
+    search: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="7" cy="7" r="4.6"/><path d="m10.5 10.5 3.2 3.2"/></svg>',
+    gear: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 1.8v2.4M10 15.8v2.4M1.8 10h2.4M15.8 10h2.4M4.2 4.2l1.7 1.7M14.1 14.1l1.7 1.7M4.2 15.8l1.7-1.7M14.1 5.9l1.7-1.7" stroke-linecap="round"/></svg>',
+    x: '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m3.5 3.5 7 7M10.5 3.5l-7 7"/></svg>',
+    pin: '<svg class="pin" viewBox="0 0 12 12" fill="currentColor" aria-label="Always checked last"><path d="M3 10.5h6v-1.2H3zM6 1.5 3.2 6.6h5.6z"/></svg>',
+    error: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm-.75 3.5h1.5v4.6h-1.5zm.75 7.2a.95.95 0 1 1 0-1.9.95.95 0 0 1 0 1.9Z"/></svg>',
+    warning: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8.9 1.9a1 1 0 0 0-1.8 0L.9 13a1 1 0 0 0 .9 1.5h12.4a1 1 0 0 0 .9-1.5Zm-1.65 3.6h1.5v4.4h-1.5zM8 12.6a.9.9 0 1 1 0-1.8.9.9 0 0 1 0 1.8Z"/></svg>',
+    mark: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8.6 8.4 16 23.6 23.4 8.4" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.3 8.4 16 16.2 19.7 8.4" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  };
+
+  // VEERČA, drawn as a monoline logotype so it looks the same on every system.
+  // It opens with V and closes with its mirror, A; the háček over the Č is a small blue v.
+  function wordmark(cls) {
+    return '<svg class="wordmark ' + cls + '" viewBox="-3 -13 138 41" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M0 0 9 24 18 0"/><path d="M38 0H25v24h13M25 12h10"/><path d="M58 0H45v24h13M45 12h10"/>' +
+      '<path d="M65 24V0h7.5a6 6 0 0 1 0 12H65M71.5 12l7 12"/><path d="M107.2 4.3A12 12 0 1 0 107.2 19.7"/>' +
+      '<path class="hacek" d="M93.5 -9.5 98 -5.5 102.5 -9.5" stroke-width="3.4"/><path d="M114 24 123 0 132 24M117.4 15h11.2"/></svg>';
+  }
+
+  const STATUS_DESC = {
+    301: 'Permanent. Browsers and search engines treat the new address as the page\u2019s real home.',
+    302: 'Temporary. The old address stays the page\u2019s real home.',
+    303: 'See other. Meant for form submissions; rarely right for vanity URLs.',
+    307: 'Temporary, and the browser repeats the request method unchanged.',
+    308: 'Permanent, and the browser repeats the request method unchanged.',
+  };
+
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* storage unavailable */ } },
+  };
+
+  const state = {
+    doc: null, ruleId: null, loadError: '', loading: false,
+    q: '', scope: 'all', onlyProblems: false, selected: new Set(), pathFilter: '',
+  };
+
+  /* ================= the open file ================= */
+
+  function recompute(ms) {
+    ms.issues = C.analyze(ms.current);
+    ms.byRule = new Map();
+    for (const i of ms.issues) {
+      i.isNew = !ms.baseline.has(i.key);
+      if (!ms.byRule.has(i.ruleId)) ms.byRule.set(i.ruleId, []);
+      ms.byRule.get(i.ruleId).push(i);
+    }
+    ms.dirty = C.snapshot(ms.current) !== ms.originalSnap;
+  }
+
+  function openDoc(text, fileName) {
+    const { market, info } = C.importPolicy(text, fileName);
+    const ms = {
+      name: market.name, host: market.host, original: clone(market), current: clone(market),
+      originalSnap: C.snapshot(market), exportedSnap: null,
+      origById: new Map(market.rules.map((r) => [r.id, JSON.stringify(r)])),
+      baseline: new Set(C.analyze(market).map((i) => i.key)), issues: [], byRule: new Map(), dirty: false,
+    };
+    recompute(ms);
+    state.doc = { ms, info, fileName };
+    state.ruleId = null; state.q = ''; state.onlyProblems = false; state.selected.clear(); state.pathFilter = '';
+    state.loadError = '';
+    renderAll();
+    const notes = [];
+    if (info.delimiter === ';') notes.push('This file uses semicolons, as Excel saves it in some regional settings. The export uses commas, like Veera\u2019s.');
+    if (info.extraCols.length) notes.push('Columns the tool doesn\u2019t edit are kept as they are: ' + info.extraCols.join(', ') + '.');
+    if (info.pinnedMoved) notes.push('The trailing-slash rule wasn\u2019t last in this file. The export puts it last, as Veera did.');
+    if (notes.length) toast(notes.join(' '));
+  }
+
+  async function readZip(buf) {
+    const dv = new DataView(buf);
+    let eocd = -1;
+    for (let i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+    if (eocd < 0) throw new Error('This zip file seems to be damaged.');
+    let p = dv.getUint32(eocd + 16, true);
+    const count = dv.getUint16(eocd + 10, true);
+    for (let n = 0; n < count; n++) {
+      const method = dv.getUint16(p + 10, true), size = dv.getUint32(p + 20, true);
+      const nameLen = dv.getUint16(p + 28, true), extraLen = dv.getUint16(p + 30, true), commentLen = dv.getUint16(p + 32, true);
+      const local = dv.getUint32(p + 42, true);
+      const name = new TextDecoder().decode(new Uint8Array(buf, p + 46, nameLen));
+      p += 46 + nameLen + extraLen + commentLen;
+      if (!/\.csv$/i.test(name) || /(^|\/)(__MACOSX|\.)/.test(name)) continue;
+      const start = local + 30 + dv.getUint16(local + 26, true) + dv.getUint16(local + 28, true);
+      const data = new Uint8Array(buf, start, size);
+      if (method === 0) return { name: name.split('/').pop(), bytes: data };
+      if (method === 8) {
+        const out = await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer();
+        return { name: name.split('/').pop(), bytes: new Uint8Array(out) };
+      }
+      throw new Error('This zip uses a compression method the tool can\u2019t read. Unzip it and open the CSV instead.');
+    }
+    throw new Error('There\u2019s no CSV file inside this zip.');
+  }
+
+  async function openFile(file) {
+    if (!file) return;
+    if (state.doc && state.doc.ms.dirty && state.doc.ms.exportedSnap !== C.snapshot(state.doc.ms.current)) {
+      confirmDialog('Open another file?', 'Your changes to ' + state.doc.ms.name + ' haven\u2019t been exported yet. Opening another file discards them.', 'Open file', () => { state.doc.ms.dirty = false; openFile(file); });
+      return;
+    }
+    state.loading = true; renderAll();
+    try {
+      let bytes = new Uint8Array(await file.arrayBuffer()), name = file.name;
+      if (/\.zip$/i.test(name) || (bytes[0] === 0x50 && bytes[1] === 0x4b)) ({ name, bytes } = await readZip(bytes.buffer));
+      else if (/\.xlsx?$/i.test(name)) throw new Error('Excel workbooks can\u2019t be opened directly. In Excel, use Save As and choose \u201cCSV UTF-8\u201d, then open that file.');
+      let text;
+      try { text = new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
+      catch (e) { throw new Error('This file isn\u2019t saved as UTF-8, so accented characters would come out wrong. In Excel, use Save As and choose \u201cCSV UTF-8\u201d, then open it again.'); }
+      state.loading = false;
+      openDoc(text, name);
+    } catch (e) {
+      state.loading = false;
+      if (state.doc) { renderAll(); toast(e.message, 'error'); }
+      else { state.loadError = e.message; renderAll(); }
+    }
+  }
+
+  const activeMs = () => (state.doc ? state.doc.ms : null);
+  const activeRule = () => { const ms = activeMs(); return ms ? ms.current.rules.find((r) => r.id === state.ruleId) || null : null; };
+  const ruleState = (ms, r) => (!ms.origById.has(r.id) ? 'new' : ms.origById.get(r.id) !== JSON.stringify(r) ? 'changed' : 'same');
+  const newErrors = (ms) => ms.issues.filter((i) => i.isNew && i.severity === 'error');
+  const unexported = () => { const ms = activeMs(); return !!ms && ms.dirty && ms.exportedSnap !== C.snapshot(ms.current); };
+
+  /* ================= rendering ================= */
+
+  function renderAll() {
+    $('#app').classList.toggle('welcome-mode', !state.doc && !state.loading);
+    document.title = state.doc ? state.doc.ms.name + ' \u2013 Veer\u010da' : 'Veer\u010da \u2013 Redirects Editor';
+    renderSource();
+    renderMain();
+    syncThemeButtons();
+  }
+
+  function renderSource() {
+    const el = $('#source');
+    const d = state.doc;
+    if (!d) { el.innerHTML = ''; return; }
+    const parts = [];
+    if (d.info.source === 'akamai') {
+      parts.push('<span class="chip"><b>' + esc(d.info.policy) + '</b>' + (d.info.version ? 'version ' + esc(d.info.version) : '') + '</span>');
+    } else parts.push('<span class="chip">' + esc(d.fileName) + '</span>');
+    parts.push('<button class="btn" data-action="open-file">Open another file</button>');
+    el.innerHTML = parts.join('');
+  }
+
+  function renderMain() {
+    const main = $('#main');
+    if (state.loading) { main.innerHTML = '<div class="center"><p class="loading"><span class="spinner"></span>Reading the file\u2026</p></div>'; return; }
+    if (!state.doc) { main.innerHTML = startHTML(); return; }
+    main.innerHTML =
+      '<section class="market">' +
+      '<div class="market-head" id="market-head"></div>' +
+      '<div class="toolbar">' +
+      '<label class="search">' + ICON.search + '<span class="visually-hidden">Search rules</span><input type="search" id="rule-search" placeholder="Search rules, paths or addresses" value="' + esc(state.q) + '" spellcheck="false"></label>' +
+      '<div class="seg" role="radiogroup" aria-label="Search in">' +
+      [['all', 'Everything'], ['name', 'Names'], ['path', 'Paths'], ['target', 'Addresses']]
+        .map(([v, l]) => '<button role="radio" aria-checked="' + (state.scope === v) + '" data-action="scope" data-scope="' + v + '">' + l + '</button>').join('') +
+      '</div>' +
+      '<div class="seg" role="radiogroup" aria-label="Show">' +
+      '<button role="radio" aria-checked="' + !state.onlyProblems + '" data-action="only-problems" data-on="">All rules</button>' +
+      '<button role="radio" aria-checked="' + (state.onlyProblems === 'new') + '" data-action="only-problems" data-on="new">New problems</button>' +
+      '<button role="radio" aria-checked="' + (state.onlyProblems === 'all') + '" data-action="only-problems" data-on="all">All problems</button>' +
+      '</div></div>' +
+      '<div class="split"><div class="glass list-panel"><div class="list-count" id="list-count"></div><div class="rule-list" id="rule-list" aria-label="Rules"></div></div>' +
+      '<div class="glass-strong detail-panel"><div class="detail" id="detail"></div></div></div></section>';
+    renderHead(); renderList(); renderDetail();
+  }
+
+  function startHTML() {
+    return '<section class="welcome" id="welcome">' +
+      '<button class="btn icon theme-btn w-theme" type="button" data-pref="auto">' + $('.topbar .theme-btn').innerHTML + '</button>' +
+      '<div class="mark w-mark">' + ICON.mark + '</div>' +
+      '<h1 class="visually-hidden">Veer\u010da, Redirects Editor</h1>' +
+      wordmark('w-word') +
+      '<p class="w-sub">Redirects Editor</p>' +
+      '<p class="w-action">Drag in the policy from the Akamai team, or <button class="link" data-action="open-file">select it from your computer</button></p>' +
+      '<p class="w-note">The .zip or .csv, exactly as it arrived. Nothing is stored: you export the file and send it back.</p>' +
+      '<p class="form-msg" role="alert">' + esc(state.loadError) + '</p>' +
+      '</section>';
+  }
+
+
+  function renderHead() {
+    const ms = activeMs(), el = $('#market-head');
+    if (!el) return;
+    const rules = ms.current.rules;
+    const paths = rules.reduce((n, r) => n + r.paths.length, 0);
+    const fresh = ms.issues.filter((i) => i.isNew);
+    const freshErr = fresh.some((i) => i.severity === 'error');
+    const known = ms.issues.length - fresh.length;
+    el.innerHTML =
+      '<div class="mh-title"><h1>' + esc(ms.name) + '</h1><a href="https://' + esc(ms.host) + '" target="_blank" rel="noopener">' + esc(ms.host) + '</a>' +
+      (state.doc.info.lastUpdate ? '<span class="mh-when">Version last updated ' + esc(fmtDate(state.doc.info.lastUpdate)) + '</span>' : '') + '</div>' +
+      '<div class="mh-stats">' +
+      '<div class="stat"><b>' + fmt(rules.length) + '</b><span>rules</span></div>' +
+      '<div class="stat"><b>' + fmt(paths) + '</b><span>paths</span></div>' +
+      '<button class="stat ' + (freshErr ? 'is-err' : fresh.length ? 'is-warn' : '') + '" data-action="show-problems" data-which="new"><b>' + fmt(fresh.length) + '</b><span>new problems</span></button>' +
+      '<button class="stat" data-action="show-problems" data-which="all"><b>' + fmt(known) + '</b><span>already in the file</span></button>' +
+      '</div>' +
+      '<div class="mh-actions">' +
+      '<button class="btn" data-action="new-rule">New rule</button>' +
+      '<button class="btn primary" data-action="review"' + (ms.dirty ? '' : ' disabled') + '>Review and export</button>' +
+      '</div>';
+  }
+
+  function visibleRules() {
+    const ms = activeMs();
+    let rules = C.exportOrder(ms.current.rules);
+    const pos = new Map(rules.map((r, i) => [r.id, i + 1]));
+    if (state.onlyProblems === 'new') rules = rules.filter((r) => (ms.byRule.get(r.id) || []).some((i) => i.isNew));
+    else if (state.onlyProblems) rules = rules.filter((r) => ms.byRule.has(r.id));
+    let q = state.q.trim().toLowerCase();
+    if (!q) return { rows: rules.map((r) => ({ r })), pos };
+    const qPath = q.replace(/^https?:\/\/[^/]+/, '').replace(/^www\.[^/]+/, '') || q;
+    const rows = [];
+    for (const r of rules) {
+      let hit = false, pathHit = null;
+      if ((state.scope === 'all' || state.scope === 'name') && r.name.toLowerCase().includes(q)) hit = true;
+      if ((state.scope === 'all' || state.scope === 'target') && r.redirectURL.toLowerCase().includes(q)) hit = true;
+      if (state.scope === 'all' || state.scope === 'path') {
+        const p = r.paths.find((x) => x.toLowerCase().includes(qPath));
+        if (p) { hit = true; pathHit = p; }
+      }
+      if (hit) rows.push({ r, pathHit, qPath });
+    }
+    return { rows, pos };
+  }
+
+  function shortTarget(r, ms) {
+    const t = C.parseTarget(r.redirectURL);
+    if (!r.redirectURL) return 'No redirect address yet';
+    if (t && t.host && (t.host === ms.host.toLowerCase() || r.host.toLowerCase().split(/\s+/).includes(t.host))) return t.path + r.redirectURL.replace(/^[^?#]*/, '');
+    return r.redirectURL;
+  }
+
+  function highlight(text, q) {
+    const i = text.toLowerCase().indexOf(q);
+    if (i < 0 || !q) return esc(text);
+    return esc(text.slice(0, i)) + '<mark>' + esc(text.slice(i, i + q.length)) + '</mark>' + esc(text.slice(i + q.length));
+  }
+
+  function renderList() {
+    const ms = activeMs(), el = $('#rule-list');
+    if (!el) return;
+    const { rows, pos } = visibleRules();
+    const total = ms.current.rules.length;
+    $('#list-count').textContent = rows.length === total ? fmt(total) + ' rules, in the order Akamai checks them' : fmt(rows.length) + ' of ' + fmt(total) + ' rules';
+    if (!rows.length) {
+      el.innerHTML = '<p class="list-empty">' + (state.onlyProblems === 'new' && !state.q ? 'No new problems. Everything you\u2019ve changed checks out.' : state.onlyProblems && !state.q ? 'No problems in this market.' : 'No rules match. Try searching everything, or clear the search.') + '</p>';
+      return;
+    }
+    const top = el.scrollTop;
+    el.innerHTML = rows.map(({ r, pathHit, qPath }) => {
+      const iss = ms.byRule.get(r.id) || [];
+      const fresh = iss.filter((i) => i.isNew);
+      const sev = fresh.some((i) => i.severity === 'error') ? 'error' : fresh.length ? 'warning' : iss.length ? 'known' : '';
+      const st = ruleState(ms, r);
+      return '<button class="rr' + (r.id === state.ruleId ? ' sel' : '') + '" data-action="select-rule" data-id="' + esc(r.id) + '"' + (r.id === state.ruleId ? ' aria-current="true"' : '') + '>' +
+        '<span class="rr-pos">' + pos.get(r.id) + '</span>' +
+        '<span class="rr-main"><span class="rr-name">' + (r.name ? esc(r.name) : '<em>Unnamed rule</em>') + '</span>' +
+        '<span class="rr-target">' + esc(shortTarget(r, ms)) + '</span>' +
+        (pathHit ? '<span class="rr-hit">' + highlight(pathHit, qPath) + '</span>' : '') + '</span>' +
+        '<span class="rr-side">' +
+        (r.statusCode !== 301 ? '<span class="tag' + (C.STATUS_CODES.includes(r.statusCode) ? '' : ' amber') + '">' + (r.statusCode || '?') + '</span>' : '') +
+        (r.pinLast ? ICON.pin : '') +
+        '<span class="rr-count" title="Paths">' + r.paths.length + '</span>' +
+        (st !== 'same' ? '<span class="dot" title="' + (st === 'new' ? 'New rule' : 'Changed') + '"></span>' : '') +
+        (sev ? '<span class="sev ' + sev + '" title="' + (sev === 'known' ? 'Has problems that were already in the file' : 'Has new problems') + '"></span>' : '') +
+        '</span></button>';
+    }).join('');
+    el.scrollTop = top;
+  }
+
+  function renderDetail() {
+    const ms = activeMs(), el = $('#detail');
+    if (!el) return;
+    const r = activeRule();
+    if (!r) { el.innerHTML = '<div class="detail-empty"><p>Select a rule to see where it sends visitors.</p></div>'; return; }
+    const ordered = C.exportOrder(ms.current.rules);
+    const pos = ordered.indexOf(r) + 1;
+    el.innerHTML =
+      '<input type="text" class="d-name" data-field="name" value="' + esc(r.name) + '" placeholder="Rule name" aria-label="Rule name" spellcheck="false">' +
+      '<div class="d-sub" id="d-sub">' + subLine(r, pos, ordered.length) + '</div>' +
+      '<div id="d-route">' + routeHTML(r) + '</div>' +
+      '<div id="d-problems">' + problemsHTML(r) + '</div>' +
+      '<div class="d-section"><h2>Redirect</h2>' + fieldsHTML(r) + '</div>' +
+      '<div class="d-section" id="d-paths">' + pathsHTML(r) + '</div>' +
+      '<div class="d-foot" id="d-foot">' + footHTML(r) + '</div>';
+  }
+
+  function subLine(r, pos, total) {
+    return 'Checked ' + fmt(pos) + ' of ' + fmt(total) + (r.pinLast ? ', and always kept last' : '');
+  }
+
+  function routeHTML(r) {
+    const ms = activeMs();
+    const ps = r.paths.filter((p) => p !== '');
+    const shown = ps.length > 4 ? ps.slice(0, 3) : ps;
+    const more = ps.length - shown.length;
+    const chips = shown.map((p) => '<span class="pchip" title="' + esc(p) + '">' + esc(p) + '</span>');
+    if (more) chips.push('<span class="pchip more">and ' + fmt(more) + ' more</span>');
+    if (!chips.length) chips.push('<span class="pchip none">No paths yet</span>');
+    const n = chips.length, rowH = 30, gap = 6, H = n * rowH + (n - 1) * gap, W = 76;
+    const wires = chips.map((_, k) => {
+      const y = k * (rowH + gap) + rowH / 2;
+      return '<path d="M0 ' + y + ' C' + W * 0.5 + ' ' + y + ' ' + W * 0.45 + ' ' + H / 2 + ' ' + (W - 8) + ' ' + H / 2 + '"/>';
+    }).join('');
+    const svg = '<svg class="wires" viewBox="0 0 ' + W + ' ' + H + '" height="' + H + '" preserveAspectRatio="none" aria-hidden="true">' + wires +
+      '<path class="head" d="M' + (W - 9) + ' ' + (H / 2 - 4.5) + ' L' + W + ' ' + H / 2 + ' L' + (W - 9) + ' ' + (H / 2 + 4.5) + 'Z"/></svg>';
+
+    const t = C.parseTarget(r.redirectURL);
+    let host, path, empty = false;
+    if (r.regex) { host = 'Built from the pattern ' + r.regex; path = r.redirectURL || 'No address yet'; }
+    else if (!r.redirectURL) { host = ''; path = 'No redirect address yet'; empty = true; }
+    else if (t && t.host) { host = t.host; path = r.redirectURL.replace(/^(https?:\/\/)?[^/?#]+/i, '') || '/'; }
+    else { host = t ? 'Same site' : ''; path = r.redirectURL; }
+    const meta = [];
+    meta.push(C.STATUS_CODES.includes(r.statusCode) ? r.statusCode + ' ' + C.STATUS_LABELS[r.statusCode] : 'No valid status code');
+    meta.push(r.useQueryString ? 'Keeps query string' : 'Drops query string');
+    if (r.caseSensitive) meta.push('Case-sensitive');
+    const chain = (ms.byRule.get(r.id) || []).find((i) => i.type === 'chain');
+    const next = chain
+      ? '<div class="route-next">Then ' + esc(chain.nextStatus) + ' again to <span class="mono">' + esc(chain.nextTarget) + '</span>, by <button class="link" data-action="select-rule" data-id="' + esc(chain.otherId) + '">' + esc(ruleName(chain.otherId)) + '</button></div>'
+      : '';
+    return '<div class="route" aria-label="Where this rule sends visitors">' +
+      '<div class="route-from">' + chips.join('') + '</div>' + svg +
+      '<div class="route-to"><div class="rt-host">' + esc(host) + '</div><div class="rt-path' + (empty ? ' empty' : '') + '">' + esc(path) + '</div>' +
+      '<div class="rt-meta">' + meta.map((m) => '<span>' + esc(m) + '</span>').join('') + '</div></div>' + next + '</div>';
+  }
+
+  function ruleName(id) {
+    const r = activeMs().current.rules.find((x) => x.id === id);
+    return r ? (r.name || 'Unnamed rule') : 'another rule';
+  }
+
+  const FIX_LABEL = {
+    removePath: 'Remove this path', removeDuplicate: 'Remove the duplicate', removeEmpty: 'Remove empty entries',
+    addScheme: 'Add https://', flatten: 'Send visitors straight to the final address',
+  };
+
+  function problemsHTML(r) {
+    const ms = activeMs();
+    const list = (ms.byRule.get(r.id) || []).slice().sort((a, b) => (b.isNew - a.isNew) || ((a.severity === 'error' ? 0 : 1) - (b.severity === 'error' ? 0 : 1)));
+    if (!list.length) return '';
+    return '<div class="problems">' + list.map((i) => {
+      const actions = [];
+      if (i.fix) actions.push('<button class="link" data-action="fix" data-key="' + esc(i.key) + '">' + FIX_LABEL[i.fix] + '</button>');
+      if (i.otherId && i.type !== 'chain') actions.push('<button class="link" data-action="select-rule" data-id="' + esc(i.otherId) + '">Open \u201c' + esc(ruleName(i.otherId)) + '\u201d</button>');
+      return '<div class="problem ' + i.severity + (i.isNew ? '' : ' known') + '"><span class="p-icon">' + ICON[i.severity] + '</span><div>' +
+        '<p>' + esc(i.message) + '</p>' + (i.isNew ? '' : '<span class="p-tag">Already in the file you opened</span>') +
+        (actions.length ? '<div class="p-actions">' + actions.join('') + '</div>' : '') + '</div></div>';
+    }).join('') + '</div>';
+  }
+
+  function switchHTML(field, on, title, hint) {
+    return '<label class="switch-row"><span class="sw-text"><span>' + title + '</span><small>' + hint + '</small></span>' +
+      '<input type="checkbox" role="switch" data-toggle="' + field + '"' + (on ? ' checked' : '') + '><span class="sw" aria-hidden="true"></span></label>';
+  }
+
+  function fieldsHTML(r) {
+    const ms = activeMs();
+    const adv = !!(r.regex || r.query || r.scheme || r.matchURL);
+    return '<label class="field"><span>Redirect address</span><input type="text" class="mono" data-field="redirectURL" value="' + esc(r.redirectURL) + '" placeholder="https://' + esc(ms.host) + '/\u2026" spellcheck="false"></label>' +
+      '<div class="field"><span id="lbl-status">Status code</span><div><div class="seg" role="radiogroup" aria-labelledby="lbl-status">' +
+      C.STATUS_CODES.map((c) => '<button role="radio" aria-checked="' + (r.statusCode === c) + '" data-action="set-status" data-code="' + c + '" title="' + C.STATUS_LABELS[c] + '">' + c + '</button>').join('') +
+      '</div></div><div class="status-desc">' + esc(STATUS_DESC[r.statusCode] || 'This rule has no valid status code. Pick one above.') + '</div></div>' +
+      '<label class="field"><span>Hosts</span><input type="text" class="mono" data-field="host" value="' + esc(r.host) + '" spellcheck="false">' +
+      '<small class="hint">Separate several hosts with spaces. Leave it empty to match every host.</small></label>' +
+      '<div class="switches">' +
+      switchHTML('caseSensitive', r.caseSensitive, 'Case-sensitive paths', '/Cars and /cars count as different paths.') +
+      switchHTML('useQueryString', r.useQueryString, 'Keep the visitor\u2019s query string', 'Anything after ? in the visited address is passed on.') +
+      switchHTML('pinLast', r.pinLast, 'Always check this rule last', 'For catch-all rules that must run after every other rule.') +
+      '</div>' +
+      '<details class="adv"' + (adv ? ' open' : '') + '><summary>Advanced matching</summary><div class="adv-grid">' +
+      '<label class="field"><span>Regex</span><input type="text" class="mono" data-field="regex" value="' + esc(r.regex) + '" spellcheck="false"></label>' +
+      '<label class="field"><span>Query</span><input type="text" class="mono" data-field="query" value="' + esc(r.query) + '" spellcheck="false"></label>' +
+      '<label class="field"><span>Scheme</span><input type="text" class="mono" data-field="scheme" value="' + esc(r.scheme) + '" spellcheck="false"></label>' +
+      '<label class="field"><span>Match URL</span><input type="text" class="mono" data-field="matchURL" value="' + esc(r.matchURL) + '" spellcheck="false"></label>' +
+      '</div></details>';
+  }
+
+  function pathsHTML(r) {
+    const ms = activeMs();
+    const flagged = new Map();
+    for (const i of ms.byRule.get(r.id) || []) if (i.path && i.type !== 'chars') flagged.set(i.path, i.isNew ? i.severity : 'known');
+    const f = state.pathFilter.trim().toLowerCase();
+    const items = r.paths.map((p, idx) => ({ p, idx })).filter(({ p }) => !f || p.toLowerCase().includes(f));
+    const sel = state.selected.size;
+    return '<div class="paths-head"><h2>Paths <span class="count">' + fmt(r.paths.length) + '</span></h2>' +
+      (r.paths.length > 12 ? '<label class="search">' + ICON.search + '<span class="visually-hidden">Filter paths</span><input type="search" id="path-filter" placeholder="Filter paths" value="' + esc(state.pathFilter) + '" spellcheck="false"></label>' : '') +
+      '</div>' +
+      '<div class="add-paths"><label class="visually-hidden" for="add-paths">Add paths</label><textarea id="add-paths" rows="1" placeholder="Add paths, one per line. Full ' + esc(ms.host) + ' addresses work too." spellcheck="false"></textarea>' +
+      '<button class="btn" data-action="add-paths" disabled>Add</button></div>' +
+      (sel ? '<div class="selbar"><span>' + C.plural(sel, 'path') + ' selected</span><button class="btn subtle" data-action="move-paths">Move to another rule</button><button class="btn danger" data-action="remove-selected">Remove</button><button class="btn subtle" data-action="clear-selection">Clear</button></div>' : '') +
+      (items.length ? '<ul class="path-list">' + items.map(({ p, idx }) => {
+        const fl = flagged.get(p);
+        return '<li class="pl"><input type="checkbox" data-action="toggle-path" data-idx="' + idx + '" aria-label="Select ' + esc(p || 'empty entry') + '"' + (state.selected.has(idx) ? ' checked' : '') + '>' +
+          '<button class="pl-text" data-action="edit-path" data-idx="' + idx + '" title="Edit path">' + (p === '' ? '<em>Empty entry</em>' : esc(p)) + '</button>' +
+          (fl ? '<span class="sev ' + fl + '"></span>' : '') +
+          '<button class="icon-btn small" data-action="remove-path" data-idx="' + idx + '" aria-label="Remove ' + esc(p || 'empty entry') + '">' + ICON.x + '</button></li>';
+      }).join('') + '</ul>' : (r.paths.length ? '<p class="hint">No paths match the filter.</p>' : '<p class="hint">This rule has no paths yet. Add one above.</p>'));
+  }
+
+  function footHTML(r) {
+    const st = ruleState(activeMs(), r);
+    return (st === 'new' ? '<span class="note">New rule, not saved yet</span>' : st === 'changed' ? '<button class="btn subtle" data-action="revert-rule">Undo changes to this rule</button>' : '') +
+      '<button class="btn danger" data-action="delete-rule">Delete rule</button>';
+  }
+
+  /* light refresh used while typing, so inputs keep focus */
+  let refreshTimer = null;
+  function scheduleRefresh() {
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(() => {
+      const ms = activeMs(), r = activeRule();
+      if (!ms || !ms.current) return;
+      recompute(ms);
+      renderHead(); renderList();
+      if (r) {
+        const ordered = C.exportOrder(ms.current.rules);
+        const set = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+        set('d-route', routeHTML(r)); set('d-problems', problemsHTML(r)); set('d-foot', footHTML(r));
+        set('d-sub', subLine(r, ordered.indexOf(r) + 1, ordered.length));
+      }
+    }, 180);
+  }
+
+  /* full refresh after structural edits */
+  function changed(keepPaths) {
+    const ms = activeMs();
+    recompute(ms);
+    if (!keepPaths) state.selected.clear();
+    const detail = $('#detail'), top = detail ? detail.scrollTop : 0;
+    renderHead(); renderList(); renderDetail();
+    if (detail) $('#detail').scrollTop = top;
+  }
+
+  function selectRule(id, focusList) {
+    const ms = activeMs();
+    if (!ms.current.rules.some((r) => r.id === id)) return;
+    state.ruleId = id; state.selected.clear(); state.pathFilter = '';
+    const { rows } = visibleRules();
+    if (!rows.some((x) => x.r.id === id)) { state.q = ''; state.onlyProblems = false; renderMain(); }
+    else {
+      document.querySelectorAll('.rr.sel').forEach((x) => { x.classList.remove('sel'); x.removeAttribute('aria-current'); });
+      const cur = document.querySelector('.rr[data-id="' + CSS.escape(id) + '"]');
+      if (cur) { cur.classList.add('sel'); cur.setAttribute('aria-current', 'true'); }
+      renderDetail();
+    }
+    $('#detail').scrollTop = 0;
+    const row = document.querySelector('.rr[data-id="' + CSS.escape(id) + '"]');
+    if (row) { row.scrollIntoView({ block: 'nearest' }); if (focusList) row.focus(); }
+  }
+
+  /* ================= toasts, files, dialogs ================= */
+
+  let toastTimer = 0;
+  function toast(message, kind, html) {
+    const el = $('#toast');
+    $('#toast-text').innerHTML = esc(message) + (html ? ' ' + html : '');
+    el.dataset.kind = kind === 'error' ? 'error' : 'info';
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, kind === 'error' ? 8000 : 4000);
+  }
+  function hideToast() { $('#toast').classList.remove('show'); }
+
+
+  function download(name, text, type) {
+    const url = URL.createObjectURL(new Blob([text], { type: type || 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+
+  function openDialog(html, onMount) {
+    const d = document.createElement('dialog');
+    d.innerHTML = '<div class="dlg">' + html + '</div>';
+    document.body.appendChild(d);
+    d.addEventListener('close', () => d.remove());
+    d.addEventListener('click', (e) => { if (e.target === d) d.close(); if (e.target.closest('[data-close]')) d.close(); });
+    d.showModal();
+    if (onMount) onMount(d);
+    return d;
+  }
+
+  function newRuleDialog() {
+    const ms = activeMs();
+    const seg = (name, opts) => '<div class="seg" role="radiogroup" data-name="' + name + '">' +
+      opts.map(([v, l, t]) => '<button type="button" role="radio" aria-checked="false" data-value="' + v + '"' + (t ? ' title="' + t + '"' : '') + '>' + l + '</button>').join('') + '</div>';
+    openDialog(
+      '<h2>New rule</h2><p>It\u2019s added to the end of the list, before any rule that\u2019s always kept last.</p>' +
+      '<form id="nr-form" class="dlg-body" autocomplete="off"><div class="nr-grid">' +
+      '<label class="field full"><span>Rule name</span><input type="text" name="name" placeholder="For example the ticket number" spellcheck="false"></label>' +
+      '<label class="field full"><span>Paths</span><textarea name="paths" rows="3" class="mono" placeholder="One per line. Full ' + esc(ms.host) + ' addresses work too." spellcheck="false"></textarea></label>' +
+      '<label class="field full"><span>Redirect address</span><input type="text" name="redirectURL" class="mono" placeholder="https://' + esc(ms.host) + '/\u2026" spellcheck="false"></label>' +
+      '<div class="field full"><span>Status code</span><div>' + seg('statusCode', C.STATUS_CODES.map((c) => [c, String(c), C.STATUS_LABELS[c]])) + '</div></div>' +
+      '<div class="field"><span>Case-sensitive paths</span><div>' + seg('caseSensitive', [['1', 'Yes'], ['0', 'No']]) + '</div></div>' +
+      '<div class="field"><span>Keep the query string</span><div>' + seg('useQueryString', [['1', 'Yes'], ['0', 'No']]) + '</div></div>' +
+      '<label class="field full"><span>Hosts</span><input type="text" name="host" class="mono" value="' + esc(ms.host) + '" spellcheck="false"></label>' +
+      '</div><p class="form-msg" id="nr-msg" role="alert"></p></form>' +
+      '<div class="dlg-actions"><span class="hint push" id="nr-hint">Fill in every field to create the rule.</span><button class="btn" data-close>Cancel</button><button class="btn primary" id="nr-create" disabled>Create rule</button></div>',
+      (d) => {
+        const form = $('#nr-form', d);
+        const picked = {};
+        const check = () => {
+          const ok = form.name.value.trim() && form.paths.value.trim() && form.redirectURL.value.trim() && ['statusCode', 'caseSensitive', 'useQueryString'].every((k) => k in picked);
+          $('#nr-create', d).disabled = !ok;
+          $('#nr-hint', d).hidden = !!ok;
+        };
+        d.addEventListener('click', (e) => {
+          const b = e.target.closest('.seg button');
+          if (!b) return;
+          const g = b.parentElement;
+          g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+          picked[g.dataset.name] = b.dataset.value;
+          check();
+        });
+        form.addEventListener('input', check);
+        form.name.focus();
+        $('#nr-create', d).addEventListener('click', () => {
+          const lines = form.paths.value.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+          const paths = [], bad = [];
+          for (const line of lines) { const p = C.toPath(line); if (/[\s"]/.test(p)) bad.push(line); else if (!paths.includes(p)) paths.push(p); }
+          if (bad.length) { $('#nr-msg', d).textContent = 'Paths can\u2019t contain spaces or quote marks: ' + bad.join(', '); return; }
+          const rule = C.normalizeRule({
+            id: C.newId(), name: form.name.value.trim(), host: form.host.value.trim(), paths,
+            redirectURL: form.redirectURL.value.trim(), statusCode: Number(picked.statusCode),
+            caseSensitive: picked.caseSensitive === '1', useQueryString: picked.useQueryString === '1',
+          });
+          ms.current.rules.push(rule);
+          d.close();
+          state.ruleId = rule.id; state.q = ''; state.onlyProblems = false;
+          recompute(ms);
+          renderMain();
+          selectRule(rule.id);
+          toast('Rule created.');
+        });
+      });
+  }
+
+  function moveDialog() {
+    const ms = activeMs(), r = activeRule();
+    const idxs = [...state.selected].sort((a, b) => a - b);
+    const paths = idxs.map((i) => r.paths[i]);
+    const others = C.exportOrder(ms.current.rules).filter((x) => x !== r);
+    const listHTML = (q) => {
+      q = q.trim().toLowerCase();
+      const hits = others.filter((x) => !q || x.name.toLowerCase().includes(q) || x.redirectURL.toLowerCase().includes(q)).slice(0, 200);
+      return hits.length ? hits.map((x) => '<button data-id="' + esc(x.id) + '">' + esc(x.name || 'Unnamed rule') + '<small>' + esc(x.redirectURL) + '</small></button>').join('') : '<p class="hint">No rule matches.</p>';
+    };
+    openDialog('<h2>Move ' + C.plural(paths.length, 'path') + '</h2><p>Choose the rule they should belong to.</p>' +
+      '<label class="search">' + ICON.search + '<span class="visually-hidden">Find a rule</span><input type="search" id="mv-q" placeholder="Find a rule by name or address" spellcheck="false"></label>' +
+      '<div class="mv-list" id="mv-list">' + listHTML('') + '</div>' +
+      '<div class="dlg-actions"><button class="btn" data-close>Cancel</button></div>',
+    (d) => {
+      const q = $('#mv-q', d);
+      q.focus();
+      q.addEventListener('input', () => { $('#mv-list', d).innerHTML = listHTML(q.value); });
+      $('#mv-list', d).addEventListener('click', (e) => {
+        const b = e.target.closest('button[data-id]');
+        if (!b) return;
+        const target = ms.current.rules.find((x) => x.id === b.dataset.id);
+        r.paths = r.paths.filter((_, i) => !state.selected.has(i));
+        let added = 0;
+        for (const p of paths) if (!target.paths.includes(p)) { target.paths.push(p); added++; }
+        d.close();
+        changed();
+        toast('Moved ' + C.plural(paths.length, 'path') + ' to \u201c' + (target.name || 'Unnamed rule') + '\u201d.' + (added < paths.length ? ' ' + (paths.length - added) + ' were already there.' : ''));
+      });
+    });
+  }
+
+  function summaryText(ms, desc) {
+    const info = state.doc.info;
+    const base = info.policy ? info.policy + (info.version ? ', based on version ' + info.version : '') : state.doc.fileName;
+    return 'Redirect changes for ' + ms.host + ' (' + base + '):\n' + desc.lines.map((l) => '- ' + l).join('\n');
+  }
+
+  function exportName() {
+    const info = state.doc.info;
+    if (info.policy && info.version) return info.policy + '_v' + info.version + '_edited.csv';
+    return state.doc.fileName.replace(/\.(csv|zip)$/i, '') + '_edited.csv';
+  }
+
+  function reviewDialog() {
+    const ms = activeMs();
+    const diff = C.diffMarket(ms.original, ms.current);
+    const desc = C.describeDiff(diff);
+    const blockers = newErrors(ms);
+    const warns = ms.issues.filter((i) => i.isNew && i.severity === 'warning');
+    const summary = summaryText(ms, desc);
+    openDialog('<h2>Review and export</h2><p>' + esc(desc.headline.charAt(0).toUpperCase() + desc.headline.slice(1)) + '.</p>' +
+      '<div class="dlg-body"><ul class="change-list">' + desc.lines.map((l) => '<li>' + esc(l) + '</li>').join('') + '</ul>' +
+      (blockers.length ? '<div class="blocker"><b>Fix ' + C.plural(blockers.length, 'problem') + ' before exporting.</b><ul>' +
+        blockers.slice(0, 6).map((i) => '<li><button class="link" data-goto="' + esc(i.ruleId) + '">' + esc(ruleName(i.ruleId)) + '</button>: ' + esc(i.message) + '</li>').join('') +
+        (blockers.length > 6 ? '<li>and ' + (blockers.length - 6) + ' more</li>' : '') + '</ul></div>' : '') +
+      (!blockers.length && warns.length ? '<div class="warnnote">' + C.plural(warns.length, 'new warning') + '. You can still export, but it\u2019s worth a look.</div>' : '') +
+      '<p class="hint">\u201cCopy summary\u201d puts this list on your clipboard, ready to paste into your email to the Akamai team.</p>' +
+      '</div>' +
+      '<div class="dlg-actions"><button class="btn danger push" id="rv-discard">Discard changes</button>' +
+      '<button class="btn" id="rv-copy">Copy summary</button>' +
+      '<button class="btn primary" id="rv-save"' + (blockers.length ? ' disabled' : '') + '>Download CSV</button></div>',
+    (d) => {
+      d.addEventListener('click', (e) => {
+        const g = e.target.closest('[data-goto]');
+        if (g) { d.close(); selectRule(g.dataset.goto); }
+      });
+      const discard = $('#rv-discard', d);
+      discard.addEventListener('click', () => {
+        if (!discard.dataset.armed) { discard.dataset.armed = '1'; discard.textContent = 'Click again to discard'; return; }
+        ms.current = clone(ms.original);
+        if (!ms.current.rules.some((r) => r.id === state.ruleId)) state.ruleId = null;
+        d.close(); recompute(ms); renderAll();
+        toast('Changes discarded. You\u2019re back to the file as you opened it.');
+      });
+      $('#rv-copy', d).addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(summary); }
+        catch (e) {
+          const ta = document.createElement('textarea');
+          ta.value = summary; d.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+        }
+        $('#rv-copy', d).textContent = 'Copied';
+      });
+      $('#rv-save', d).addEventListener('click', () => {
+        download(exportName(), C.exportCSV(ms.current), 'text/csv');
+        ms.exportedSnap = C.snapshot(ms.current);
+        $('#rv-save', d).textContent = 'Downloaded';
+        toast('Downloaded ' + exportName() + '. Send it to the Akamai team with the summary.');
+      });
+    });
+  }
+
+  function confirmDialog(title, body, action, onYes) {
+    openDialog('<h2>' + esc(title) + '</h2><p>' + esc(body) + '</p><div class="dlg-actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="cf-yes">' + esc(action) + '</button></div>',
+      (d) => { const y = $('#cf-yes', d); y.focus(); y.addEventListener('click', () => { d.close(); onYes(); }); });
+  }
+
+  /* ================= actions ================= */
+
+  function applyFix(issue) {
+    const ms = activeMs();
+    const r = ms.current.rules.find((x) => x.id === issue.ruleId);
+    if (!r) return;
+    if (issue.fix === 'removePath') r.paths = r.paths.filter((p) => p !== issue.path);
+    if (issue.fix === 'removeEmpty') r.paths = r.paths.filter((p) => p !== '');
+    if (issue.fix === 'addScheme') r.redirectURL = 'https://' + r.redirectURL.trim();
+    if (issue.fix === 'flatten') r.redirectURL = issue.nextTarget;
+    if (issue.fix === 'removeDuplicate') {
+      const key = (p) => (r.caseSensitive ? p : p.toLowerCase());
+      const k = key(issue.path);
+      let seen = false;
+      r.paths = r.paths.filter((p) => { if (key(p) !== k) return true; if (!seen) { seen = true; return true; } return false; });
+    }
+    changed();
+  }
+
+  function addPaths() {
+    const r = activeRule(), ta = $('#add-paths');
+    const lines = ta.value.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+    let added = 0;
+    const dup = [], bad = [];
+    for (const line of lines) {
+      const p = C.toPath(line);
+      if (/[\s"]/.test(p)) { bad.push(line); continue; }
+      if (r.paths.includes(p)) { dup.push(p); continue; }
+      r.paths.push(p); added++;
+    }
+    changed();
+    const msg = [];
+    if (added) msg.push('Added ' + C.plural(added, 'path') + '.');
+    if (dup.length) msg.push(C.plural(dup.length, 'path') + ' already in this rule.');
+    if (bad.length) msg.push('Skipped ' + bad.join(', ') + ': paths can\u2019t contain spaces or quote marks.');
+    if (msg.length) toast(msg.join(' '), bad.length && !added ? 'error' : null);
+    if (bad.length) { $('#add-paths').value = bad.join('\n'); $('#add-paths').focus(); }
+  }
+
+  function editPath(btn) {
+    const r = activeRule(), idx = Number(btn.dataset.idx), old = r.paths[idx];
+    const input = document.createElement('input');
+    input.type = 'text'; input.className = 'pl-edit'; input.value = old; input.spellcheck = false;
+    input.setAttribute('aria-label', 'Edit path');
+    btn.replaceWith(input);
+    input.focus(); input.select();
+    let done = false;
+    const finish = (save) => {
+      if (done) return; done = true;
+      const p = C.toPath(input.value);
+      if (save && p && p !== old) {
+        if (/[\s"]/.test(p)) { toast('Paths can\u2019t contain spaces or quote marks.', 'error'); changed(); return; }
+        r.paths[idx] = p;
+      }
+      changed();
+    };
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); }
+    });
+    input.addEventListener('blur', () => finish(true));
+  }
+
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-action]');
+    if (!el || el.closest('dialog')) return;
+    const a = el.dataset.action;
+    const ms = activeMs(), r = activeRule();
+    switch (a) {
+      case 'open-file': $('#file-input').click(); break;
+      case 'scope': state.scope = el.dataset.scope; renderMain(); $('#rule-search').focus(); break;
+      case 'only-problems': state.onlyProblems = el.dataset.on || false; renderMain(); break;
+      case 'show-problems': state.onlyProblems = el.dataset.which; state.q = ''; renderMain(); break;
+      case 'select-rule': selectRule(el.dataset.id); break;
+      case 'new-rule': newRuleDialog(); break;
+      case 'review': reviewDialog(); break;
+      case 'set-status': r.statusCode = Number(el.dataset.code); changed(true); break;
+      case 'fix': { const i = ms.issues.find((x) => x.key === el.dataset.key); if (i) applyFix(i); break; }
+      case 'add-paths': addPaths(); break;
+      case 'edit-path': editPath(el); break;
+      case 'remove-path': r.paths.splice(Number(el.dataset.idx), 1); changed(); break;
+      case 'toggle-path': {
+        const i = Number(el.dataset.idx);
+        if (el.checked) state.selected.add(i); else state.selected.delete(i);
+        const top = $('#detail').scrollTop;
+        $('#d-paths').innerHTML = pathsHTML(r);
+        $('#detail').scrollTop = top;
+        break;
+      }
+      case 'clear-selection': state.selected.clear(); $('#d-paths').innerHTML = pathsHTML(r); break;
+      case 'remove-selected': {
+        const n = state.selected.size;
+        r.paths = r.paths.filter((_, i) => !state.selected.has(i));
+        changed();
+        toast('Removed ' + C.plural(n, 'path') + '.');
+        break;
+      }
+      case 'move-paths': moveDialog(); break;
+      case 'revert-rule': {
+        const orig = ms.original.rules.find((x) => x.id === r.id);
+        const i = ms.current.rules.indexOf(r);
+        ms.current.rules[i] = clone(orig);
+        changed();
+        break;
+      }
+      case 'delete-rule':
+        confirmDialog('Delete \u201c' + (r.name || 'Unnamed rule') + '\u201d?', 'Its ' + C.plural(r.paths.length, 'path') + ' will stop redirecting once the Akamai team imports your file.', 'Delete rule', () => {
+          ms.current.rules = ms.current.rules.filter((x) => x !== r);
+          state.ruleId = null;
+          changed();
+          toast('Rule deleted.');
+        });
+        break;
+    }
+  });
+
+  document.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.closest('dialog')) return;
+    if (t.id === 'rule-search') {
+      state.q = t.value;
+      clearTimeout(t._timer);
+      t._timer = setTimeout(renderList, 120);
+      return;
+    }
+    if (t.id === 'path-filter') {
+      state.pathFilter = t.value;
+      const ul = $('#d-paths');
+      const pos = t.selectionStart;
+      ul.innerHTML = pathsHTML(activeRule());
+      const f = $('#path-filter'); f.focus(); f.setSelectionRange(pos, pos);
+      return;
+    }
+    if (t.id === 'add-paths') {
+      const b = document.querySelector('[data-action="add-paths"]');
+      if (b) b.disabled = !t.value.trim();
+      t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight + 2, 220) + 'px';
+      return;
+    }
+    if (t.dataset.field) {
+      const r = activeRule();
+      if (!r) return;
+      r[t.dataset.field] = t.value;
+      scheduleRefresh();
+    }
+  });
+
+  document.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.closest('dialog')) return;
+    if (t.id === 'file-input') { if (t.files.length) openFile(t.files[0]); t.value = ''; return; }
+    if (t.dataset.toggle) {
+      const r = activeRule();
+      r[t.dataset.toggle] = t.checked;
+      changed(true);
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.id === 'add-paths' && e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); if (e.target.value.trim()) addPaths(); return; }
+    if (document.querySelector('dialog[open]')) return;
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
+    if (e.key === '/' && !typing && $('#rule-search')) { e.preventDefault(); $('#rule-search').focus(); return; }
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && e.target.classList && e.target.classList.contains('rr')) {
+      e.preventDefault();
+      const sib = e.key === 'ArrowDown' ? e.target.nextElementSibling : e.target.previousElementSibling;
+      if (sib && sib.dataset.id) selectRule(sib.dataset.id, true);
+    }
+  });
+
+  window.addEventListener('beforeunload', (e) => {
+    if (unexported()) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  // drag and drop anywhere on the page
+  let dragDepth = 0;
+  const hasFiles = (e) => e.dataTransfer && [...e.dataTransfer.types].includes('Files');
+  window.addEventListener('dragenter', (e) => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth++; document.body.classList.add('dragging'); });
+  window.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
+  window.addEventListener('dragleave', () => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) document.body.classList.remove('dragging'); });
+  window.addEventListener('drop', (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); dragDepth = 0; document.body.classList.remove('dragging');
+    const f = e.dataTransfer.files[0];
+    if (f && !/\.(zip|csv|txt|xlsx?)$/i.test(f.name)) { toast('Drop the .zip or .csv file from the Akamai team.', 'error'); return; }
+    openFile(f);
+  });
+
+  /* ================= appearance ================= */
+  const THEME_KEY = 'veerca-theme';
+  const THEME_ORDER = ['auto', 'light', 'dark'];
+  const THEME_NAMES = { auto: 'Auto', light: 'Light', dark: 'Dark' };
+  const mqLight = matchMedia('(prefers-color-scheme: light)');
+  let themePref = 'auto';
+  try { const v = localStorage.getItem(THEME_KEY); if (THEME_ORDER.includes(v)) themePref = v; } catch (e) { /* storage unavailable */ }
+
+  function syncThemeButtons() {
+    const next = THEME_ORDER[(THEME_ORDER.indexOf(themePref) + 1) % THEME_ORDER.length];
+    document.querySelectorAll('.theme-btn').forEach((b) => {
+      b.dataset.pref = themePref;
+      b.title = 'Appearance: ' + THEME_NAMES[themePref];
+      b.setAttribute('aria-label', 'Appearance: ' + THEME_NAMES[themePref] + '. Switch to ' + THEME_NAMES[next]);
+    });
+  }
+  function applyTheme() {
+    document.documentElement.dataset.theme = themePref === 'auto' ? (mqLight.matches ? 'light' : 'dark') : themePref;
+    syncThemeButtons();
+  }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.theme-btn')) return;
+    themePref = THEME_ORDER[(THEME_ORDER.indexOf(themePref) + 1) % THEME_ORDER.length];
+    try { localStorage.setItem(THEME_KEY, themePref); } catch (err) { /* storage unavailable */ }
+    applyTheme();
+    toast('Appearance: ' + THEME_NAMES[themePref] + (themePref === 'auto' ? ', following your system' : ''));
+  });
+  mqLight.addEventListener('change', () => { if (themePref === 'auto') applyTheme(); });
+  $('#toast-close').addEventListener('click', hideToast);
+
+  /* ================= start ================= */
+  $('#brand-mark').innerHTML = ICON.mark;
+  $('#brand-word').outerHTML = wordmark('brand-word');
+  applyTheme();
+  renderAll();
+})();
+
+</script>
+</body>
+</html>
