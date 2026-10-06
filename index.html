@@ -252,16 +252,45 @@ body.dragging::after{content:"Drop to open the policy";position:fixed;inset:16px
 .stat b{font:600 17px var(--font-d);font-variant-numeric:tabular-nums}
 .stat span{font-size:12px;color:var(--ink-3)}
 button.stat:hover{background:var(--hover)}
-.stat.is-err b{color:var(--bad)}
-.stat.is-warn b{color:var(--warn)}
+.mh-problems{display:flex;flex-direction:column;gap:5px;padding-left:18px;border-left:1px solid var(--sep)}
+.mh-label{padding-left:2px;font-size:11.5px;font-weight:600;color:var(--ink-3)}
+.pb-row{display:flex;gap:8px}
+.pb{display:flex;align-items:center;gap:8px;padding:6px 13px 6px 9px;border:0;border-radius:14px;text-align:left;line-height:1.25;transition:background .15s,box-shadow .15s}
+.pb-icon{display:grid;place-items:center;flex:none}
+.pb-icon svg{width:16px;height:16px}
+.pb-text{display:flex;flex-direction:column}
+.pb-text b{font-size:13.5px;font-weight:600}
+.pb-text small{font-size:11.5px;color:var(--ink-3)}
+.pb.mine.is-err{background:var(--note-bad-bg);box-shadow:inset 0 0 0 1px rgba(255,59,48,.28)}
+.pb.mine.is-err .pb-icon,.pb.mine.is-err b{color:var(--note-bad-ink)}
+.pb.mine.is-warn{background:var(--note-warn-bg);box-shadow:inset 0 0 0 1px rgba(255,149,0,.3)}
+.pb.mine.is-warn .pb-icon,.pb.mine.is-warn b{color:var(--note-warn-ink)}
+.pb.mine.is-ok{background:none}
+.pb.mine.is-ok .pb-icon{color:var(--ok)}
+.pb.old{background:none;box-shadow:inset 0 0 0 1px var(--line)}
+.pb.old .pb-icon{color:var(--ink-3)}
+.pb.old b{font-weight:500;color:var(--ink-2)}
+.pb:hover{filter:brightness(1.03)}
+.pb.old:hover,.pb.mine.is-ok:hover{background:var(--hover)}
 .mh-actions{margin-left:auto;display:flex;gap:8px}
 .mh-actions .btn{height:36px;padding:0 16px;font-size:13.5px}
 .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:0 2px}
-.toolbar .search{flex:1 1 220px;max-width:380px}
+.searchbar{display:flex;align-items:center;gap:4px;flex:1 1 520px;max-width:720px;height:40px;padding:0 4px 0 13px;border-radius:999px;
+  background:var(--field-bg);box-shadow:var(--field-shadow);transition:box-shadow .15s}
+.searchbar:focus-within{box-shadow:inset 0 0 0 1px rgba(75,151,255,.8),0 0 0 3px rgba(75,151,255,.25)}
+.searchbar > svg{flex:none;width:14px;height:14px;color:var(--ink-3)}
+.searchbar input[type=search]{flex:1;min-width:120px;height:38px;padding:0 6px;background:none;box-shadow:none;border-radius:0}
+.searchbar input[type=search]:focus{box-shadow:none}
+.sb-in{flex:none;padding:0 4px 0 12px;border-left:1px solid var(--sep);font-size:12px;color:var(--ink-3)}
+.searchbar .seg{flex:none}
+.list-head{border-bottom:1px solid var(--line)}
+.lh-filter{display:flex;align-items:center;gap:10px;padding:12px 14px 0;overflow-x:auto}
+.lh-label{flex:none;font-size:11.5px;font-weight:600;color:var(--ink-3)}
+.lh-filter .seg{flex:none}
 
 .split{flex:1;min-height:0;display:grid;grid-template-columns:minmax(300px,40%) minmax(0,1fr);gap:var(--gap)}
 .list-panel{display:flex;flex-direction:column;min-height:0;overflow:hidden;border-radius:26px}
-.list-count{padding:14px 18px 10px;font-size:12px;color:var(--ink-3);border-bottom:1px solid var(--line)}
+.list-count{padding:9px 18px 10px;font-size:12px;color:var(--ink-3)}
 .rule-list{flex:1;overflow:auto;padding:6px}
 .rr{width:100%;display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:8px;align-items:start;padding:8px 10px 8px 4px;border:0;border-radius:12px;
   background:none;text-align:left;transition:background .15s}
@@ -291,15 +320,36 @@ button.stat:hover{background:var(--hover)}
 .detail-panel{display:flex;min-width:0;min-height:0;overflow:hidden;border-radius:26px}
 .detail{flex:1;min-width:0;overflow:auto;padding:22px 24px 18px}
 .detail-empty{height:100%;display:grid;place-items:center;text-align:center;color:var(--ink-2)}
-.d-title{display:flex;align-items:center;gap:4px;min-height:38px}
-.d-name-text{margin:0;min-width:0;font:600 21px/1.25 var(--font-d);letter-spacing:-.005em;word-break:break-word;cursor:text}
+.d-head{display:flex;align-items:flex-start;gap:12px}
+.d-tools{display:flex;gap:6px;flex:none;padding-top:3px}
+.d-tools .btn svg{width:14px;height:14px}
+.btn.icon.trash{color:var(--note-bad-ink)}
+.btn.icon.trash:hover{background:var(--note-bad-bg)}
+.d-title{flex:1;min-width:0;display:flex;align-items:center;gap:4px;min-height:38px}
+.detail-panel.editing{box-shadow:var(--glass-shadow),inset 0 3px 0 var(--accent-2)}
+.edit-zone{margin-left:-14px;margin-right:-14px;padding:14px 14px 4px;border-radius:16px;background:var(--accent-soft);box-shadow:var(--accent-ring)}
+.edit-badge{margin-left:8px;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600;color:#fff;background:var(--accent)}
+.info-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 18px;margin:0}
+.info{min-width:0}
+.info.wide{grid-column:1 / -1}
+.info dt{margin-bottom:3px;font-size:11.5px;font-weight:600;color:var(--ink-3)}
+.info dd{margin:0;font-size:13.5px;word-break:break-all}
+.info dd.mono{font-size:12.5px}
+.info dd em{font-style:normal;color:var(--ink-3)}
+.info dd a{color:var(--link);text-decoration:none}
+.info dd a:hover{text-decoration:underline}
+.pl.editing{background:var(--accent-soft)}
+.pl-ok{color:var(--ok) !important;opacity:1 !important}
+.d-name-text{margin:0;min-width:0;font:600 21px/1.25 var(--font-d);letter-spacing:-.005em;word-break:break-word}
 .d-name-text em{font-weight:500;color:var(--ink-3)}
 .d-edit{flex:none;width:30px;height:30px;color:var(--ink-3)}
 .d-edit svg{width:15px;height:15px}
 .d-title:hover .d-edit{color:var(--link);background:var(--hover)}
-input.d-name{flex:1;height:38px;margin-left:-8px;padding:0 8px;font:600 21px var(--font-d);letter-spacing:-.005em}
+input.d-name{flex:1;height:38px;margin-left:-2px;padding:0 10px;font:600 21px var(--font-d);letter-spacing:-.005em}
 input.d-name:focus{background:var(--field-bg);box-shadow:inset 0 0 0 1px rgba(75,151,255,.8),0 0 0 3px rgba(75,151,255,.25)}
-.d-sub{margin:2px 0 18px;font-size:12.5px;color:var(--ink-3)}
+.d-head{margin-bottom:16px}
+.d-sub{margin:-12px 0 16px;font-size:12.5px;color:var(--ink-3)}
+.d-sub:empty{display:none}
 .d-section{margin-top:24px}
 .d-section h2{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:13px;font-weight:600;color:var(--ink-2)}
 .d-section h2 .count{font-weight:500;color:var(--ink-3)}
@@ -327,6 +377,10 @@ input.d-name:focus{background:var(--field-bg);box-shadow:inset 0 0 0 1px rgba(75
 .route-next .mono{word-break:break-all;color:var(--ink)}
 
 .problems{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.pg-h{display:flex;align-items:baseline;gap:8px;margin:8px 0 0;font-size:12px;font-weight:600;color:var(--ink-2)}
+.pg-h:first-child{margin-top:0}
+.pg-h span{font-weight:400;color:var(--ink-3)}
+.dup-effect{display:block;margin-top:3px}
 .problem{display:grid;grid-template-columns:18px 1fr;gap:10px;padding:11px 13px;border-radius:14px}
 .problem.error{background:var(--note-bad-bg)}
 .problem.warning{background:var(--note-warn-bg)}
@@ -337,7 +391,6 @@ input.d-name:focus{background:var(--field-bg);box-shadow:inset 0 0 0 1px rgba(75
 .problem.error .p-icon{color:var(--bad)}
 .problem.warning .p-icon{color:var(--warn)}
 .problem.known .p-icon{color:var(--ink-3)}
-.p-tag{display:inline-block;margin-top:3px;font-size:11.5px;color:var(--ink-3)}
 .p-actions{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px}
 .p-actions .link{font-size:12.5px}
 
@@ -376,8 +429,14 @@ details.adv summary{padding:2px 0 10px;font-size:13px;font-weight:600;color:var(
 .pl{display:flex;align-items:center;gap:8px;min-height:36px;padding:3px 6px 3px 12px;border-top:1px solid var(--line)}
 .pl:first-child{border-top:0}
 .pl input[type=checkbox]{flex:none;width:15px;height:15px;margin:0;accent-color:var(--accent)}
-.pl-text{flex:1;min-width:0;padding:4px 6px;border:0;border-radius:7px;background:none;text-align:left;font-family:var(--mono);font-size:12.5px;word-break:break-all}
-.pl-text:hover{background:var(--hover)}
+.pl-text{flex:1;min-width:0;padding:4px 6px;font-family:var(--mono);font-size:12.5px;word-break:break-all}
+.pl-actions{display:flex;gap:4px;flex:none}
+.pl-btn{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px 0 8px;border:0;border-radius:999px;
+  background:var(--btn-bg);box-shadow:var(--btn-shadow);font-size:12px;font-weight:500;color:var(--ink-2);transition:background .15s,color .15s}
+.pl-btn svg{width:12px;height:12px}
+.pl-btn:hover{color:var(--ink);background:var(--btn-bg-hover)}
+.pl-btn.del{color:var(--note-bad-ink)}
+.pl-btn.del:hover{background:var(--note-bad-bg);box-shadow:inset 0 0 0 1px rgba(255,59,48,.3)}
 .pl-text em{font-family:var(--font);color:var(--ink-3)}
 .pl input.pl-edit{flex:1;height:30px;font-family:var(--mono);font-size:12.5px}
 .pl .icon-btn{opacity:.55}
@@ -400,8 +459,10 @@ dialog[open]{animation:popIn .26s var(--ease)}
 .dlg h2{margin:0 0 6px;font:600 19px var(--font-d);letter-spacing:-.01em}
 .dlg > p{margin:0 0 16px;color:var(--ink-2)}
 .dlg-body{margin:0 -26px;padding:4px 26px;overflow:auto}
-.dlg-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:18px}
+.dlg-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:10px 8px;margin-top:18px}
 .dlg-actions .push{margin-right:auto}
+.dlg > p.override{margin:18px -26px 0;padding:12px 26px 0;border-top:1px solid var(--line);font-size:12.5px;text-align:right}
+.override .link{color:var(--note-bad-ink)}
 .dlg-actions .btn{height:36px;padding:0 16px;font-size:13.5px}
 .change-list{margin:0 0 14px;padding:0;list-style:none;border-radius:14px;background:var(--well);box-shadow:inset 0 0 0 1px var(--line)}
 .change-list li{padding:9px 13px;border-top:1px solid var(--line);font-size:13px;word-break:break-word}
@@ -426,6 +487,10 @@ dialog[open]{animation:popIn .26s var(--ease)}
 .toast .btn{height:28px;font-size:12.5px}
 .toast a{color:var(--link);font-weight:500}
 
+@media (max-width:1320px){
+  .lh-label{display:none}
+  .lh-filter .seg button{padding:0 9px}
+}
 @media (max-width:1180px){
   .split{grid-template-columns:minmax(260px,42%) minmax(0,1fr)}
   .route{grid-template-columns:minmax(0,1fr) 56px minmax(0,1.1fr);padding:14px}
@@ -645,6 +710,39 @@ dialog[open]{animation:popIn .26s var(--ease)}
     return idx;
   }
 
+  // Other rules that already contain this path (exactly, or ignoring case unless both
+  // rules are case-sensitive), on an overlapping host. Used to stop duplicates as they're added.
+  function pathOwners(market, path, rule) {
+    const out = [];
+    if (!path) return out;
+    const lp = path.toLowerCase();
+    const rh = hostsOf(rule);
+    exportOrder(market.rules).forEach((r, i) => {
+      if (r === rule) return;
+      const h = hostsOf(r);
+      if (rh && h && !rh.some((x) => h.includes(x))) return;
+      for (const q of r.paths) {
+        if (q === path || (q.toLowerCase() === lp && !(r.caseSensitive && rule.caseSensitive))) { out.push({ rule: r, pos: i + 1, path: q }); return; }
+      }
+    });
+    return out;
+  }
+
+  // Two rules are the same when they send visitors to the same address with identical settings.
+  // Then the second one adds nothing: its paths could simply live in the first.
+  const normTarget = (u) => str(u).trim().replace(/\/+$/, '').toLowerCase();
+  function ruleKey(r) {
+    return [normTarget(r.redirectURL), r.statusCode, r.caseSensitive, r.useQueryString, r.regex, r.query, r.scheme, r.matchURL,
+      r.host.trim().toLowerCase().split(/\s+/).filter(Boolean).sort().join(' ')].join('\u0001');
+  }
+  function findTwin(market, rule) {
+    if (!rule.redirectURL.trim()) return null;
+    const k = ruleKey(rule);
+    const ordered = exportOrder(market.rules);
+    for (let i = 0; i < ordered.length; i++) if (ordered[i] !== rule && ordered[i].id !== rule.id && ruleKey(ordered[i]) === k) return { rule: ordered[i], pos: i + 1 };
+    return null;
+  }
+
   /* ---------- checks ---------- */
 
   function analyze(market) {
@@ -656,6 +754,9 @@ dialog[open]{animation:popIn .26s var(--ease)}
     ordered.forEach((r) => (hostsOf(r) || []).forEach((h) => knownHosts.add(h)));
     const nameCount = new Map();
     ordered.forEach((r) => { const k = r.name.trim(); if (k) nameCount.set(k, (nameCount.get(k) || 0) + 1); });
+
+    const firstByKey = new Map();
+    ordered.forEach((r, i) => { if (r.redirectURL.trim()) { const k = ruleKey(r); if (!firstByKey.has(k)) firstByKey.set(k, { rule: r, pos: i + 1 }); } });
 
     ordered.forEach((r, i) => {
       const add = (severity, type, message, extra) => {
@@ -671,6 +772,11 @@ dialog[open]{animation:popIn .26s var(--ease)}
         if (/["\r\n]/.test(r[field])) add('error', 'chars', 'The ' + label + ' contains a quote mark or a line break, which would break the file.', { path: field });
       }
       if (r.name.trim() && nameCount.get(r.name.trim()) > 1) add('warning', 'dupName', 'Another rule in this policy has the same name.');
+      const twin = r.redirectURL.trim() && firstByKey.get(ruleKey(r));
+      if (twin && twin.rule !== r) {
+        add('error', 'dupRule', 'This rule sends visitors to the same address as \u201c' + twin.rule.name + '\u201d (rule ' + twin.pos + '), with the same settings, so it isn\u2019t needed. Its paths belong in that rule.',
+          { otherId: twin.rule.id, fix: 'merge' });
+      }
       const garbled = [r.redirectURL].concat(r.paths).find((s) => GARBLED.test(s));
       if (garbled) add('warning', 'garbled', garbled + ' contains garbled characters, typical of a file once saved in the wrong encoding. It won\u2019t match the real address.');
 
@@ -789,7 +895,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   root.RedirectCore = {
     MARKETS, STATUS_CODES, STATUS_LABELS, CSV_HEAD, normalizeRule, snapshot, exportOrder, newId,
-    parseCSV, importPolicy, exportCSV, toPath, parseTarget, analyze, diffMarket, describeDiff, plural,
+    parseCSV, importPolicy, exportCSV, toPath, pathOwners, findTwin, parseTarget, analyze, diffMarket, describeDiff, plural,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
@@ -810,6 +916,10 @@ dialog[open]{animation:popIn .26s var(--ease)}
     tray: '<svg class="dz-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 5v13.5M10.5 13 16 18.5 21.5 13"/><path d="M5 19.5v3.5A4 4 0 0 0 9 27h14a4 4 0 0 0 4-4v-3.5"/></svg>',
     pencil: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2.6 13.4 5 5.6 12.8 2.5 13.5l.7-3.1z"/><path d="M9.6 4 12 6.4"/></svg>',
     chev: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 3 7.5 6 4.5 9"/></svg>',
+    check: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm3.3 5.2-3.9 4.2a.75.75 0 0 1-1.1 0L4.7 8.7a.75.75 0 1 1 1.1-1l1.1 1.2 3.3-3.6a.75.75 0 1 1 1.1 1Z"/></svg>',
+    ring: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="5.6"/><path d="M8 5.2v3.3M8 10.6v.1" stroke-linecap="round"/></svg>',
+    trash: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.8 4.3h10.4M6.4 4.3V2.9h3.2v1.4M4.2 4.3l.6 8.6a1.2 1.2 0 0 0 1.2 1.1h4a1.2 1.2 0 0 0 1.2-1.1l.6-8.6M6.7 7v4.4M9.3 7v4.4"/></svg>',
+    ok: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3.5 8.4 2.9 2.9 6.1-6.6"/></svg>',
     search: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="7" cy="7" r="4.6"/><path d="m10.5 10.5 3.2 3.2"/></svg>',
     gear: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 1.8v2.4M10 15.8v2.4M1.8 10h2.4M15.8 10h2.4M4.2 4.2l1.7 1.7M14.1 14.1l1.7 1.7M4.2 15.8l1.7-1.7M14.1 5.9l1.7-1.7" stroke-linecap="round"/></svg>',
     x: '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m3.5 3.5 7 7M10.5 3.5l-7 7"/></svg>',
@@ -842,7 +952,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
   };
 
   const state = {
-    doc: null, ruleId: null, loadError: '', loading: false,
+    doc: null, ruleId: null, loadError: '', loading: false, editing: null,
     q: '', scope: 'all', onlyProblems: false, selected: new Set(), pathFilter: '',
   };
 
@@ -869,6 +979,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     };
     recompute(ms);
     state.doc = { ms, info, fileName };
+    state.editing = null;
     state.ruleId = null; state.q = ''; state.onlyProblems = false; state.selected.clear(); state.pathFilter = '';
     state.loadError = '';
     renderAll();
@@ -935,6 +1046,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
   // Text typed but not applied yet counts as work too: paths in the "Add paths" box,
   // a path being edited, or a half-filled New rule form.
   function pendingInput() {
+    if (draftChanged()) return true;
     const ta = document.getElementById('add-paths');
     if (ta && ta.value.trim()) return true;
     if (document.querySelector('.pl input.pl-edit')) return true;
@@ -980,17 +1092,19 @@ dialog[open]{animation:popIn .26s var(--ease)}
       '<section class="market">' +
       '<div class="market-head" id="market-head"></div>' +
       '<div class="toolbar">' +
-      '<label class="search">' + ICON.search + '<span class="visually-hidden">Search rules</span><input type="search" id="rule-search" placeholder="Search rules, paths or addresses" value="' + esc(state.q) + '" spellcheck="false"></label>' +
-      '<div class="seg" role="radiogroup" aria-label="Search in">' +
+      '<div class="searchbar">' + ICON.search +
+      '<label class="visually-hidden" for="rule-search">Search rules</label><input type="search" id="rule-search" placeholder="Search rules, paths or addresses" value="' + esc(state.q) + '" spellcheck="false">' +
+      '<span class="sb-in" id="sb-in">in</span><div class="seg" role="radiogroup" aria-labelledby="sb-in">' +
       [['all', 'Everything'], ['name', 'Names'], ['path', 'Paths'], ['target', 'Addresses']]
         .map(([v, l]) => '<button role="radio" aria-checked="' + (state.scope === v) + '" data-action="scope" data-scope="' + v + '">' + l + '</button>').join('') +
-      '</div>' +
-      '<div class="seg" role="radiogroup" aria-label="Show">' +
+      '</div></div></div>' +
+      '<div class="split"><div class="glass list-panel">' +
+      '<div class="list-head"><div class="lh-filter"><span class="lh-label" id="lh-show">Show</span><div class="seg" role="radiogroup" aria-labelledby="lh-show">' +
       '<button role="radio" aria-checked="' + !state.onlyProblems + '" data-action="only-problems" data-on="">All rules</button>' +
-      '<button role="radio" aria-checked="' + (state.onlyProblems === 'new') + '" data-action="only-problems" data-on="new">New problems</button>' +
-      '<button role="radio" aria-checked="' + (state.onlyProblems === 'all') + '" data-action="only-problems" data-on="all">All problems</button>' +
-      '</div></div>' +
-      '<div class="split"><div class="glass list-panel"><div class="list-count" id="list-count"></div><div class="rule-list" id="rule-list" aria-label="Rules"></div></div>' +
+      '<button role="radio" aria-checked="' + (state.onlyProblems === 'new') + '" data-action="only-problems" data-on="new">Errors from your changes</button>' +
+      '<button role="radio" aria-checked="' + (state.onlyProblems === 'known') + '" data-action="only-problems" data-on="known">Errors already in the policy</button>' +
+      '</div></div><div class="list-count" id="list-count"></div></div>' +
+      '<div class="rule-list" id="rule-list" aria-label="Rules"></div></div>' +
       '<div class="glass-strong detail-panel"><div class="detail" id="detail"></div></div></div></section>';
     renderHead(); renderList(); renderDetail();
   }
@@ -1025,9 +1139,18 @@ dialog[open]{animation:popIn .26s var(--ease)}
       '<div class="mh-stats">' +
       '<div class="stat"><b>' + fmt(rules.length) + '</b><span>rules</span></div>' +
       '<div class="stat"><b>' + fmt(paths) + '</b><span>paths</span></div>' +
-      '<button class="stat ' + (freshErr ? 'is-err' : fresh.length ? 'is-warn' : '') + '" data-action="show-problems" data-which="new"><b>' + fmt(fresh.length) + '</b><span>new problems</span></button>' +
-      '<button class="stat" data-action="show-problems" data-which="all"><b>' + fmt(known) + '</b><span>already in the file</span></button>' +
       '</div>' +
+      '<div class="mh-problems" role="group" aria-labelledby="mh-errors"><span class="mh-label" id="mh-errors">Errors</span><div class="pb-row">' +
+      '<button class="pb mine ' + (freshErr ? 'is-err' : fresh.length ? 'is-warn' : 'is-ok') + '" data-action="show-problems" data-which="new" ' +
+      'title="Problems your edits created. Errors must be fixed before you can export.">' +
+      '<span class="pb-icon">' + (freshErr ? ICON.error : fresh.length ? ICON.warning : ICON.check) + '</span>' +
+      '<span class="pb-text"><b>' + (fresh.length ? fmt(fresh.length) + ' from your changes' : 'Nothing from your changes') + '</b>' +
+      '</span></button>' +
+      (known ? '<button class="pb old" data-action="show-problems" data-which="known" ' +
+      'title="These were already in the policy when you opened it. They\u2019re shown for information and don\u2019t block exporting.">' +
+      '<span class="pb-icon">' + ICON.ring + '</span>' +
+      '<span class="pb-text"><b>' + fmt(known) + ' already in the policy</b></span></button>' : '') +
+      '</div></div>' +
       '<div class="mh-actions">' +
       '<button class="btn" data-action="new-rule">New rule</button>' +
       '<button class="btn primary" data-action="review"' + (ms.dirty ? '' : ' disabled') + '>Review and export</button>' +
@@ -1039,6 +1162,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     let rules = C.exportOrder(ms.current.rules);
     const pos = new Map(rules.map((r, i) => [r.id, i + 1]));
     if (state.onlyProblems === 'new') rules = rules.filter((r) => (ms.byRule.get(r.id) || []).some((i) => i.isNew));
+    else if (state.onlyProblems === 'known') rules = rules.filter((r) => (ms.byRule.get(r.id) || []).some((i) => !i.isNew));
     else if (state.onlyProblems) rules = rules.filter((r) => ms.byRule.has(r.id));
     let q = state.q.trim().toLowerCase();
     if (!q) return { rows: rules.map((r) => ({ r })), pos };
@@ -1077,7 +1201,9 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const total = ms.current.rules.length;
     $('#list-count').textContent = rows.length === total ? fmt(total) + ' rules, in the order Akamai checks them' : fmt(rows.length) + ' of ' + fmt(total) + ' rules';
     if (!rows.length) {
-      el.innerHTML = '<p class="list-empty">' + (state.onlyProblems === 'new' && !state.q ? 'No new problems. Everything you\u2019ve changed checks out.' : state.onlyProblems && !state.q ? 'No problems in this market.' : 'No rules match. Try searching everything, or clear the search.') + '</p>';
+      el.innerHTML = '<p class="list-empty">' + (state.q ? 'No rules match. Try searching everything, or clear the search.'
+        : state.onlyProblems === 'new' ? 'Nothing from your changes. Everything you\u2019ve edited checks out.'
+        : state.onlyProblems === 'known' ? 'This policy had no problems when you opened it.' : 'No rules.') + '</p>';
       return;
     }
     const top = el.scrollTop;
@@ -1096,7 +1222,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
         (r.pinLast ? ICON.pin : '') +
         '<span class="rr-count" title="Paths">' + r.paths.length + '</span>' +
         (st !== 'same' ? '<span class="dot" title="' + (st === 'new' ? 'New rule' : 'Changed') + '"></span>' : '') +
-        (sev ? '<span class="sev ' + sev + '" title="' + (sev === 'known' ? 'Has problems that were already in the file' : 'Has new problems') + '"></span>' : '') +
+        (sev ? '<span class="sev ' + sev + '" title="' + (sev === 'known' ? 'Has problems that were already in the policy' : 'Has problems from your changes') + '"></span>' : '') +
         '</span></button>';
     }).join('');
     el.scrollTop = top;
@@ -1106,47 +1232,116 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const ms = activeMs(), el = $('#detail');
     if (!el) return;
     const r = activeRule();
-    if (!r) { el.innerHTML = '<div class="detail-empty"><p>Select a rule to see where it sends visitors.</p></div>'; return; }
+    const panel = el.closest('.detail-panel');
+    if (!r) {
+      if (panel) panel.classList.remove('editing');
+      el.innerHTML = '<div class="detail-empty"><p>Select a rule to see where it sends visitors.</p></div>';
+      return;
+    }
+    const editing = !!state.editing && state.editing.ruleId === r.id;
+    if (panel) panel.classList.toggle('editing', editing);
     const ordered = C.exportOrder(ms.current.rules);
     const pos = ordered.indexOf(r) + 1;
     el.innerHTML =
-      '<div class="d-title" id="d-title">' + titleHTML(r) + '</div>' +
+      '<div class="d-head"><div class="d-title" id="d-title">' + titleHTML(r, editing) + '</div><div class="d-tools">' + toolsHTML(editing) + '</div></div>' +
       '<div class="d-sub" id="d-sub">' + subLine(r, pos, ordered.length) + '</div>' +
       '<div id="d-route">' + routeHTML(r) + '</div>' +
       '<div id="d-problems">' + problemsHTML(r) + '</div>' +
-      '<div class="d-section"><h2>Redirect</h2>' + fieldsHTML(r) + '</div>' +
+      '<div class="d-section' + (editing ? ' edit-zone' : '') + '" id="d-fields"><h2>Redirect' + (editing ? '<span class="edit-badge">Editing</span>' : '') + '</h2>' +
+      (editing ? fieldsHTML(state.editing.draft) : infoHTML(r)) + '</div>' +
       '<div class="d-section" id="d-paths">' + pathsHTML(r) + '</div>' +
       '<div class="d-foot" id="d-foot">' + footHTML(r) + '</div>';
+    if (editing && state.editing.focus) {
+      const f = el.querySelector('[data-draft="' + state.editing.focus + '"]');
+      state.editing.focus = null;
+      if (f) { f.focus(); f.select(); }
+    }
   }
 
-  function titleHTML(r) {
-    return '<h2 class="d-name-text" data-action="edit-name" title="Edit rule name">' + (r.name ? esc(r.name) : '<em>Unnamed rule</em>') + '</h2>' +
-      '<button class="icon-btn d-edit" data-action="edit-name" aria-label="Edit rule name" title="Edit rule name">' + ICON.pencil + '</button>';
+
+  function titleHTML(r, editing) {
+    if (editing) return '<input type="text" class="d-name" data-draft="name" value="' + esc(state.editing.draft.name) + '" placeholder="Rule name" aria-label="Rule name" spellcheck="false">';
+    return '<h2 class="d-name-text">' + (r.name ? esc(r.name) : '<em>Unnamed rule</em>') + '</h2>';
   }
 
-  function editName() {
-    const r = activeRule(), box = $('#d-title');
-    if (!r || !box || box.querySelector('input')) return;
-    const before = r.name;
-    box.innerHTML = '<input type="text" class="d-name" value="' + esc(r.name) + '" placeholder="Rule name" aria-label="Rule name" spellcheck="false">';
-    const input = box.querySelector('input');
-    input.focus(); input.select();
-    let done = false;
-    const finish = (keep) => {
-      if (done) return; done = true;
-      r.name = keep ? input.value.trim() : before;
-      changed(true);
-    };
-    input.addEventListener('input', () => { r.name = input.value; scheduleRefresh(); });
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); finish(true); }
-      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); }
-    });
-    input.addEventListener('blur', () => finish(true));
+  function toolsHTML(editing) {
+    if (editing) return '<button class="btn" data-action="cancel-edit">Cancel</button><button class="btn primary" data-action="save-edit">Save</button>';
+    return '<button class="btn" data-action="edit-rule" data-focus="name">' + ICON.pencil + 'Edit</button>';
   }
+
+  /* ---- editing a rule: changes go into a draft and only apply on Save ---- */
+  const DRAFT_FIELDS = ['name', 'redirectURL', 'statusCode', 'useQueryString', 'caseSensitive', 'regex'];
+  function startEdit(focus) {
+    const r = activeRule();
+    if (!r) return;
+    if (!state.editing || state.editing.ruleId !== r.id) {
+      const draft = {};
+      for (const k of DRAFT_FIELDS) draft[k] = r[k];
+      state.editing = { ruleId: r.id, draft };
+    }
+    state.editing.focus = focus || 'name';
+    renderDetail();
+  }
+  function draftChanged() {
+    const e = state.editing;
+    if (!e) return false;
+    const r = activeMs() && activeMs().current.rules.find((x) => x.id === e.ruleId);
+    return !!r && DRAFT_FIELDS.some((k) => (typeof r[k] === 'string' ? r[k].trim() : r[k]) !== (typeof e.draft[k] === 'string' ? e.draft[k].trim() : e.draft[k]));
+  }
+  function renderEditFields() {
+    const box = $('#d-fields');
+    if (box && state.editing) box.innerHTML = '<h2>Redirect<span class="edit-badge">Editing</span></h2>' + fieldsHTML(state.editing.draft);
+  }
+  function cancelEdit() { state.editing = null; renderDetail(); }
+
+  function saveEdit(force) {
+    const ms = activeMs(), e = state.editing;
+    const r = e && ms.current.rules.find((x) => x.id === e.ruleId);
+    if (!r) { state.editing = null; renderDetail(); return; }
+    const d = Object.assign({}, e.draft, { name: e.draft.name.trim(), redirectURL: e.draft.redirectURL.trim(), regex: e.draft.regex.trim() });
+    const candidate = Object.assign(clone(r), d);
+    const twin = C.findTwin(ms.current, candidate);
+    if (twin) {
+      openDialog('<h2>This would duplicate an existing rule</h2>' +
+        '<p>\u201c' + esc(twin.rule.name || 'Unnamed rule') + '\u201d (rule ' + twin.pos + ') already sends visitors to <span class="mono">' + esc(twin.rule.redirectURL) +
+        '</span> with the same settings. Instead of keeping two identical rules, move this rule\u2019s paths there.</p>' +
+        '<div class="dlg-actions"><button class="btn" data-close>Keep editing</button><button class="btn primary" id="tw-merge">Move the paths there and delete this rule</button></div>',
+      (dlg) => {
+        $('#tw-merge', dlg).addEventListener('click', () => {
+          dlg.close();
+          state.editing = null;
+          let moved = 0;
+          for (const p of r.paths) if (!twin.rule.paths.includes(p)) { twin.rule.paths.push(p); moved++; }
+          ms.current.rules = ms.current.rules.filter((x) => x !== r);
+          state.ruleId = twin.rule.id;
+          changed();
+          selectRule(twin.rule.id);
+          toast('Moved ' + C.plural(moved, 'path') + ' into \u201c' + (twin.rule.name || 'Unnamed rule') + '\u201d and deleted \u201c' + (r.name || 'Unnamed rule') + '\u201d.');
+        });
+      });
+      return;
+    }
+    const clash = d.name && d.name.toLowerCase() !== r.name.trim().toLowerCase() &&
+      ms.current.rules.find((x) => x !== r && x.name.trim().toLowerCase() === d.name.toLowerCase());
+    if (clash && !force) {
+      openDialog('<h2>A rule with this name already exists</h2>' +
+        '<p>\u201c' + esc(clash.name) + '\u201d already uses this name. Two rules with the same name are easy to mix up.</p>' +
+        '<div class="dlg-actions"><button class="btn primary" data-close>Keep editing</button></div>' +
+        '<p class="override"><button class="link" id="nm-force">I know what I\u2019m doing, save anyway</button></p>',
+      (dlg) => { $('#nm-force', dlg).addEventListener('click', () => { dlg.close(); saveEdit(true); }); });
+      return;
+    }
+    for (const k of DRAFT_FIELDS) r[k] = d[k];
+    state.editing = null;
+    changed(true);
+    toast('Rule updated.');
+  }
+
+
+
 
   function subLine(r, pos, total) {
-    return 'Checked ' + fmt(pos) + ' of ' + fmt(total) + (r.pinLast ? ', and always kept last' : '');
+    return r.pinLast ? 'Always checked last, after every other rule' : '';
   }
 
   function routeHTML(r) {
@@ -1193,29 +1388,36 @@ dialog[open]{animation:popIn .26s var(--ease)}
   const FIX_LABEL = {
     removePath: 'Remove this path', removeDuplicate: 'Remove the duplicate', removeEmpty: 'Remove empty entries',
     addScheme: 'Add https://', flatten: 'Send visitors straight to the final address',
+    merge: 'Move its paths there and delete this rule',
   };
 
   function problemsHTML(r) {
     const ms = activeMs();
-    const list = (ms.byRule.get(r.id) || []).slice().sort((a, b) => (b.isNew - a.isNew) || ((a.severity === 'error' ? 0 : 1) - (b.severity === 'error' ? 0 : 1)));
-    if (!list.length) return '';
-    return '<div class="problems">' + list.map((i) => {
+    const bySev = (a, b) => (a.severity === 'error' ? 0 : 1) - (b.severity === 'error' ? 0 : 1);
+    const all = ms.byRule.get(r.id) || [];
+    const mine = all.filter((i) => i.isNew).sort(bySev), old = all.filter((i) => !i.isNew).sort(bySev);
+    if (!all.length) return '';
+    const card = (i) => {
       const actions = [];
       if (i.fix) actions.push('<button class="link" data-action="fix" data-key="' + esc(i.key) + '">' + FIX_LABEL[i.fix] + '</button>');
       if (i.otherId && i.type !== 'chain') actions.push('<button class="link" data-action="select-rule" data-id="' + esc(i.otherId) + '">Open \u201c' + esc(ruleName(i.otherId)) + '\u201d</button>');
       return '<div class="problem ' + i.severity + (i.isNew ? '' : ' known') + '"><span class="p-icon">' + ICON[i.severity] + '</span><div>' +
-        '<p>' + esc(i.message) + '</p>' + (i.isNew ? '' : '<span class="p-tag">Already in the file you opened</span>') +
-        (actions.length ? '<div class="p-actions">' + actions.join('') + '</div>' : '') + '</div></div>';
-    }).join('') + '</div>';
+        '<p>' + esc(i.message) + '</p>' + (actions.length ? '<div class="p-actions">' + actions.join('') + '</div>' : '') + '</div></div>';
+    };
+    return '<div class="problems">' +
+      (mine.length ? '<h3 class="pg-h">From your changes</h3>' + mine.map(card).join('') : '') +
+      (old.length ? '<h3 class="pg-h">Already in the policy<span>Not caused by you, won\u2019t block export</span></h3>' + old.map(card).join('') : '') +
+      '</div>';
   }
 
-  function statusPicker(code, name) {
+
+  function statusPicker(code, name, action) {
     const valid = C.STATUS_CODES.includes(code);
     return '<div class="sp"' + (name ? ' data-name="' + name + '"' : '') + '>' +
       '<button type="button" class="sp-current' + (valid ? '' : ' empty') + '" aria-expanded="false" title="' + (valid ? esc(STATUS_DESC[code]) : 'Choose a status code') + '">' +
       spLabel(code) + '</button>' +
       '<div class="seg sp-options" role="radiogroup" aria-label="Status code">' +
-      C.STATUS_CODES.map((c) => '<button type="button" role="radio" aria-checked="' + (c === code) + '"' + (name ? '' : ' data-action="set-status"') +
+      C.STATUS_CODES.map((c) => '<button type="button" role="radio" aria-checked="' + (c === code) + '"' + (name ? '' : ' data-action="' + (action || 'set-status') + '"') +
         ' data-code="' + c + '" title="' + esc(c + ' ' + C.STATUS_LABELS[c] + '. ' + STATUS_DESC[c]) + '">' + c + '</button>').join('') +
       '</div></div>';
   }
@@ -1234,8 +1436,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   function ynSeg(field, on) {
     return '<div class="seg" role="radiogroup">' +
-      '<button type="button" role="radio" aria-checked="' + on + '" data-action="set-bool" data-bool="' + field + '" data-v="1">Yes</button>' +
-      '<button type="button" role="radio" aria-checked="' + !on + '" data-action="set-bool" data-bool="' + field + '" data-v="0">No</button></div>';
+      '<button type="button" role="radio" aria-checked="' + on + '" data-action="draft-bool" data-bool="' + field + '" data-v="1">Yes</button>' +
+      '<button type="button" role="radio" aria-checked="' + !on + '" data-action="draft-bool" data-bool="' + field + '" data-v="0">No</button></div>';
   }
 
   function switchHTML(field, on, title, hint) {
@@ -1243,18 +1445,33 @@ dialog[open]{animation:popIn .26s var(--ease)}
       '<input type="checkbox" role="switch" data-toggle="' + field + '"' + (on ? ' checked' : '') + '><span class="sw" aria-hidden="true"></span></label>';
   }
 
+  function infoHTML(r) {
+    const kept = [['query', 'query'], ['scheme', 'scheme'], ['matchURL', 'match URL']].filter(([k]) => r[k]);
+    const yn = (v) => (v ? 'Yes' : 'No');
+    return '<dl class="info-grid">' +
+      '<div class="info wide"><dt>Redirect URL</dt><dd class="mono">' + (r.redirectURL ? (/^https?:\/\//i.test(r.redirectURL)
+        ? '<a href="' + esc(r.redirectURL) + '" target="_blank" rel="noopener">' + esc(r.redirectURL) + '</a>' : esc(r.redirectURL)) : '<em>None</em>') + '</dd></div>' +
+      '<div class="info"><dt>Status code</dt><dd>' + (C.STATUS_CODES.includes(r.statusCode) ? '<b>' + r.statusCode + '</b> ' + esc(C.STATUS_LABELS[r.statusCode]) : '<em>None</em>') + '</dd></div>' +
+      '<div class="info"><dt>Use query string</dt><dd>' + yn(r.useQueryString) + '</dd></div>' +
+      '<div class="info"><dt>Case sensitive</dt><dd>' + yn(r.caseSensitive) + '</dd></div>' +
+      '<div class="info"><dt>Regex</dt><dd class="mono">' + (r.regex ? esc(r.regex) : '<em>None</em>') + '</dd></div>' +
+      '<div class="info"><dt>Host</dt><dd class="mono">' + (r.host ? esc(r.host) : '<em>Every host</em>') + '</dd></div>' +
+      '</dl>' +
+      (kept.length ? '<p class="hint kept">Also matches on ' + kept.map(([k, l]) => l + ' \u201c' + esc(r[k]) + '\u201d').join(', ') + '. Kept exactly as in the file.</p>' : '');
+  }
+
   function fieldsHTML(r) {
     const ms = activeMs();
-    const kept = [['query', 'query'], ['scheme', 'scheme'], ['matchURL', 'match URL']].filter(([k]) => r[k]);
-    return '<label class="field"><span>Redirect URL</span><input type="text" class="mono" data-field="redirectURL" value="' + esc(r.redirectURL) + '" placeholder="https://' + esc(ms.host) + '/\u2026" spellcheck="false"></label>' +
+    const kept = [];
+    return '<label class="field"><span>Redirect URL</span><input type="text" class="mono" data-draft="redirectURL" value="' + esc(r.redirectURL) + '" placeholder="https://' + esc(ms.host) + '/\u2026" spellcheck="false"></label>' +
       '<div class="field-row">' +
-      '<div class="field"><span>Status code</span>' + statusPicker(r.statusCode) + '</div>' +
+      '<div class="field"><span>Status code</span>' + statusPicker(r.statusCode, null, 'draft-status') + '</div>' +
       '<div class="field"><span>Use query string</span>' + ynSeg('useQueryString', r.useQueryString) + '</div>' +
       '<div class="field"><span>Case sensitive</span>' + ynSeg('caseSensitive', r.caseSensitive) + '</div>' +
       '</div>' +
       '<div class="field-row two">' +
-      '<label class="field"><span>Regex</span><input type="text" class="mono" data-field="regex" value="' + esc(r.regex) + '" placeholder="None" spellcheck="false"></label>' +
-      '<div class="field"><span>Host</span><div class="ro mono" title="' + esc(r.host) + '">' + (r.host ? esc(r.host) : 'Every host') + '</div></div>' +
+      '<label class="field"><span>Regex</span><input type="text" class="mono" data-draft="regex" value="' + esc(r.regex) + '" placeholder="None" spellcheck="false"></label>' +
+      '<div class="field"><span>Host</span><div class="ro mono" title="' + esc(activeRule().host) + '">' + (activeRule().host ? esc(activeRule().host) : 'Every host') + '</div></div>' +
       '</div>' +
       (kept.length ? '<p class="hint kept">Also matches on ' + kept.map(([k, l]) => l + ' \u201c' + esc(r[k]) + '\u201d').join(', ') + '. Kept exactly as in the file.</p>' : '');
   }
@@ -1276,18 +1493,20 @@ dialog[open]{animation:popIn .26s var(--ease)}
       (items.length ? '<ul class="path-list">' + items.map(({ p, idx }) => {
         const fl = flagged.get(p);
         return '<li class="pl"><input type="checkbox" data-action="toggle-path" data-idx="' + idx + '" aria-label="Select ' + esc(p || 'empty entry') + '"' + (state.selected.has(idx) ? ' checked' : '') + '>' +
-          '<button class="pl-text" data-action="edit-path" data-idx="' + idx + '" title="Edit path">' + (p === '' ? '<em>Empty entry</em>' : esc(p)) + '</button>' +
+          '<span class="pl-text" data-idx="' + idx + '">' + (p === '' ? '<em>Empty entry</em>' : esc(p)) + '</span>' +
           (fl ? '<span class="sev ' + fl + '"></span>' : '') +
-          '<button class="icon-btn small" data-action="edit-path-btn" data-idx="' + idx + '" aria-label="Edit ' + esc(p || 'empty entry') + '" title="Edit path">' + ICON.pencil + '</button>' +
-          '<button class="icon-btn small" data-action="remove-path" data-idx="' + idx + '" aria-label="Remove ' + esc(p || 'empty entry') + '" title="Remove path">' + ICON.x + '</button></li>';
+          '<span class="pl-actions"><button class="pl-btn" data-action="edit-path-btn" data-idx="' + idx + '" aria-label="Edit ' + esc(p || 'empty entry') + '">' + ICON.pencil + 'Edit</button>' +
+          '<button class="pl-btn del" data-action="remove-path" data-idx="' + idx + '" aria-label="Delete ' + esc(p || 'empty entry') + '">' + ICON.trash + 'Delete</button></span></li>';
       }).join('') + '</ul>' : (r.paths.length ? '<p class="hint">No paths match the filter.</p>' : '<p class="hint">This rule has no paths yet. Add one above.</p>'));
   }
 
   function footHTML(r) {
     const st = ruleState(activeMs(), r);
-    return (st === 'new' ? '<span class="note">New rule, not saved yet</span>' : st === 'changed' ? '<button class="btn subtle" data-action="revert-rule">Undo changes to this rule</button>' : '') +
+    return (st === 'new' ? '<span class="note">Added by you</span>'
+      : st === 'changed' ? '<button class="btn subtle" data-action="revert-rule">Undo all changes to this rule</button>' : '') +
       '<button class="btn danger" data-action="delete-rule">Delete rule</button>';
   }
+
 
   /* light refresh used while typing, so inputs keep focus */
   let refreshTimer = null;
@@ -1320,6 +1539,14 @@ dialog[open]{animation:popIn .26s var(--ease)}
   function selectRule(id, focusList) {
     const ms = activeMs();
     if (!ms.current.rules.some((r) => r.id === id)) return;
+    if (state.editing && state.editing.ruleId !== id) {
+      if (draftChanged()) {
+        confirmDialog('Discard your edits?', 'You changed this rule but didn\u2019t save it. Leaving it now throws those edits away.', 'Discard edits',
+          () => { state.editing = null; selectRule(id, focusList); }, { destructive: true });
+        return;
+      }
+      state.editing = null;
+    }
     state.ruleId = id; state.selected.clear(); state.pathFilter = '';
     const { rows } = visibleRules();
     if (!rows.some((x) => x.r.id === id)) { state.q = ''; state.onlyProblems = false; renderMain(); }
@@ -1412,6 +1639,40 @@ dialog[open]{animation:popIn .26s var(--ease)}
         form.addEventListener('input', check);
         form.name.focus();
         $('#nr-create', d).addEventListener('click', () => {
+          const twin = C.findTwin(ms.current, C.normalizeRule({
+            host: ms.host, redirectURL: form.redirectURL.value.trim(), regex: form.regex.value.trim(), statusCode: Number(picked.statusCode),
+            caseSensitive: picked.caseSensitive === '1', useQueryString: picked.useQueryString === '1',
+          }));
+          if (twin) {
+            openDialog('<h2>This rule already exists</h2>' +
+              '<p>\u201c' + esc(twin.rule.name || 'Unnamed rule') + '\u201d (rule ' + twin.pos + ') already sends visitors to <span class="mono">' + esc(twin.rule.redirectURL) +
+              '</span> with the same settings. Add your paths to it instead of creating a second rule.</p>' +
+              '<div class="dlg-actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="dt-open">Open existing rule instead</button></div>',
+            (d2) => {
+              $('#dt-open', d2).focus();
+              $('#dt-open', d2).addEventListener('click', () => {
+                d2.close(); d.close(); state.q = ''; state.onlyProblems = false; selectRule(twin.rule.id);
+                const ta = $('#add-paths'); if (ta) { ta.scrollIntoView({ block: 'center' }); ta.focus(); }
+              });
+            });
+            return;
+          }
+          const wanted = form.name.value.trim().toLowerCase();
+          const same = C.exportOrder(ms.current.rules).find((x) => x.name.trim().toLowerCase() === wanted);
+          if (same && !d.dataset.forced) {
+            const pos = C.exportOrder(ms.current.rules).indexOf(same) + 1;
+            openDialog('<h2>A rule with this name already exists</h2>' +
+              '<p>\u201c' + esc(same.name) + '\u201d is rule ' + pos + ' and sends visitors to <span class="mono">' + esc(same.redirectURL) + '</span>. ' +
+              'To add paths to it, open it instead of creating a second rule with the same name.</p>' +
+              '<div class="dlg-actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="dn-open">Open existing rule instead</button></div>' +
+              '<p class="override"><button class="link" id="dn-force">I know what I\u2019m doing, create anyway</button></p>',
+            (d2) => {
+              $('#dn-open', d2).focus();
+              $('#dn-open', d2).addEventListener('click', () => { d2.close(); d.close(); state.q = ''; state.onlyProblems = false; selectRule(same.id); });
+              $('#dn-force', d2).addEventListener('click', () => { d2.close(); d.dataset.forced = '1'; $('#nr-create', d).click(); });
+            });
+            return;
+          }
           const rule = C.normalizeRule({
             id: C.newId(), name: form.name.value.trim(), host: ms.host, paths: [],
             redirectURL: form.redirectURL.value.trim(), regex: form.regex.value.trim(), statusCode: Number(picked.statusCode),
@@ -1484,10 +1745,10 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const summary = summaryText(ms, desc);
     openDialog('<h2>Review and export</h2><p>' + esc(desc.headline.charAt(0).toUpperCase() + desc.headline.slice(1)) + '.</p>' +
       '<div class="dlg-body"><ul class="change-list">' + desc.lines.map((l) => '<li>' + esc(l) + '</li>').join('') + '</ul>' +
-      (blockers.length ? '<div class="blocker"><b>Fix ' + C.plural(blockers.length, 'problem') + ' before exporting.</b><ul>' +
+      (blockers.length ? '<div class="blocker"><b>Fix ' + C.plural(blockers.length, 'problem') + ' from your changes before exporting.</b><ul>' +
         blockers.slice(0, 6).map((i) => '<li><button class="link" data-goto="' + esc(i.ruleId) + '">' + esc(ruleName(i.ruleId)) + '</button>: ' + esc(i.message) + '</li>').join('') +
         (blockers.length > 6 ? '<li>and ' + (blockers.length - 6) + ' more</li>' : '') + '</ul></div>' : '') +
-      (!blockers.length && warns.length ? '<div class="warnnote">' + C.plural(warns.length, 'new warning') + '. You can still export, but it\u2019s worth a look.</div>' : '') +
+      (!blockers.length && warns.length ? '<div class="warnnote">' + C.plural(warns.length, 'warning') + ' from your changes. You can still export, but it\u2019s worth a look.</div>' : '') +
       '<p class="hint">\u201cCopy summary\u201d puts this list on your clipboard, ready to paste into your email to the Akamai team.</p>' +
       '</div>' +
       '<div class="dlg-actions"><button class="btn danger push" id="rv-discard">Discard changes</button>' +
@@ -1535,6 +1796,18 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const ms = activeMs();
     const r = ms.current.rules.find((x) => x.id === issue.ruleId);
     if (!r) return;
+    if (issue.fix === 'merge') {
+      const target = ms.current.rules.find((x) => x.id === issue.otherId);
+      if (!target) return;
+      let moved = 0;
+      for (const p of r.paths) if (!target.paths.includes(p)) { target.paths.push(p); moved++; }
+      ms.current.rules = ms.current.rules.filter((x) => x !== r);
+      state.ruleId = target.id;
+      changed();
+      selectRule(target.id);
+      toast('Moved ' + C.plural(moved, 'path') + ' into \u201c' + (target.name || 'Unnamed rule') + '\u201d and deleted \u201c' + (r.name || 'Unnamed rule') + '\u201d.');
+      return;
+    }
     if (issue.fix === 'removePath') r.paths = r.paths.filter((p) => p !== issue.path);
     if (issue.fix === 'removeEmpty') r.paths = r.paths.filter((p) => p !== '');
     if (issue.fix === 'addScheme') r.redirectURL = 'https://' + r.redirectURL.trim();
@@ -1551,46 +1824,65 @@ dialog[open]{animation:popIn .26s var(--ease)}
   function addPaths() {
     const r = activeRule(), ta = $('#add-paths');
     const lines = ta.value.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
-    let added = 0;
-    const dup = [], bad = [];
+    const dup = [], bad = [], fresh = [];
     for (const line of lines) {
       const p = C.toPath(line);
       if (/[\s"]/.test(p)) { bad.push(line); continue; }
-      if (r.paths.includes(p)) { dup.push(p); continue; }
-      r.paths.push(p); added++;
+      if (r.paths.includes(p) || fresh.includes(p)) { dup.push(p); continue; }
+      fresh.push(p);
     }
+    const shared = fresh.filter((p) => C.pathOwners(activeMs().current, p, r).length);
+    commitPaths(r, fresh, dup, bad, [], shared);
+  }
+
+  function commitPaths(r, take, dup, keepInBox, skippedTaken, shared) {
+    const bad = keepInBox.filter((x) => !skippedTaken.includes(x));
+    r.paths.push(...take);
+    const added = take.length;
     changed();
     const msg = [];
     if (added) msg.push('Added ' + C.plural(added, 'path') + '.');
     if (dup.length) msg.push(C.plural(dup.length, 'path') + ' already in this rule.');
     if (bad.length) msg.push('Skipped ' + bad.join(', ') + ': paths can\u2019t contain spaces or quote marks.');
+    if (shared && shared.length) msg.push(shared.length === 1 ? 'Another rule has it too, so it shows under Errors until one copy is gone.'
+      : shared.length + ' of them are in another rule too, so they show under Errors until one copy is gone.');
+    if (skippedTaken.length) msg.push(C.plural(skippedTaken.length, 'path') + ' left out because another rule already has ' + (skippedTaken.length === 1 ? 'it' : 'them') + '.');
     if (msg.length) toast(msg.join(' '), bad.length && !added ? 'error' : null);
-    if (bad.length) { $('#add-paths').value = bad.join('\n'); $('#add-paths').focus(); }
+    if (keepInBox.length) {
+      const box = $('#add-paths');
+      box.value = keepInBox.join('\n');
+      box.dispatchEvent(new Event('input', { bubbles: true }));
+      box.focus();
+    }
   }
 
   function editPath(btn) {
     const r = activeRule(), idx = Number(btn.dataset.idx), old = r.paths[idx];
-    const input = document.createElement('input');
-    input.type = 'text'; input.className = 'pl-edit'; input.value = old; input.spellcheck = false;
-    input.setAttribute('aria-label', 'Edit path');
-    btn.replaceWith(input);
+    const li = btn.closest('.pl');
+    document.querySelectorAll('.pl.editing').forEach((x) => { if (x !== li) x.dispatchEvent(new Event('pl-cancel')); });
+    li.classList.add('editing');
+    li.innerHTML = '<input type="text" class="pl-edit" spellcheck="false" aria-label="Edit path">' +
+      '<button class="icon-btn small pl-ok" type="button" title="Save path" aria-label="Save path">' + ICON.ok + '</button>' +
+      '<button class="icon-btn small" type="button" title="Cancel" aria-label="Cancel">' + ICON.x + '</button>';
+    const input = li.querySelector('input');
+    input.value = old;
     input.focus(); input.select();
-    let done = false;
-    const finish = (save) => {
-      if (done) return; done = true;
+    const save = () => {
       const p = C.toPath(input.value);
-      if (save && p && p !== old) {
-        if (/[\s"]/.test(p)) { toast('Paths can\u2019t contain spaces or quote marks.', 'error'); changed(); return; }
-        r.paths[idx] = p;
-      }
-      changed();
+      if (p && /[\s"]/.test(p)) { toast('Paths can\u2019t contain spaces or quote marks.', 'error'); input.focus(); return; }
+      if (p && p !== old) r.paths[idx] = p;
+      changed(true);
     };
+    const cancel = () => { const top = $('#detail').scrollTop; $('#d-paths').innerHTML = pathsHTML(r); $('#detail').scrollTop = top; };
+    li.querySelector('.pl-ok').addEventListener('click', save);
+    li.querySelector('.pl-ok + .icon-btn').addEventListener('click', cancel);
+    li.addEventListener('pl-cancel', cancel);
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); finish(true); }
-      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); }
+      if (e.key === 'Enter') { e.preventDefault(); save(); }
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); cancel(); }
     });
-    input.addEventListener('blur', () => finish(true));
   }
+
 
   document.addEventListener('click', (e) => {
     const el = e.target.closest('[data-action]');
@@ -1599,7 +1891,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const ms = activeMs(), r = activeRule();
     switch (a) {
       case 'open-file': $('#file-input').click(); break;
-      case 'scope': state.scope = el.dataset.scope; renderMain(); $('#rule-search').focus(); break;
+      case 'scope': { state.scope = el.dataset.scope; renderMain(); const s = $('#rule-search'); if (s) { s.focus(); s.setSelectionRange(s.value.length, s.value.length); } break; }
       case 'only-problems': state.onlyProblems = el.dataset.on || false; renderMain(); break;
       case 'show-problems': state.onlyProblems = el.dataset.which; state.q = ''; renderMain(); break;
       case 'select-rule': selectRule(el.dataset.id); break;
@@ -1607,11 +1899,14 @@ dialog[open]{animation:popIn .26s var(--ease)}
       case 'review': reviewDialog(); break;
       case 'set-status': r.statusCode = Number(el.dataset.code); changed(true); break;
       case 'set-bool': r[el.dataset.bool] = el.dataset.v === '1'; changed(true); break;
-      case 'edit-name': editName(); break;
-      case 'edit-path-btn': { const b = document.querySelector('.pl-text[data-idx="' + el.dataset.idx + '"]'); if (b) editPath(b); break; }
+      case 'edit-rule': startEdit(el.dataset.focus); break;
+      case 'cancel-edit': cancelEdit(); break;
+      case 'save-edit': saveEdit(); break;
+      case 'draft-status': state.editing.draft.statusCode = Number(el.dataset.code); renderEditFields(); break;
+      case 'draft-bool': state.editing.draft[el.dataset.bool] = el.dataset.v === '1'; renderEditFields(); break;
+      case 'edit-path-btn': editPath(el); break;
       case 'fix': { const i = ms.issues.find((x) => x.key === el.dataset.key); if (i) applyFix(i); break; }
       case 'add-paths': addPaths(); break;
-      case 'edit-path': editPath(el); break;
       case 'remove-path': r.paths.splice(Number(el.dataset.idx), 1); changed(); break;
       case 'toggle-path': {
         const i = Number(el.dataset.idx);
@@ -1640,7 +1935,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       case 'delete-rule':
         confirmDialog('Delete \u201c' + (r.name || 'Unnamed rule') + '\u201d?', 'Its ' + C.plural(r.paths.length, 'path') + ' will stop redirecting once the Akamai team imports your file.', 'Delete rule', () => {
           ms.current.rules = ms.current.rules.filter((x) => x !== r);
-          state.ruleId = null;
+          state.ruleId = null; state.editing = null;
           changed();
           toast('Rule deleted.');
         }, { destructive: true });
@@ -1671,12 +1966,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight + 2, 220) + 'px';
       return;
     }
-    if (t.dataset.field) {
-      const r = activeRule();
-      if (!r) return;
-      r[t.dataset.field] = t.value;
-      scheduleRefresh();
-    }
+    if (t.dataset.draft && state.editing) { state.editing.draft[t.dataset.draft] = t.value; return; }
   });
 
   document.addEventListener('change', (e) => {
@@ -1693,6 +1983,10 @@ dialog[open]{animation:popIn .26s var(--ease)}
   document.addEventListener('keydown', (e) => {
     if (e.target.id === 'add-paths' && e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); if (e.target.value.trim()) addPaths(); return; }
     if (document.querySelector('dialog[open]')) return;
+    if (state.editing && e.target.dataset && e.target.dataset.draft) {
+      if (e.key === 'Enter') { e.preventDefault(); saveEdit(); return; }
+      if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); return; }
+    }
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
     if (e.key === '/' && !typing && $('#rule-search')) { e.preventDefault(); $('#rule-search').focus(); return; }
     if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && e.target.classList && e.target.classList.contains('rr')) {
