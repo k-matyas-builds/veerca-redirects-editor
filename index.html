@@ -153,7 +153,11 @@ button:disabled{cursor:default}
 .btn.lg{height:38px;padding:0 18px;font-size:14px}
 .btn.subtle,.btn.danger{background:none;box-shadow:none;color:var(--link)}
 .btn.danger{color:var(--note-bad-ink)}
-.btn.subtle:hover:not(:disabled),.btn.danger:hover:not(:disabled){background:var(--hover)}
+.btn.subtle:hover:not(:disabled){background:var(--hover)}
+.btn.danger:hover:not(:disabled){background:var(--note-bad-bg)}
+.btn.danger svg{width:12px;height:12px}
+.d-foot{padding-right:6px}
+.d-foot .btn.danger{height:26px;gap:5px;padding:0 10px 0 8px;font-size:12.5px}
 .btn.icon{width:32px;padding:0;flex:none}
 .link{padding:0;border:0;background:none;font:inherit;color:var(--link);text-align:left}
 .link:hover{text-decoration:underline;text-underline-offset:3px}
@@ -202,7 +206,8 @@ input.mono,textarea.mono{font-family:var(--mono);font-size:12.5px}
 .wordmark{display:block;color:var(--ink)}
 .wordmark .hacek{stroke:var(--accent-2)}
 .brand{display:flex;align-items:center;gap:11px}
-.brand .wordmark{height:17px;width:auto}
+.brand-text{display:flex;align-items:baseline;gap:11px}
+.brand .wordmark{height:16.2px;width:auto}
 .brand-sub{padding-left:11px;border-left:1px solid var(--sep);font-size:13px;font-weight:500;color:var(--ink-2);white-space:nowrap}
 
 /* ---------- Frame ---------- */
@@ -226,7 +231,7 @@ input.mono,textarea.mono{font-family:var(--mono);font-size:12.5px}
 .w-mark{width:96px;height:96px;margin-bottom:26px;filter:drop-shadow(0 16px 28px rgba(6,111,239,.42)) drop-shadow(0 2px 4px rgba(0,0,0,.2));
   animation:markIn .7s var(--ease) both}
 @keyframes markIn{from{opacity:0;transform:translateY(8px) scale(.94)}}
-.w-word{height:62px;width:auto}
+.w-word{height:59px;width:auto}
 .w-sub{margin:16px 0 0;font:500 19px/1.3 var(--font-d);letter-spacing:.01em;color:var(--ink-2)}
 .dropzone{display:flex;flex-direction:column;align-items:center;gap:14px;width:min(440px,100%);margin-top:40px;padding:30px 28px 26px;border-radius:24px;
   background:var(--dz-dash),var(--well);cursor:pointer;transition:background-color .2s,box-shadow .2s,transform .3s var(--ease)}
@@ -435,7 +440,7 @@ details.adv summary{padding:2px 0 10px;font-size:13px;font-weight:600;color:var(
   background:var(--btn-bg);box-shadow:var(--btn-shadow);font-size:12px;font-weight:500;color:var(--ink-2);transition:background .15s,color .15s}
 .pl-btn svg{width:12px;height:12px}
 .pl-btn:hover{color:var(--ink);background:var(--btn-bg-hover)}
-.pl-btn.del{color:var(--note-bad-ink)}
+.pl-btn.del{color:var(--note-bad-ink);background:none;box-shadow:none}
 .pl-btn.del:hover{background:var(--note-bad-bg);box-shadow:inset 0 0 0 1px rgba(255,59,48,.3)}
 .pl-text em{font-family:var(--font);color:var(--ink-3)}
 .pl input.pl-edit{flex:1;height:30px;font-family:var(--mono);font-size:12.5px}
@@ -514,7 +519,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
 <body>
 <div id="app" class="welcome-mode">
   <header class="topbar glass">
-    <div class="brand" aria-label="Veerča, Redirects Editor"><span class="mark" id="brand-mark"></span><span id="brand-word"></span><span class="brand-sub">Redirects Editor</span></div>
+    <div class="brand" aria-label="Veerča, Redirects Editor"><span class="mark" id="brand-mark"></span><span class="brand-text"><span id="brand-word"></span><span class="brand-sub">Redirects Editor</span></span></div>
     <div class="source" id="source"></div>
     <button class="btn icon theme-btn" type="button" data-pref="auto"><svg class="ti-auto" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="5.75"/><path d="M8 2.25a5.75 5.75 0 0 1 0 11.5z" fill="currentColor" stroke="none"/></svg><svg class="ti-light" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.06 1.06M11.54 11.54l1.06 1.06M3.4 12.6l1.06-1.06M11.54 4.46l1.06-1.06"/></svg><svg class="ti-dark" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M13.25 9.6A5.75 5.75 0 1 1 6.4 2.75a4.6 4.6 0 0 0 6.85 6.85z"/></svg></button>
   </header>
@@ -932,7 +937,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
   // VEERČA, drawn as a monoline logotype so it looks the same on every system.
   // It opens with V and closes with its mirror, A; the háček over the Č is a small blue v.
   function wordmark(cls) {
-    return '<svg class="wordmark ' + cls + '" viewBox="-3 -13 138 41" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">' +
+    return '<svg class="wordmark ' + cls + '" viewBox="-3 -13 138 39" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">' +
       '<path d="M0 0 9 24 18 0"/><path d="M38 0H25v24h13M25 12h10"/><path d="M58 0H45v24h13M45 12h10"/>' +
       '<path d="M65 24V0h7.5a6 6 0 0 1 0 12H65M71.5 12l7 12"/><path d="M107.2 4.3A12 12 0 1 0 107.2 19.7"/>' +
       '<path class="hacek" d="M93.5 -9.5 98 -5.5 102.5 -9.5" stroke-width="3.4"/><path d="M114 24 123 0 132 24M117.4 15h11.2"/></svg>';
@@ -1504,7 +1509,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const st = ruleState(activeMs(), r);
     return (st === 'new' ? '<span class="note">Added by you</span>'
       : st === 'changed' ? '<button class="btn subtle" data-action="revert-rule">Undo all changes to this rule</button>' : '') +
-      '<button class="btn danger" data-action="delete-rule">Delete rule</button>';
+      '<button class="btn danger" data-action="delete-rule">' + ICON.trash + 'Delete rule</button>';
   }
 
 
