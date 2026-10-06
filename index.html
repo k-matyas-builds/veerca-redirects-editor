@@ -2075,6 +2075,26 @@ dialog[open]{animation:popIn .26s var(--ease)}
   /* ================= start ================= */
   $('#brand-mark').innerHTML = ICON.mark;
   $('#brand-word').outerHTML = wordmark('brand-word');
+
+  // Line the middle of the VEERČA letters up with the middle of "Redirects Editor".
+  // The text's middle depends on the system font, so it's measured rather than guessed.
+  function alignBrand() {
+    const sub = $('.brand-sub'), wm = $('.brand .wordmark');
+    if (!sub || !wm) return;
+    const cs = getComputedStyle(sub);
+    const letterH = parseFloat(getComputedStyle(wm).height) * 28 / 39;              // letters fill 28 of the drawing's 39 units, resting on its bottom edge
+    let textMid = parseFloat(cs.fontSize) * 0.36;                                   // fallback: typical cap-height middle
+    const ctx = document.createElement('canvas').getContext('2d');
+    for (const family of [cs.fontFamily, 'system-ui, sans-serif']) {
+      ctx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + family;
+      if (ctx.font.indexOf(cs.fontSize) === -1) continue;                           // this browser couldn't read that font list
+      const m = ctx.measureText(sub.textContent.trim());
+      if (m.actualBoundingBoxAscent > 0) { textMid = (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2; break; }
+    }
+    wm.style.transform = 'translateY(' + (letterH / 2 - textMid).toFixed(2) + 'px)';
+  }
+  alignBrand();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(alignBrand);
   applyTheme();
   renderAll();
 })();
