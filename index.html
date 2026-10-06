@@ -295,8 +295,13 @@ button.stat:hover{background:var(--hover)}
 .detail-panel{display:flex;min-width:0;min-height:0;overflow:hidden;border-radius:26px}
 .detail{flex:1;min-width:0;overflow:auto;padding:22px 24px 18px}
 .detail-empty{height:100%;display:grid;place-items:center;text-align:center;color:var(--ink-2)}
-input.d-name{height:38px;margin-left:-8px;padding:0 8px;background:none;box-shadow:none;font:600 21px var(--font-d);letter-spacing:-.005em}
-input.d-name:hover{background:var(--hover)}
+.d-title{display:flex;align-items:center;gap:4px;min-height:38px}
+.d-name-text{margin:0;min-width:0;font:600 21px/1.25 var(--font-d);letter-spacing:-.005em;word-break:break-word;cursor:text}
+.d-name-text em{font-weight:500;color:var(--ink-3)}
+.d-edit{flex:none;width:30px;height:30px;color:var(--ink-3)}
+.d-edit svg{width:15px;height:15px}
+.d-title:hover .d-edit{color:var(--link);background:var(--hover)}
+input.d-name{flex:1;height:38px;margin-left:-8px;padding:0 8px;font:600 21px var(--font-d);letter-spacing:-.005em}
 input.d-name:focus{background:var(--field-bg);box-shadow:inset 0 0 0 1px rgba(75,151,255,.8),0 0 0 3px rgba(75,151,255,.25)}
 .d-sub{margin:2px 0 18px;font-size:12.5px;color:var(--ink-3)}
 .d-section{margin-top:24px}
@@ -340,7 +345,24 @@ input.d-name:focus{background:var(--field-bg);box-shadow:inset 0 0 0 1px rgba(75
 .p-actions{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px}
 .p-actions .link{font-size:12.5px}
 
-.status-desc{margin-top:4px;font-size:12px;color:var(--ink-3)}
+.field-row{display:flex;flex-wrap:wrap;gap:0 28px}
+.field-row > .field:first-child{min-width:252px}
+.field-row.two{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.ro{display:flex;align-items:center;height:36px;padding:0 11px;border-radius:10px;background:var(--well);color:var(--ink-2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.hint.kept{margin:-4px 0 6px}
+.sp{display:inline-flex;align-items:center;height:32px}
+.sp-current{display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 10px 0 13px;border:0;border-radius:999px;
+  background:var(--seg-bg);box-shadow:var(--seg-ring);font-size:13px;color:var(--ink);transition:background .15s}
+.sp-current b{font-weight:600}
+.sp-current span{color:var(--ink-2)}
+.sp-current svg{width:12px;height:12px;color:var(--ink-3);transition:transform .2s var(--ease)}
+.sp-current:hover{background:var(--hover-2)}
+.sp-current:hover svg{transform:translateX(2px);color:var(--ink-2)}
+.sp-current.empty span{color:var(--ink-3)}
+.sp-options{display:none}
+.sp.open .sp-current{display:none}
+.sp.open .sp-options{display:inline-flex;animation:spOut .34s var(--ease)}
+@keyframes spOut{from{clip-path:inset(0 100% 0 0 round 999px);opacity:.3}to{clip-path:inset(0 0 0 0 round 999px);opacity:1}}
 .switches{margin:4px 0 6px}
 details.adv{margin-top:6px;padding-top:10px;border-top:1px solid var(--line)}
 details.adv summary{padding:2px 0 10px;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer}
@@ -362,7 +384,8 @@ details.adv summary{padding:2px 0 10px;font-size:13px;font-weight:600;color:var(
 .pl-text:hover{background:var(--hover)}
 .pl-text em{font-family:var(--font);color:var(--ink-3)}
 .pl input.pl-edit{flex:1;height:30px;font-family:var(--mono);font-size:12.5px}
-.pl .icon-btn{opacity:.6}
+.pl .icon-btn{opacity:.55}
+.pl .icon-btn svg{width:13px;height:13px}
 .pl:hover .icon-btn,.pl .icon-btn:focus-visible{opacity:1}
 .d-foot{display:flex;align-items:center;gap:8px;margin-top:24px;padding-top:14px;border-top:1px solid var(--line)}
 .d-foot .note{margin-right:auto;font-size:12.5px;color:var(--ink-3)}
@@ -788,6 +811,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   const ICON = {
     tray: '<svg class="dz-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 5v13.5M10.5 13 16 18.5 21.5 13"/><path d="M5 19.5v3.5A4 4 0 0 0 9 27h14a4 4 0 0 0 4-4v-3.5"/></svg>',
+    pencil: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2.6 13.4 5 5.6 12.8 2.5 13.5l.7-3.1z"/><path d="M9.6 4 12 6.4"/></svg>',
+    chev: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 3 7.5 6 4.5 9"/></svg>',
     search: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="7" cy="7" r="4.6"/><path d="m10.5 10.5 3.2 3.2"/></svg>',
     gear: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 1.8v2.4M10 15.8v2.4M1.8 10h2.4M15.8 10h2.4M4.2 4.2l1.7 1.7M14.1 14.1l1.7 1.7M4.2 15.8l1.7-1.7M14.1 5.9l1.7-1.7" stroke-linecap="round"/></svg>',
     x: '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m3.5 3.5 7 7M10.5 3.5l-7 7"/></svg>',
@@ -1088,13 +1113,39 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const ordered = C.exportOrder(ms.current.rules);
     const pos = ordered.indexOf(r) + 1;
     el.innerHTML =
-      '<input type="text" class="d-name" data-field="name" value="' + esc(r.name) + '" placeholder="Rule name" aria-label="Rule name" spellcheck="false">' +
+      '<div class="d-title" id="d-title">' + titleHTML(r) + '</div>' +
       '<div class="d-sub" id="d-sub">' + subLine(r, pos, ordered.length) + '</div>' +
       '<div id="d-route">' + routeHTML(r) + '</div>' +
       '<div id="d-problems">' + problemsHTML(r) + '</div>' +
       '<div class="d-section"><h2>Redirect</h2>' + fieldsHTML(r) + '</div>' +
       '<div class="d-section" id="d-paths">' + pathsHTML(r) + '</div>' +
       '<div class="d-foot" id="d-foot">' + footHTML(r) + '</div>';
+  }
+
+  function titleHTML(r) {
+    return '<h2 class="d-name-text" data-action="edit-name" title="Edit rule name">' + (r.name ? esc(r.name) : '<em>Unnamed rule</em>') + '</h2>' +
+      '<button class="icon-btn d-edit" data-action="edit-name" aria-label="Edit rule name" title="Edit rule name">' + ICON.pencil + '</button>';
+  }
+
+  function editName() {
+    const r = activeRule(), box = $('#d-title');
+    if (!r || !box || box.querySelector('input')) return;
+    const before = r.name;
+    box.innerHTML = '<input type="text" class="d-name" value="' + esc(r.name) + '" placeholder="Rule name" aria-label="Rule name" spellcheck="false">';
+    const input = box.querySelector('input');
+    input.focus(); input.select();
+    let done = false;
+    const finish = (keep) => {
+      if (done) return; done = true;
+      r.name = keep ? input.value.trim() : before;
+      changed(true);
+    };
+    input.addEventListener('input', () => { r.name = input.value; scheduleRefresh(); });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); }
+    });
+    input.addEventListener('blur', () => finish(true));
   }
 
   function subLine(r, pos, total) {
@@ -1161,6 +1212,35 @@ dialog[open]{animation:popIn .26s var(--ease)}
     }).join('') + '</div>';
   }
 
+  function statusPicker(code, name) {
+    const valid = C.STATUS_CODES.includes(code);
+    return '<div class="sp"' + (name ? ' data-name="' + name + '"' : '') + '>' +
+      '<button type="button" class="sp-current' + (valid ? '' : ' empty') + '" aria-expanded="false" title="' + (valid ? esc(STATUS_DESC[code]) : 'Choose a status code') + '">' +
+      spLabel(code) + '</button>' +
+      '<div class="seg sp-options" role="radiogroup" aria-label="Status code">' +
+      C.STATUS_CODES.map((c) => '<button type="button" role="radio" aria-checked="' + (c === code) + '"' + (name ? '' : ' data-action="set-status"') +
+        ' data-code="' + c + '" title="' + esc(c + ' ' + C.STATUS_LABELS[c] + '. ' + STATUS_DESC[c]) + '">' + c + '</button>').join('') +
+      '</div></div>';
+  }
+  function spLabel(code) {
+    return C.STATUS_CODES.includes(code)
+      ? '<b>' + code + '</b><span>' + esc(C.STATUS_LABELS[code]) + '</span>' + ICON.chev
+      : '<span>Please choose</span>' + ICON.chev;
+  }
+  function closePickers(except) {
+    document.querySelectorAll('.sp.open').forEach((sp) => {
+      if (sp === except) return;
+      sp.classList.remove('open');
+      sp.querySelector('.sp-current').setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function ynSeg(field, on) {
+    return '<div class="seg" role="radiogroup">' +
+      '<button type="button" role="radio" aria-checked="' + on + '" data-action="set-bool" data-bool="' + field + '" data-v="1">Yes</button>' +
+      '<button type="button" role="radio" aria-checked="' + !on + '" data-action="set-bool" data-bool="' + field + '" data-v="0">No</button></div>';
+  }
+
   function switchHTML(field, on, title, hint) {
     return '<label class="switch-row"><span class="sw-text"><span>' + title + '</span><small>' + hint + '</small></span>' +
       '<input type="checkbox" role="switch" data-toggle="' + field + '"' + (on ? ' checked' : '') + '><span class="sw" aria-hidden="true"></span></label>';
@@ -1168,25 +1248,20 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   function fieldsHTML(r) {
     const ms = activeMs();
-    const adv = !!(r.regex || r.query || r.scheme || r.matchURL);
-    return '<label class="field"><span>Redirect address</span><input type="text" class="mono" data-field="redirectURL" value="' + esc(r.redirectURL) + '" placeholder="https://' + esc(ms.host) + '/\u2026" spellcheck="false"></label>' +
-      '<div class="field"><span id="lbl-status">Status code</span><div><div class="seg" role="radiogroup" aria-labelledby="lbl-status">' +
-      C.STATUS_CODES.map((c) => '<button role="radio" aria-checked="' + (r.statusCode === c) + '" data-action="set-status" data-code="' + c + '" title="' + C.STATUS_LABELS[c] + '">' + c + '</button>').join('') +
-      '</div></div><div class="status-desc">' + esc(STATUS_DESC[r.statusCode] || 'This rule has no valid status code. Pick one above.') + '</div></div>' +
-      '<label class="field"><span>Hosts</span><input type="text" class="mono" data-field="host" value="' + esc(r.host) + '" spellcheck="false">' +
-      '<small class="hint">Separate several hosts with spaces. Leave it empty to match every host.</small></label>' +
-      '<div class="switches">' +
-      switchHTML('caseSensitive', r.caseSensitive, 'Case-sensitive paths', '/Cars and /cars count as different paths.') +
-      switchHTML('useQueryString', r.useQueryString, 'Keep the visitor\u2019s query string', 'Anything after ? in the visited address is passed on.') +
-      switchHTML('pinLast', r.pinLast, 'Always check this rule last', 'For catch-all rules that must run after every other rule.') +
+    const kept = [['query', 'query'], ['scheme', 'scheme'], ['matchURL', 'match URL']].filter(([k]) => r[k]);
+    return '<label class="field"><span>Redirect URL</span><input type="text" class="mono" data-field="redirectURL" value="' + esc(r.redirectURL) + '" placeholder="https://' + esc(ms.host) + '/\u2026" spellcheck="false"></label>' +
+      '<div class="field-row">' +
+      '<div class="field"><span>Status code</span>' + statusPicker(r.statusCode) + '</div>' +
+      '<div class="field"><span>Use query string</span>' + ynSeg('useQueryString', r.useQueryString) + '</div>' +
+      '<div class="field"><span>Case sensitive</span>' + ynSeg('caseSensitive', r.caseSensitive) + '</div>' +
       '</div>' +
-      '<details class="adv"' + (adv ? ' open' : '') + '><summary>Advanced matching</summary><div class="adv-grid">' +
-      '<label class="field"><span>Regex</span><input type="text" class="mono" data-field="regex" value="' + esc(r.regex) + '" spellcheck="false"></label>' +
-      '<label class="field"><span>Query</span><input type="text" class="mono" data-field="query" value="' + esc(r.query) + '" spellcheck="false"></label>' +
-      '<label class="field"><span>Scheme</span><input type="text" class="mono" data-field="scheme" value="' + esc(r.scheme) + '" spellcheck="false"></label>' +
-      '<label class="field"><span>Match URL</span><input type="text" class="mono" data-field="matchURL" value="' + esc(r.matchURL) + '" spellcheck="false"></label>' +
-      '</div></details>';
+      '<div class="field-row two">' +
+      '<label class="field"><span>Regex</span><input type="text" class="mono" data-field="regex" value="' + esc(r.regex) + '" placeholder="None" spellcheck="false"></label>' +
+      '<div class="field"><span>Host</span><div class="ro mono" title="' + esc(r.host) + '">' + (r.host ? esc(r.host) : 'Every host') + '</div></div>' +
+      '</div>' +
+      (kept.length ? '<p class="hint kept">Also matches on ' + kept.map(([k, l]) => l + ' \u201c' + esc(r[k]) + '\u201d').join(', ') + '. Kept exactly as in the file.</p>' : '');
   }
+
 
   function pathsHTML(r) {
     const ms = activeMs();
@@ -1206,7 +1281,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
         return '<li class="pl"><input type="checkbox" data-action="toggle-path" data-idx="' + idx + '" aria-label="Select ' + esc(p || 'empty entry') + '"' + (state.selected.has(idx) ? ' checked' : '') + '>' +
           '<button class="pl-text" data-action="edit-path" data-idx="' + idx + '" title="Edit path">' + (p === '' ? '<em>Empty entry</em>' : esc(p)) + '</button>' +
           (fl ? '<span class="sev ' + fl + '"></span>' : '') +
-          '<button class="icon-btn small" data-action="remove-path" data-idx="' + idx + '" aria-label="Remove ' + esc(p || 'empty entry') + '">' + ICON.x + '</button></li>';
+          '<button class="icon-btn small" data-action="edit-path-btn" data-idx="' + idx + '" aria-label="Edit ' + esc(p || 'empty entry') + '" title="Edit path">' + ICON.pencil + '</button>' +
+          '<button class="icon-btn small" data-action="remove-path" data-idx="' + idx + '" aria-label="Remove ' + esc(p || 'empty entry') + '" title="Remove path">' + ICON.x + '</button></li>';
       }).join('') + '</ul>' : (r.paths.length ? '<p class="hint">No paths match the filter.</p>' : '<p class="hint">This rule has no paths yet. Add one above.</p>'));
   }
 
@@ -1298,46 +1374,50 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   function newRuleDialog() {
     const ms = activeMs();
-    const seg = (name, opts) => '<div class="seg" role="radiogroup" data-name="' + name + '">' +
-      opts.map(([v, l, t]) => '<button type="button" role="radio" aria-checked="false" data-value="' + v + '"' + (t ? ' title="' + t + '"' : '') + '>' + l + '</button>').join('') + '</div>';
+    const yn = (name) => '<div class="seg" role="radiogroup" data-name="' + name + '">' +
+      '<button type="button" role="radio" aria-checked="false" data-value="1">Yes</button>' +
+      '<button type="button" role="radio" aria-checked="false" data-value="0">No</button></div>';
     openDialog(
-      '<h2>New rule</h2><p>It\u2019s added to the end of the list, before any rule that\u2019s always kept last.</p>' +
+      '<h2>New rule</h2><p>You add its paths next, in the rule\u2019s details.</p>' +
       '<form id="nr-form" class="dlg-body" autocomplete="off"><div class="nr-grid">' +
       '<label class="field full"><span>Rule name</span><input type="text" name="name" placeholder="For example the ticket number" spellcheck="false"></label>' +
-      '<label class="field full"><span>Paths</span><textarea name="paths" rows="3" class="mono" placeholder="One per line. Full ' + esc(ms.host) + ' addresses work too." spellcheck="false"></textarea></label>' +
-      '<label class="field full"><span>Redirect address</span><input type="text" name="redirectURL" class="mono" placeholder="https://' + esc(ms.host) + '/\u2026" spellcheck="false"></label>' +
-      '<div class="field full"><span>Status code</span><div>' + seg('statusCode', C.STATUS_CODES.map((c) => [c, String(c), C.STATUS_LABELS[c]])) + '</div></div>' +
-      '<div class="field"><span>Case-sensitive paths</span><div>' + seg('caseSensitive', [['1', 'Yes'], ['0', 'No']]) + '</div></div>' +
-      '<div class="field"><span>Keep the query string</span><div>' + seg('useQueryString', [['1', 'Yes'], ['0', 'No']]) + '</div></div>' +
-      '<label class="field full"><span>Hosts</span><input type="text" name="host" class="mono" value="' + esc(ms.host) + '" spellcheck="false"></label>' +
+      '<label class="field full"><span>Redirect URL</span><input type="text" name="redirectURL" class="mono" placeholder="https://' + esc(ms.host) + '/\u2026" spellcheck="false"></label>' +
+      '<label class="field"><span>Regex</span><input type="text" name="regex" class="mono" placeholder="Optional" spellcheck="false"></label>' +
+      '<div class="field"><span>Status code</span><div>' + statusPicker(0, 'statusCode') + '</div></div>' +
+      '<div class="field"><span>Use query string</span><div>' + yn('useQueryString') + '</div></div>' +
+      '<div class="field"><span>Case sensitive</span><div>' + yn('caseSensitive') + '</div></div>' +
       '</div><p class="form-msg" id="nr-msg" role="alert"></p></form>' +
-      '<div class="dlg-actions"><span class="hint push" id="nr-hint">Fill in every field to create the rule.</span><button class="btn" data-close>Cancel</button><button class="btn primary" id="nr-create" disabled>Create rule</button></div>',
+      '<div class="dlg-actions"><span class="hint push" id="nr-hint">Everything except Regex is required.</span><button class="btn" data-close>Cancel</button><button class="btn primary" id="nr-create" disabled>Add rule</button></div>',
       (d) => {
         const form = $('#nr-form', d);
         const picked = {};
         const check = () => {
-          const ok = form.name.value.trim() && form.paths.value.trim() && form.redirectURL.value.trim() && ['statusCode', 'caseSensitive', 'useQueryString'].every((k) => k in picked);
+          const ok = form.name.value.trim() && form.redirectURL.value.trim() && ['statusCode', 'caseSensitive', 'useQueryString'].every((k) => k in picked);
           $('#nr-create', d).disabled = !ok;
           $('#nr-hint', d).hidden = !!ok;
         };
         d.addEventListener('click', (e) => {
           const b = e.target.closest('.seg button');
           if (!b) return;
-          const g = b.parentElement;
-          g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
-          picked[g.dataset.name] = b.dataset.value;
+          const group = b.closest('[data-name]');
+          b.parentElement.querySelectorAll('button').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+          if (group.classList.contains('sp')) {
+            picked.statusCode = b.dataset.code;
+            const cur = group.querySelector('.sp-current');
+            cur.innerHTML = spLabel(Number(b.dataset.code));
+            cur.classList.remove('empty');
+            cur.title = STATUS_DESC[b.dataset.code];
+            closePickers();
+            cur.focus();
+          } else picked[group.dataset.name] = b.dataset.value;
           check();
         });
         form.addEventListener('input', check);
         form.name.focus();
         $('#nr-create', d).addEventListener('click', () => {
-          const lines = form.paths.value.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
-          const paths = [], bad = [];
-          for (const line of lines) { const p = C.toPath(line); if (/[\s"]/.test(p)) bad.push(line); else if (!paths.includes(p)) paths.push(p); }
-          if (bad.length) { $('#nr-msg', d).textContent = 'Paths can\u2019t contain spaces or quote marks: ' + bad.join(', '); return; }
           const rule = C.normalizeRule({
-            id: C.newId(), name: form.name.value.trim(), host: form.host.value.trim(), paths,
-            redirectURL: form.redirectURL.value.trim(), statusCode: Number(picked.statusCode),
+            id: C.newId(), name: form.name.value.trim(), host: ms.host, paths: [],
+            redirectURL: form.redirectURL.value.trim(), regex: form.regex.value.trim(), statusCode: Number(picked.statusCode),
             caseSensitive: picked.caseSensitive === '1', useQueryString: picked.useQueryString === '1',
           });
           ms.current.rules.push(rule);
@@ -1346,10 +1426,13 @@ dialog[open]{animation:popIn .26s var(--ease)}
           recompute(ms);
           renderMain();
           selectRule(rule.id);
-          toast('Rule created.');
+          const ta = $('#add-paths');
+          if (ta) { ta.scrollIntoView({ block: 'center' }); ta.focus(); }
+          toast('Rule created. Add its paths below.');
         });
       }, { keepOnOutsideClick: true });
   }
+
 
   function moveDialog() {
     const ms = activeMs(), r = activeRule();
@@ -1526,6 +1609,9 @@ dialog[open]{animation:popIn .26s var(--ease)}
       case 'new-rule': newRuleDialog(); break;
       case 'review': reviewDialog(); break;
       case 'set-status': r.statusCode = Number(el.dataset.code); changed(true); break;
+      case 'set-bool': r[el.dataset.bool] = el.dataset.v === '1'; changed(true); break;
+      case 'edit-name': editName(); break;
+      case 'edit-path-btn': { const b = document.querySelector('.pl-text[data-idx="' + el.dataset.idx + '"]'); if (b) editPath(b); break; }
       case 'fix': { const i = ms.issues.find((x) => x.key === el.dataset.key); if (i) applyFix(i); break; }
       case 'add-paths': addPaths(); break;
       case 'edit-path': editPath(el); break;
@@ -1637,6 +1723,28 @@ dialog[open]{animation:popIn .26s var(--ease)}
     if (f && !/\.(zip|csv|txt|xlsx?)$/i.test(f.name)) { toast('Drop the .zip or .csv file from the Akamai team.', 'error'); return; }
     openFile(f);
   });
+
+  document.addEventListener('click', (e) => {
+    const cur = e.target.closest('.sp-current');
+    if (cur) {
+      const sp = cur.closest('.sp');
+      closePickers(sp);
+      sp.classList.add('open');
+      cur.setAttribute('aria-expanded', 'true');
+      const on = sp.querySelector('.sp-options [aria-checked="true"]') || sp.querySelector('.sp-options button');
+      if (on) on.focus();
+      return;
+    }
+    if (!e.target.closest('.sp')) closePickers();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const open = document.querySelector('.sp.open');
+    if (!open) return;
+    e.preventDefault(); e.stopPropagation();
+    closePickers();
+    open.querySelector('.sp-current').focus();
+  }, true);
 
   /* ================= appearance ================= */
   const THEME_KEY = 'veerca-theme';
