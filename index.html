@@ -242,6 +242,30 @@ body.is-welcome.dragging .dropzone{background:var(--accent-soft);box-shadow:inse
 body.is-welcome.dragging .dz-icon{color:var(--accent-2);transform:translateY(3px)}
 body.is-welcome.dragging::after{display:none}
 .welcome .form-msg{margin:16px 0 0;max-width:52ch;padding:9px 14px;border-radius:12px;background:var(--note-bad-bg)}
+.welcome{overflow-y:auto;justify-content:safe center}
+.welcome > *{flex-shrink:0}
+.welcome.has-recent .w-mark{width:76px;height:76px;margin-bottom:20px}
+.welcome.has-recent .dropzone{margin-top:30px}
+
+/* recent policies, kept in this browser */
+.recent{width:min(440px,100%);margin-top:26px;text-align:left}
+.rc-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 8px 8px}
+.rc-head h2{margin:0;font:600 14px/1.3 var(--font-d)}
+.rc-list{margin:0;padding:4px;list-style:none;border-radius:20px;background:var(--well)}
+.rc-item{position:relative}
+.rc-item + .rc-item{margin-top:1px}
+.rc-open{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1px 14px;padding:9px 46px 9px 12px;border:0;border-radius:16px;background:none;text-align:left}
+.rc-open:hover{background:var(--hover)}
+.rc-name{font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc-src{font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc-when,.rc-status{justify-self:end;font-size:12px;color:var(--ink-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.rc-status.unexported{color:var(--note-warn-ink);font-weight:500}
+.rc-stale{grid-column:1/-1;margin-top:4px;font-size:12px;color:var(--ink-2)}
+.rc-remove{position:absolute;right:10px;top:50%;transform:translateY(-50%)}
+.rc-foot{display:flex;gap:8px;padding:6px 0 0}
+.rc-foot .btn{height:28px;padding:0 10px;font-size:12.5px}
+.rc-foot .rc-clear{margin-left:auto;color:var(--ink-3)}
+.recent .rc-foot .btn.rc-clear:hover:not(:disabled){color:var(--note-bad-ink);background:var(--note-bad-bg)}
 body.dragging::after{content:"Drop to open the policy";position:fixed;inset:16px;z-index:60;display:grid;place-items:center;border-radius:28px;pointer-events:none;
   background:rgba(6,111,239,.16);box-shadow:inset 0 0 0 2px rgba(75,151,255,.8);font:600 17px var(--font-d);color:var(--ink)}
 
@@ -961,6 +985,90 @@ dialog[open]{animation:popIn .26s var(--ease)}
     q: '', scope: 'all', onlyProblems: false, selected: new Set(), pathFilter: '',
   };
 
+  /* ================= recent policies, kept in this browser ================= */
+  // One slot per market: the file as it was opened, plus the edits made since.
+  // Everything stays in this browser's IndexedDB; nothing is sent anywhere.
+  // If the browser blocks storage, recent.db stays null and the tool works as before.
+  const RECENT_DB = 'veerca', RECENT_STORE = 'policies', RECENT_SHOWN = 5, STALE_DAYS = 30;
+  const recent = { db: null, items: new Map(), showAll: false, timer: 0, inflight: 0, warned: false };
+
+  const idbReq = (req) => new Promise((res, rej) => { req.onsuccess = () => res(req.result); req.onerror = () => rej(req.error); });
+
+  async function recentInit() {
+    try {
+      const req = indexedDB.open(RECENT_DB, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(RECENT_STORE, { keyPath: 'key' });
+      const db = await idbReq(req);
+      const all = await idbReq(db.transaction(RECENT_STORE).objectStore(RECENT_STORE).getAll());
+      for (const rec of all) if (!recent.items.has(rec.key)) recent.items.set(rec.key, rec);
+      recent.db = db;
+    } catch (e) { recent.db = null; }
+    if (state.doc) saveNow();
+    else if (!state.loading) renderMain();
+  }
+
+  function recentWrite(fn) {
+    if (!recent.db) return Promise.resolve();
+    recent.inflight++;
+    return new Promise((res, rej) => {
+      const tx = recent.db.transaction(RECENT_STORE, 'readwrite');
+      fn(tx.objectStore(RECENT_STORE));
+      tx.oncomplete = () => res();
+      tx.onerror = tx.onabort = () => rej(tx.error);
+    }).finally(() => { recent.inflight--; });
+  }
+
+  // A market's slot is keyed by its host, so a newer file for the same market replaces the older one.
+  const recentKey = (market, info) => (market.host ? market.host.toLowerCase() : 'policy:' + (info.policy || market.name));
+  const sourceLabel = (d) => (d.info.source === 'akamai' ? d.info.policy + (d.info.version ? ', version ' + d.info.version : '') : d.fileName);
+
+  function scheduleSave() {
+    clearTimeout(recent.timer);
+    recent.timer = setTimeout(saveNow, 400);
+  }
+
+  function saveNow() {
+    clearTimeout(recent.timer); recent.timer = 0;
+    const d = state.doc;
+    if (!d || !recent.db) return;
+    const ms = d.ms, snap = C.snapshot(ms.current);
+    if (d.saved && d.saved.snap === snap && d.saved.exported === ms.exportedSnap) return;
+    const edited = snap !== ms.originalSnap;
+    const rec = {
+      key: d.key, name: ms.name, host: ms.host, fileName: d.fileName, label: sourceLabel(d), text: d.text,
+      current: clone(ms.current), exportedSnap: ms.exportedSnap,
+      changes: edited ? (C.diffMarket(ms.original, ms.current).count || 1) : 0,
+      unexported: edited && snap !== ms.exportedSnap,
+      openedAt: d.openedAt, savedAt: Date.now(),
+    };
+    d.saved = { snap, exported: ms.exportedSnap };
+    recent.items.set(rec.key, rec);
+    recentWrite((s) => s.put(rec)).catch(() => {
+      if (state.doc === d) d.saved = null;
+      if (!recent.warned) {
+        recent.warned = true;
+        toast('This browser couldn\u2019t save your work for later. Export before you close the tab.', 'error');
+      }
+    });
+  }
+
+  function recentRemove(keys) {
+    for (const k of keys) recent.items.delete(k);
+    recentWrite((s) => { for (const k of keys) s.delete(k); }).catch(() => {});
+    if (!state.doc && !state.loading) renderMain();
+  }
+
+  function relTime(ts, inSentence) {
+    const d = new Date(ts), now = new Date();
+    const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const days = Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
+    if (days === 0) return (inSentence ? 'today at ' : 'Today, ') + time;
+    if (days === 1) return (inSentence ? 'yesterday at ' : 'Yesterday, ') + time;
+    const opts = { day: 'numeric', month: inSentence ? 'long' : 'short' };
+    if (d.getFullYear() !== now.getFullYear()) opts.year = 'numeric';
+    return (inSentence ? 'on ' : '') + d.toLocaleDateString('en-GB', opts);
+  }
+
   /* ================= the open file ================= */
 
   function recompute(ms) {
@@ -972,10 +1080,11 @@ dialog[open]{animation:popIn .26s var(--ease)}
       ms.byRule.get(i.ruleId).push(i);
     }
     ms.dirty = C.snapshot(ms.current) !== ms.originalSnap;
+    scheduleSave();
   }
 
-  function openDoc(text, fileName) {
-    const { market, info } = C.importPolicy(text, fileName);
+  function openDoc(text, fileName, parsed, opts) {
+    const { market, info } = parsed || C.importPolicy(text, fileName);
     const ms = {
       name: market.name, host: market.host, original: clone(market), current: clone(market),
       originalSnap: C.snapshot(market), exportedSnap: null,
@@ -983,7 +1092,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       baseline: new Set(C.analyze(market).map((i) => i.key)), issues: [], byRule: new Map(), dirty: false,
     };
     recompute(ms);
-    state.doc = { ms, info, fileName };
+    state.doc = { ms, info, fileName, text, key: recentKey(market, info), openedAt: Date.now(), saved: null };
     state.editing = null;
     state.ruleId = null; state.q = ''; state.onlyProblems = false; state.selected.clear(); state.pathFilter = '';
     state.loadError = '';
@@ -992,7 +1101,42 @@ dialog[open]{animation:popIn .26s var(--ease)}
     if (info.delimiter === ';') notes.push('This file uses semicolons, as Excel saves it in some regional settings. The export uses commas, like Veera\u2019s.');
     if (info.extraCols.length) notes.push('Columns the tool doesn\u2019t edit are kept as they are: ' + info.extraCols.join(', ') + '.');
     if (info.pinnedMoved) notes.push('The trailing-slash rule wasn\u2019t last in this file. The export puts it last, as Veera did.');
-    if (notes.length) toast(notes.join(' '));
+    if (notes.length && !(opts && opts.quiet)) toast(notes.join(' '));
+  }
+
+  // Picks a policy back up from the recent list: the file as opened, with the edits made since.
+  function restoreRecent(rec, parsed) {
+    try { openDoc(rec.text, rec.fileName, parsed, { quiet: true }); }
+    catch (e) { toast('This saved copy can\u2019t be read anymore. Open the file again instead.', 'error'); return; }
+    const d = state.doc, ms = d.ms;
+    d.openedAt = rec.openedAt;
+    ms.current = clone(rec.current);
+    ms.exportedSnap = rec.exportedSnap;
+    recompute(ms);
+    renderAll();
+    if (rec.changes) toast('Back where you left off, with ' + C.plural(rec.changes, 'change') + (rec.unexported ? ' not exported yet.' : ', already exported.'));
+  }
+
+  // A newly opened file takes its market's slot in the recent list. If that slot holds
+  // the very same file, carry on with its edits; if it holds changes that were never
+  // exported, ask before replacing them.
+  function openParsed(text, fileName, parsed) {
+    const prev = recent.items.get(recentKey(parsed.market, parsed.info));
+    if (prev && prev.text === text) { restoreRecent(prev, parsed); return; }
+    if (!prev || !prev.unexported) { openDoc(text, fileName, parsed); return; }
+    renderAll();
+    openDialog('<h2>Replace your unexported changes?</h2>' +
+      '<p>You last worked on ' + esc(prev.name) + ' ' + esc(relTime(prev.savedAt, true)) + ' and have ' + C.plural(prev.changes, 'change') +
+      ' you haven\u2019t exported. Opening this file replaces them.</p>' +
+      '<div class="dlg-actions"><button class="btn" data-close>Cancel</button>' +
+      '<button class="btn" id="rp-saved">Open saved copy</button>' +
+      '<button class="btn destructive" id="rp-replace">Replace</button></div>',
+    (dl) => {
+      $('#rp-saved', dl).addEventListener('click', () => { dl.close(); restoreRecent(prev); });
+      const rp = $('#rp-replace', dl);
+      rp.focus();
+      rp.addEventListener('click', () => { dl.close(); openDoc(text, fileName, parsed); });
+    });
   }
 
   async function readZip(buf) {
@@ -1023,10 +1167,17 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   async function openFile(file, force) {
     if (!file) return;
-    if (!force && unexported()) {
-      confirmDialog('Open another file?', 'Your changes to ' + state.doc.ms.name + ' haven\u2019t been exported yet. Opening another file discards them.', 'Open file', () => openFile(file, true));
-      return;
+    if (!force && state.doc) {
+      // With storage working, the open policy stays in the recent list, so only typed-but-unapplied text is at risk.
+      if (recent.db ? pendingInput() : unexported()) {
+        confirmDialog('Open another file?', recent.db
+          ? 'Text you typed but didn\u2019t apply yet will be lost. Everything else stays in your recent policies.'
+          : 'Your changes to ' + state.doc.ms.name + ' haven\u2019t been exported yet. Opening another file discards them.',
+        'Open file', () => openFile(file, true));
+        return;
+      }
     }
+    saveNow();
     state.loading = true; renderAll();
     try {
       let bytes = new Uint8Array(await file.arrayBuffer()), name = file.name;
@@ -1035,8 +1186,9 @@ dialog[open]{animation:popIn .26s var(--ease)}
       let text;
       try { text = new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
       catch (e) { throw new Error('This file isn\u2019t saved as UTF-8, so accented characters would come out wrong. In Excel, use Save As and choose \u201cCSV UTF-8\u201d, then open it again.'); }
+      const parsed = C.importPolicy(text, name);
       state.loading = false;
-      openDoc(text, name);
+      openParsed(text, name, parsed);
     } catch (e) {
       state.loading = false;
       if (state.doc) { renderAll(); toast(e.message, 'error'); }
@@ -1086,6 +1238,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       parts.push('<span class="chip"><b>' + esc(d.info.policy) + '</b>' + (d.info.version ? 'version ' + esc(d.info.version) : '') + '</span>');
     } else parts.push('<span class="chip">' + esc(d.fileName) + '</span>');
     parts.push('<button class="btn" data-action="open-file">Open another file</button>');
+    parts.push('<button class="btn" data-action="close-file">Close</button>');
     el.innerHTML = parts.join('');
   }
 
@@ -1115,7 +1268,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
   }
 
   function startHTML() {
-    return '<section class="welcome" id="welcome">' +
+    const list = recentHTML();
+    return '<section class="welcome' + (list ? ' has-recent' : '') + '" id="welcome">' +
       '<button class="btn icon theme-btn w-theme" type="button" data-pref="auto">' + $('.topbar .theme-btn').innerHTML + '</button>' +
       '<div class="mark w-mark">' + ICON.mark + '</div>' +
       '<h1 class="visually-hidden">Veer\u010da, Redirects Editor</h1>' +
@@ -1125,7 +1279,33 @@ dialog[open]{animation:popIn .26s var(--ease)}
       '<button class="btn primary lg" type="button" data-action="open-file">Select a policy from your computer</button>' +
       '<p class="dz-or">or drag the .zip or .csv file here</p></div>' +
       '<p class="form-msg" role="alert">' + esc(state.loadError) + '</p>' +
+      list +
       '</section>';
+  }
+
+  function recentHTML() {
+    if (!recent.db || !recent.items.size) return '';
+    const all = [...recent.items.values()].sort((a, b) => b.savedAt - a.savedAt);
+    const shown = recent.showAll ? all : all.slice(0, RECENT_SHOWN);
+    return '<section class="recent" aria-labelledby="rc-title">' +
+      '<div class="rc-head"><h2 id="rc-title">Recent policies</h2><span class="hint">Kept in this browser only</span></div>' +
+      '<ul class="rc-list">' + shown.map(recentRow).join('') + '</ul>' +
+      '<div class="rc-foot">' +
+      (all.length > RECENT_SHOWN ? '<button class="btn subtle" type="button" data-action="show-all-recent">' + (recent.showAll ? 'Show fewer' : 'Show all ' + all.length) + '</button>' : '') +
+      '<button class="btn subtle rc-clear" type="button" data-action="clear-recent">Clear all</button></div></section>';
+  }
+
+  function recentRow(rec) {
+    const age = Math.floor((Date.now() - rec.openedAt) / 864e5);
+    const status = rec.unexported ? '<span class="rc-status unexported">' + C.plural(rec.changes, 'change') + ' not exported</span>'
+      : rec.changes ? '<span class="rc-status">' + C.plural(rec.changes, 'change') + ', exported</span>'
+      : '<span class="rc-status">No changes</span>';
+    return '<li class="rc-item"><button class="rc-open" type="button" data-action="open-recent" data-key="' + esc(rec.key) + '">' +
+      '<span class="rc-name">' + esc(rec.name) + '</span><span class="rc-when">' + esc(relTime(rec.savedAt)) + '</span>' +
+      '<span class="rc-src">' + esc(rec.label) + '</span>' + status +
+      (age >= STALE_DAYS ? '<span class="rc-stale">Opened ' + age + ' days ago, so there may be a newer version.</span>' : '') +
+      '</button><button class="icon-btn rc-remove" type="button" data-action="remove-recent" data-key="' + esc(rec.key) + '" ' +
+      'title="Remove from recent policies" aria-label="Remove ' + esc(rec.name) + ' from recent policies">' + ICON.x + '</button></li>';
   }
 
 
@@ -1783,6 +1963,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       $('#rv-save', d).addEventListener('click', () => {
         download(exportName(), C.exportCSV(ms.current), 'text/csv');
         ms.exportedSnap = C.snapshot(ms.current);
+        saveNow();
         $('#rv-save', d).textContent = 'Downloaded';
         toast('Downloaded ' + exportName() + '. Send it to the Akamai team with the summary.');
       });
@@ -1896,6 +2077,34 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const ms = activeMs(), r = activeRule();
     switch (a) {
       case 'open-file': $('#file-input').click(); break;
+      case 'close-file': {
+        const close = () => { saveNow(); state.doc = null; state.editing = null; state.ruleId = null; state.loadError = ''; renderAll(); };
+        if (recent.db ? pendingInput() : unexported()) {
+          confirmDialog('Close ' + ms.name + '?', recent.db
+            ? 'Text you typed but didn\u2019t apply yet will be lost. Everything else stays in your recent policies.'
+            : 'Your changes haven\u2019t been exported yet. Closing discards them.',
+          'Close', close, { destructive: !recent.db });
+        } else close();
+        break;
+      }
+      case 'open-recent': { const rec = recent.items.get(el.dataset.key); if (rec) restoreRecent(rec); break; }
+      case 'remove-recent': {
+        const rec = recent.items.get(el.dataset.key);
+        if (!rec) break;
+        if (rec.unexported) {
+          confirmDialog('Remove ' + rec.name + '?', 'Its ' + C.plural(rec.changes, 'change') + (rec.changes === 1 ? ' hasn\u2019t' : ' haven\u2019t') + ' been exported. Removing it from this browser loses ' + (rec.changes === 1 ? 'it.' : 'them.'),
+            'Remove', () => recentRemove([rec.key]), { destructive: true });
+        } else recentRemove([rec.key]);
+        break;
+      }
+      case 'show-all-recent': recent.showAll = !recent.showAll; renderMain(); break;
+      case 'clear-recent': {
+        const n = recent.items.size, open = [...recent.items.values()].filter((x) => x.unexported).length;
+        confirmDialog('Clear recent policies?', 'This removes ' + C.plural(n, 'saved policy', 'saved policies') + ' from this browser.' +
+          (open ? ' ' + (open === 1 ? 'One has' : open + ' have') + ' changes that weren\u2019t exported.' : ''),
+        'Clear all', () => { recent.showAll = false; recentRemove([...recent.items.keys()]); }, { destructive: true });
+        break;
+      }
       case 'scope': { state.scope = el.dataset.scope; renderMain(); const s = $('#rule-search'); if (s) { s.focus(); s.setSelectionRange(s.value.length, s.value.length); } break; }
       case 'only-problems': state.onlyProblems = el.dataset.on || false; renderMain(); break;
       case 'show-problems': state.onlyProblems = el.dataset.which; state.q = ''; renderMain(); break;
@@ -2002,9 +2211,14 @@ dialog[open]{animation:popIn .26s var(--ease)}
   });
 
   // Any open policy is protected from an accidental reload or close, changed or not.
+  // Its latest state is also written to the recent list first, so it's there either way.
   window.addEventListener('beforeunload', (e) => {
-    if (state.doc) { e.preventDefault(); e.returnValue = ''; }
+    if (!state.doc) return;
+    saveNow();
+    e.preventDefault(); e.returnValue = '';
   });
+  window.addEventListener('pagehide', saveNow);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveNow(); });
 
   // drag and drop anywhere on the page
   let dragDepth = 0;
@@ -2097,6 +2311,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(alignBrand);
   applyTheme();
   renderAll();
+  recentInit();
 })();
 
 </script>
