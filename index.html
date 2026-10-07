@@ -1114,7 +1114,6 @@ dialog[open]{animation:popIn .26s var(--ease)}
     clearTimeout(sync.timer); sync.timer = 0;
     if (state.doc && !sync.muted) post(docMessage());
   }
-  const savedMark = (d) => ({ snap: C.snapshot(d.ms.current), exported: d.ms.exportedSnap, as: JSON.stringify(d.exportAs || null) });
 
   // Takes over another tab's copy without replacing the rule objects, so anything holding on to
   // a rule (an open dialog, an edit in progress) still points at the live one.
@@ -1141,7 +1140,6 @@ dialog[open]{animation:popIn .26s var(--ease)}
       ms.current = clone(m.current);
       ms.exportedSnap = m.exportedSnap;
       recompute(ms);
-      d.saved = savedMark(d);
     } finally { sync.muted--; }
     const keepName = keepRule && why === 'switched' && prevName;
     const still = keepRule && state.doc.ms.current.rules.find((r) => r.id === keepRule);
@@ -1169,7 +1167,6 @@ dialog[open]{animation:popIn .26s var(--ease)}
       ms.exportedSnap = m.exportedSnap;
       d.exportAs = m.exportAs || null;
       recompute(ms);
-      d.saved = savedMark(d);                                // the tab that made the change saves it
     } finally { sync.muted--; }
     const after = selId ? ms.current.rules.find((r) => r.id === selId) : null;
     if (sel && !after) {
@@ -2578,12 +2575,13 @@ dialog[open]{animation:popIn .26s var(--ease)}
     }
   });
 
-  // Any open policy is protected from an accidental reload or close, changed or not.
+  // The main editor is protected from an accidental reload or close, changed or not.
   // Its latest state is also written to the recent list first, so it's there either way.
+  // Every tab saves the changes it receives too, so closing a rule page never loses anything.
   window.addEventListener('beforeunload', (e) => {
     if (!state.doc) return;
     saveNow();
-    if (state.view === 'rule' && recent.db && !recent.inflight && !pendingInput()) return;
+    if (state.view === 'rule') return;   // rule pages never ask: the main tab has every change, and it's the one that's protected
     e.preventDefault(); e.returnValue = '';
   });
   window.addEventListener('pagehide', saveNow);
