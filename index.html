@@ -344,7 +344,7 @@ button.stat:hover{background:var(--hover)}
 .rr-name em{font-weight:400;color:var(--ink-3)}
 .rr-target,.rr-hit{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rr-hit{color:var(--ink-2)}
-.rr-hit mark{background:var(--hit);color:inherit;border-radius:3px}
+.rr-main mark{background:var(--hit);color:inherit;border-radius:3px;box-shadow:0 0 0 1px var(--hit)}
 .rr-side{display:flex;align-items:center;gap:7px;padding-top:2px}
 .rr-count{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
 .tag{height:18px;padding:0 7px;border-radius:999px;font-size:11px;font-weight:600;line-height:18px;background:var(--chip-bg);color:var(--ink-2)}
@@ -470,6 +470,8 @@ details.adv summary{padding:2px 0 10px;font-size:13px;font-weight:600;color:var(
 .pl{display:flex;align-items:center;gap:8px;min-height:36px;padding:3px 6px 3px 12px;border-top:1px solid var(--line)}
 .pl:first-child{border-top:0}
 .pl input[type=checkbox]{flex:none;width:15px;height:15px;margin:0;accent-color:var(--accent)}
+.pl.pl-all{border-top:0;min-height:34px}
+.pl-all label{display:flex;align-items:center;gap:8px;flex:1;padding:4px 0;font-size:12.5px;font-weight:500;color:var(--ink-2);cursor:pointer;user-select:none}
 .pl-text{flex:1;min-width:0;padding:4px 6px;font-family:var(--mono);font-size:12.5px;word-break:break-all}
 .pl-actions{display:flex;gap:4px;flex:none}
 .pl-btn{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px 0 8px;border:0;border-radius:999px;
@@ -1403,10 +1405,17 @@ dialog[open]{animation:popIn .26s var(--ease)}
     return r.redirectURL;
   }
 
+  // Marks every occurrence of q (case-insensitive) in text.
   function highlight(text, q) {
-    const i = text.toLowerCase().indexOf(q);
-    if (i < 0 || !q) return esc(text);
-    return esc(text.slice(0, i)) + '<mark>' + esc(text.slice(i, i + q.length)) + '</mark>' + esc(text.slice(i + q.length));
+    text = str(text);
+    if (!q) return esc(text);
+    const low = text.toLowerCase();
+    let out = '', from = 0, i;
+    while ((i = low.indexOf(q, from)) !== -1) {
+      out += esc(text.slice(from, i)) + '<mark>' + esc(text.slice(i, i + q.length)) + '</mark>';
+      from = i + q.length;
+    }
+    return out + esc(text.slice(from));
   }
 
   function renderList() {
@@ -1422,6 +1431,11 @@ dialog[open]{animation:popIn .26s var(--ease)}
       return;
     }
     const top = el.scrollTop;
+    // Highlight the search in every field it was searched in: the name, the address and the matching path.
+    const q = state.q.trim().toLowerCase();
+    const inName = q && (state.scope === 'all' || state.scope === 'name');
+    const inTarget = q && (state.scope === 'all' || state.scope === 'target');
+    const markTarget = (t) => { const a = highlight(t, q); return a.includes('<mark>') ? a : highlight(t, rows.length ? rows[0].qPath || '' : ''); };
     el.innerHTML = rows.map(({ r, pathHit, qPath }) => {
       const iss = ms.byRule.get(r.id) || [];
       const fresh = iss.filter((i) => i.isNew);
@@ -1429,8 +1443,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
       const st = ruleState(ms, r);
       return '<button class="rr' + (r.id === state.ruleId ? ' sel' : '') + '" data-action="select-rule" data-id="' + esc(r.id) + '"' + (r.id === state.ruleId ? ' aria-current="true"' : '') + '>' +
         '<span class="rr-pos">' + pos.get(r.id) + '</span>' +
-        '<span class="rr-main"><span class="rr-name">' + (r.name ? esc(r.name) : '<em>Unnamed rule</em>') + '</span>' +
-        '<span class="rr-target">' + esc(shortTarget(r, ms)) + '</span>' +
+        '<span class="rr-main"><span class="rr-name">' + (r.name ? (inName ? highlight(r.name, q) : esc(r.name)) : '<em>Unnamed rule</em>') + '</span>' +
+        '<span class="rr-target">' + (inTarget ? markTarget(shortTarget(r, ms)) : esc(shortTarget(r, ms))) + '</span>' +
         (pathHit ? '<span class="rr-hit">' + highlight(pathHit, qPath) + '</span>' : '') + '</span>' +
         '<span class="rr-side">' +
         (r.statusCode !== 301 ? '<span class="tag' + (C.STATUS_CODES.includes(r.statusCode) ? '' : ' amber') + '">' + (r.statusCode || '?') + '</span>' : '') +
@@ -1693,6 +1707,15 @@ dialog[open]{animation:popIn .26s var(--ease)}
   }
 
 
+  // "Select all" heads the path list. With a filter typed in, it selects just the matching paths.
+  function selectAllHTML(items) {
+    if (items.length < 2) return '';
+    const n = items.filter(({ idx }) => state.selected.has(idx)).length;
+    const filtered = !!state.pathFilter.trim();
+    return '<li class="pl pl-all"><label><input type="checkbox" data-action="toggle-all-paths"' + (n === items.length ? ' checked' : '') + (n && n < items.length ? ' data-mixed' : '') + '>' +
+      '<span>' + (filtered ? 'Select all ' + fmt(items.length) + ' matching' : 'Select all') + '</span></label></li>';
+  }
+
   function pathsHTML(r) {
     const ms = activeMs();
     const flagged = new Map();
@@ -1706,7 +1729,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       '<div class="add-paths"><label class="visually-hidden" for="add-paths">Add paths</label><textarea id="add-paths" rows="1" placeholder="Add paths, one per line. Full ' + esc(ms.host) + ' addresses work too." spellcheck="false"></textarea>' +
       '<button class="btn" data-action="add-paths" disabled>Add</button></div>' +
       (sel ? '<div class="selbar"><span>' + C.plural(sel, 'path') + ' selected</span><button class="btn subtle" data-action="move-paths">Move to another rule</button><button class="btn danger" data-action="remove-selected">Remove</button><button class="btn subtle" data-action="clear-selection">Clear</button></div>' : '') +
-      (items.length ? '<ul class="path-list">' + items.map(({ p, idx }) => {
+      (items.length ? '<ul class="path-list">' + selectAllHTML(items) + items.map(({ p, idx }) => {
         const fl = flagged.get(p);
         return '<li class="pl"><input type="checkbox" data-action="toggle-path" data-idx="' + idx + '" aria-label="Select ' + esc(p || 'empty entry') + '"' + (state.selected.has(idx) ? ' checked' : '') + '>' +
           '<span class="pl-text" data-idx="' + idx + '">' + (p === '' ? '<em>Empty entry</em>' : esc(p)) + '</span>' +
@@ -2217,6 +2240,15 @@ dialog[open]{animation:popIn .26s var(--ease)}
         break;
       }
       case 'clear-selection': state.selected.clear(); $('#d-paths').innerHTML = pathsHTML(r); break;
+      case 'toggle-all-paths': {
+        const f = state.pathFilter.trim().toLowerCase();
+        r.paths.forEach((p, i) => { if (!f || p.toLowerCase().includes(f)) { if (el.checked) state.selected.add(i); else state.selected.delete(i); } });
+        const top = $('#detail').scrollTop;
+        $('#d-paths').innerHTML = pathsHTML(r);
+        $('#detail').scrollTop = top;
+        const all = $('[data-action="toggle-all-paths"]'); if (all) all.focus();
+        break;
+      }
       case 'remove-selected': {
         const n = state.selected.size;
         r.paths = r.paths.filter((_, i) => !state.selected.has(i));
@@ -2411,6 +2443,9 @@ dialog[open]{animation:popIn .26s var(--ease)}
   }
   alignBrand();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(alignBrand);
+  new MutationObserver(() => { document.querySelectorAll('input[data-mixed]').forEach((i) => { i.indeterminate = true; }); })
+    .observe($('#main'), { childList: true, subtree: true });
+
   applyTheme();
   renderAll();
   recentInit();
