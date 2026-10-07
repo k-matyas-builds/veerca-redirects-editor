@@ -336,6 +336,8 @@ button.stat:hover{background:var(--hover)}
 .rr{width:100%;display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:8px;align-items:start;padding:8px 10px 8px 4px;border:0;border-radius:12px;
   background:none;text-align:left;transition:background .15s}
 .rr + .rr{margin-top:1px}
+a.rr{color:inherit;text-decoration:none;-webkit-user-drag:none}
+a.link{text-decoration:none;cursor:pointer}
 .rr:hover{background:var(--hover)}
 .rr.sel{background:var(--accent-soft);box-shadow:var(--accent-ring)}
 .rr-pos{padding-top:2px;text-align:right;font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
@@ -471,6 +473,21 @@ details.adv summary{padding:2px 0 10px;font-size:13px;font-weight:600;color:var(
 .pl:first-child{border-top:0}
 .pl input[type=checkbox]{flex:none;width:15px;height:15px;margin:0;accent-color:var(--accent)}
 .pl.pl-all{border-top:0;min-height:34px}
+.d-open{flex:none;display:grid;place-items:center;width:30px;height:30px;margin-left:4px;border-radius:50%;color:var(--ink-3);transition:color .15s,background .15s}
+.d-open:hover{color:var(--link);background:var(--hover)}
+.d-open svg{width:17px;height:17px}
+/* a tab showing a single rule */
+.rule-page{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;width:min(1080px,100%);margin:0 auto}
+.rp-head{display:flex;align-items:baseline;gap:16px;padding:6px 8px 0}
+.rp-crumbs{display:flex;align-items:baseline;gap:9px;min-width:0;font:600 22px/1.2 var(--font-d)}
+.rp-crumbs a{color:var(--ink);text-decoration:none}
+.rp-crumbs a:hover{color:var(--link)}
+.rp-sep{color:var(--ink-3);font-weight:400}
+#rp-pos{font-size:15px;font-weight:500;color:var(--ink-2);white-space:nowrap}
+.rp-host{margin-left:auto;font-size:13px;color:var(--ink-2);text-decoration:none}
+.rp-host:hover{color:var(--link)}
+.rule-page .detail-panel{flex:1}
+a.btn{text-decoration:none}
 .pl-all label{display:flex;align-items:center;gap:8px;flex:1;padding:4px 0;font-size:12.5px;font-weight:500;color:var(--ink-2);cursor:pointer;user-select:none}
 .pl-text{flex:1;min-width:0;padding:4px 6px;font-family:var(--mono);font-size:12.5px;word-break:break-all}
 .pl-actions{display:flex;gap:4px;flex:none}
@@ -734,7 +751,6 @@ dialog[open]{animation:popIn .26s var(--ease)}
   }
 
   // UTF-8 text that was read as Windows-1250/1252 at some point, e.g. "á" turned into "Ăˇ".
-  const GARBLED = /[\u00C3\u0102\u00C2\u0139\u00C4][\u0080-\u00BF\u02C7\u02D8\u02DD\u0141\u0142\u2018\u2019\u201A\u201C\u201D\u201E\u2020\u2021\u2026\u2030\u2039\u203A\u0160\u0161\u015A\u015B\u0164\u0165\u0179\u017A\u017D\u017E]/;
   const hostsOf = (r) => { const h = r.host.trim().toLowerCase(); return h ? h.split(/\s+/) : null; };
   const isPlain = (p) => p.startsWith('/') && !/[*?]/.test(p) && !p.includes('&!');
 
@@ -820,8 +836,6 @@ dialog[open]{animation:popIn .26s var(--ease)}
         add('error', 'dupRule', 'This rule sends visitors to the same address as \u201c' + twin.rule.name + '\u201d (rule ' + twin.pos + '), with the same settings, so it isn\u2019t needed. Its paths belong in that rule.',
           { otherId: twin.rule.id, fix: 'merge' });
       }
-      const garbled = [r.redirectURL].concat(r.paths).find((s) => GARBLED.test(s));
-      if (garbled) add('warning', 'garbled', garbled + ' contains garbled characters, typical of a file once saved in the wrong encoding. It won\u2019t match the real address.');
 
       const seen = new Set();
       let empty = 0;
@@ -959,6 +973,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     chev: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 3 7.5 6 4.5 9"/></svg>',
     check: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm3.3 5.2-3.9 4.2a.75.75 0 0 1-1.1 0L4.7 8.7a.75.75 0 1 1 1.1-1l1.1 1.2 3.3-3.6a.75.75 0 1 1 1.1 1Z"/></svg>',
     ring: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="5.6"/><path d="M8 5.2v3.3M8 10.6v.1" stroke-linecap="round"/></svg>',
+    newTab: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 8 8"/><path d="M11.5 9.5v3a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3"/></svg>',
     trash: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.8 4.3h10.4M6.4 4.3V2.9h3.2v1.4M4.2 4.3l.6 8.6a1.2 1.2 0 0 0 1.2 1.1h4a1.2 1.2 0 0 0 1.2-1.1l.6-8.6M6.7 7v4.4M9.3 7v4.4"/></svg>',
     ok: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3.5 8.4 2.9 2.9 6.1-6.6"/></svg>',
     search: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="7" cy="7" r="4.6"/><path d="m10.5 10.5 3.2 3.2"/></svg>',
@@ -994,6 +1009,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   const state = {
     doc: null, ruleId: null, loadError: '', loading: false, editing: null,
+    view: 'full',          // 'rule': a tab showing just one rule, like a rule page in Veera
     q: '', scope: 'all', onlyProblems: false, selected: new Set(), pathFilter: '',
   };
 
@@ -1056,7 +1072,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     };
     d.saved = { snap, exported: ms.exportedSnap, as };
     recent.items.set(rec.key, rec);
-    recentWrite((s) => s.put(rec)).catch(() => {
+    recentWrite((s) => s.put(rec)).then(() => post({ type: 'saved', rec })).catch(() => {
       if (state.doc === d) d.saved = null;
       if (!recent.warned) {
         recent.warned = true;
@@ -1068,7 +1084,185 @@ dialog[open]{animation:popIn .26s var(--ease)}
   function recentRemove(keys) {
     for (const k of keys) recent.items.delete(k);
     recentWrite((s) => { for (const k of keys) s.delete(k); }).catch(() => {});
+    post({ type: 'removed', keys });
     if (!state.doc && !state.loading) renderMain();
+  }
+
+  /* ================= one policy in several tabs ================= */
+  // Any rule can be opened in a tab of its own: the button in the rule's header, or Ctrl/Cmd-click
+  // or middle-click on a rule. Tabs showing the same policy keep each other up to date over a
+  // BroadcastChannel (same browser only):
+  //   doc     every change in a tab is sent to the others straight away, as the whole working copy
+  //   hello   a tab that opens a policy from the recent list asks the others for their copy first
+  //   saved / removed   keep every tab's recent list current
+  // If two tabs change the very same rule at the same moment, the last change wins.
+  const sync = { ch: null, muted: 0, timer: 0, waiting: null };
+  try { sync.ch = new BroadcastChannel('veerca'); } catch (e) { sync.ch = null; }
+  const post = (msg) => { if (sync.ch) { try { sync.ch.postMessage(msg); } catch (e) { /* ignore */ } } };
+
+  function docMessage() {
+    const d = state.doc;
+    return { type: 'doc', key: d.key, text: d.text, fileName: d.fileName, openedAt: d.openedAt,
+      current: d.ms.current, exportedSnap: d.ms.exportedSnap, exportAs: d.exportAs || null };
+  }
+  function scheduleBroadcast() {
+    if (sync.muted || !sync.ch) return;
+    clearTimeout(sync.timer);
+    sync.timer = setTimeout(broadcastNow, 0);
+  }
+  function broadcastNow() {
+    clearTimeout(sync.timer); sync.timer = 0;
+    if (state.doc && !sync.muted) post(docMessage());
+  }
+  const savedMark = (d) => ({ snap: C.snapshot(d.ms.current), exported: d.ms.exportedSnap, as: JSON.stringify(d.exportAs || null) });
+
+  // Takes over another tab's copy without replacing the rule objects, so anything holding on to
+  // a rule (an open dialog, an edit in progress) still points at the live one.
+  function mergeRules(cur, remote) {
+    const byId = new Map(cur.rules.map((r) => [r.id, r]));
+    cur.rules = remote.rules.map((rr) => {
+      const l = byId.get(rr.id), c = clone(rr);
+      if (!l) return c;
+      for (const k of Object.keys(l)) if (!(k in c)) delete l[k];
+      return Object.assign(l, c);
+    });
+    for (const k of Object.keys(remote)) if (k !== 'rules') cur[k] = clone(remote[k]);
+  }
+
+  // Shows another tab's copy in this tab, from scratch.
+  function adoptDoc(m, why) {
+    const keepRule = state.ruleId, prevName = activeRule() ? activeRule().name : null;
+    sync.muted++;
+    try {
+      openDoc(m.text, m.fileName, null, { quiet: true });
+      const d = state.doc, ms = d.ms;
+      d.openedAt = m.openedAt || d.openedAt;
+      d.exportAs = m.exportAs || null;
+      ms.current = clone(m.current);
+      ms.exportedSnap = m.exportedSnap;
+      recompute(ms);
+      d.saved = savedMark(d);
+    } finally { sync.muted--; }
+    const keepName = keepRule && why === 'switched' && prevName;
+    const still = keepRule && state.doc.ms.current.rules.find((r) => r.id === keepRule);
+    if (still && (!keepName || still.name === keepName)) state.ruleId = keepRule;
+    renderAll();
+    if (why === 'switched') toast('Another tab opened ' + m.fileName + ' for ' + state.doc.ms.name + ', so this tab shows it too.');
+  }
+
+  function applyRemote(m) {
+    const d = state.doc;
+    if (!d) {
+      const w = sync.waiting;
+      if (w && w.key === m.key) { sync.waiting = null; clearTimeout(w.timer); adoptDoc(m); selectFromLink(w.rule); }
+      return;
+    }
+    if (d.key !== m.key) return;
+    if (m.text !== d.text) { adoptDoc(m, 'switched'); return; }
+    const ms = d.ms;
+    if (C.snapshot(m.current) === C.snapshot(ms.current) && m.exportedSnap === ms.exportedSnap &&
+      JSON.stringify(m.exportAs || null) === JSON.stringify(d.exportAs || null)) return;
+    const selId = state.ruleId, sel = activeRule(), before = sel ? JSON.stringify(sel) : '';
+    sync.muted++;
+    try {
+      mergeRules(ms.current, m.current);
+      ms.exportedSnap = m.exportedSnap;
+      d.exportAs = m.exportAs || null;
+      recompute(ms);
+      d.saved = savedMark(d);                                // the tab that made the change saves it
+    } finally { sync.muted--; }
+    const after = selId ? ms.current.rules.find((r) => r.id === selId) : null;
+    if (sel && !after) {
+      state.ruleId = null; state.editing = null; state.selected.clear();
+      renderAll();
+      toast('\u201c' + (sel.name || 'Unnamed rule') + '\u201d was deleted in another tab.');
+      return;
+    }
+    const detail = $('#detail'), top = detail ? detail.scrollTop : 0;
+    renderHead(); renderList();
+    if (after && JSON.stringify(after) !== before) {
+      // The rule shown here changed in another tab: redraw it, keeping anything typed but not added yet.
+      const box = $('#add-paths'), typed = box ? box.value : '';
+      const focused = document.activeElement && document.activeElement.id;
+      state.selected.clear();
+      if (state.editing && state.editing.ruleId === selId) toast('This rule was just changed in another tab. Saving your edit will replace those changes.');
+      renderDetail();
+      const nb = $('#add-paths');
+      if (nb && typed) { nb.value = typed; nb.dispatchEvent(new Event('input', { bubbles: true })); }
+      if (focused) { const f = document.getElementById(focused); if (f) f.focus(); }
+      if ($('#detail')) $('#detail').scrollTop = top;
+    } else if (after) {
+      const pr = $('#d-problems');                           // changes elsewhere can still affect this rule's problems
+      if (pr) pr.innerHTML = problemsHTML(after);
+    }
+    setTitle();
+  }
+
+  if (sync.ch) sync.ch.onmessage = (e) => {
+    const m = e.data || {};
+    if (m.type === 'hello') { if (state.doc && state.doc.key === m.key) broadcastNow(); return; }
+    if (m.type === 'doc') { applyRemote(m); return; }
+    if (m.type === 'saved' && m.rec) recent.items.set(m.rec.key, m.rec);
+    else if (m.type === 'removed') for (const k of m.keys || []) recent.items.delete(k);
+    else return;
+    if (!state.doc && !state.loading) renderMain();
+  };
+
+  // Every tab's address says which policy and rule it shows, e.g. …/#open=www.ford.hu&rule=r2.
+  // Reloading, bookmarking or pasting it opens the same place again: in this browser only, since the
+  // policy itself lives in this browser's recent list (or in another tab that has it open).
+  //   #open=www.ford.hu                      the full editor (it doesn't follow the selected rule)
+  //   #open=www.ford.hu&rule=r12             the full editor, opened with rule 12 selected
+  //   #open=www.ford.hu&rule=r12&view=rule   rule 12 on its own page (what "Open in new tab" opens)
+  const ruleHref = (id, view) => '#open=' + encodeURIComponent(state.doc.key) + (id ? '&rule=' + encodeURIComponent(id) : '') + (id && view === 'rule' ? '&view=rule' : '');
+  const ruleLink = (id) => location.href.split('#')[0] + ruleHref(id, 'rule');
+  function syncUrl() {
+    if (state.doc && state.view === 'rule' && !activeRule()) return;      // a rule page whose rule is gone keeps its address
+    const want = !state.doc ? '' : state.view === 'rule' ? ruleHref(state.ruleId, 'rule') : ruleHref(null);
+    if (location.hash !== want) history.replaceState(null, '', location.href.split('#')[0] + want);
+  }
+  function openInNewTab(id) {
+    if (!state.doc || !id) return;
+    if (!recent.db && !sync.ch) { toast('This browser can\u2019t share the policy with another tab.', 'error'); return; }
+    saveNow();
+    const w = window.open(ruleLink(id), '_blank');
+    if (!w) toast('The browser blocked the new tab. Allow pop-ups for this site, then try again.', 'error');
+  }
+
+  function linkFromHash() {
+    if (!/^#open=/.test(location.hash)) return null;
+    const q = new URLSearchParams(location.hash.slice(1));
+    const rule = q.get('rule') || null;
+    return { key: q.get('open'), rule, view: rule && q.get('view') === 'rule' ? 'rule' : 'full' };
+  }
+  function openFromLink(link, replacing) {
+    if (!link || (state.doc && !replacing)) return;
+    state.view = link.view;
+    const rec = recent.items.get(link.key);
+    if (rec) { restoreRecent(rec, null, { quiet: true }); selectFromLink(link.rule); return; }
+    if (replacing) { syncUrl(); toast('That policy isn\u2019t saved in this browser.', 'error'); return; }
+    // Not in this browser's list yet: ask the tab it came from.
+    sync.waiting = { key: link.key, rule: link.rule, timer: setTimeout(() => {
+      sync.waiting = null;
+      if (!state.doc) toast('This link points to a policy that isn\u2019t saved in this browser. Links only work on the computer and browser where the policy was opened.', 'error');
+    }, 1500) };
+    post({ type: 'hello', key: link.key });
+  }
+  // Pasting a link into this tab's address bar.
+  window.addEventListener('hashchange', () => {
+    const link = linkFromHash();
+    if (!link) { syncUrl(); return; }
+    if (state.doc && state.doc.key === link.key) {
+      if (state.view !== link.view) { state.view = link.view; renderAll(); }
+      if (link.rule && link.rule !== state.ruleId) selectFromLink(link.rule); else syncUrl();
+      return;
+    }
+    if (state.doc) saveNow();
+    openFromLink(link, !!state.doc);
+  });
+  function selectFromLink(id) {
+    if (id && state.doc && state.doc.ms.current.rules.some((r) => r.id === id)) selectRule(id);
+    else syncUrl();
   }
 
   function relTime(ts, inSentence) {
@@ -1094,6 +1288,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     }
     ms.dirty = C.snapshot(ms.current) !== ms.originalSnap;
     scheduleSave();
+    scheduleBroadcast();
   }
 
   function openDoc(text, fileName, parsed, opts) {
@@ -1118,17 +1313,22 @@ dialog[open]{animation:popIn .26s var(--ease)}
   }
 
   // Picks a policy back up from the recent list: the file as opened, with the edits made since.
-  function restoreRecent(rec, parsed) {
-    try { openDoc(rec.text, rec.fileName, parsed, { quiet: true }); }
-    catch (e) { toast('This saved copy can\u2019t be read anymore. Open the file again instead.', 'error'); return; }
-    const d = state.doc, ms = d.ms;
-    d.openedAt = rec.openedAt;
-    d.exportAs = rec.exportAs || null;
-    ms.current = clone(rec.current);
-    ms.exportedSnap = rec.exportedSnap;
-    recompute(ms);
+  function restoreRecent(rec, parsed, opts) {
+    clearTimeout(sync.timer);
+    sync.muted++;
+    try {
+      try { openDoc(rec.text, rec.fileName, parsed, { quiet: true }); }
+      catch (e) { toast('This saved copy can\u2019t be read anymore. Open the file again instead.', 'error'); return; }
+      const d = state.doc, ms = d.ms;
+      d.openedAt = rec.openedAt;
+      d.exportAs = rec.exportAs || null;
+      ms.current = clone(rec.current);
+      ms.exportedSnap = rec.exportedSnap;
+      recompute(ms);
+    } finally { sync.muted--; }
+    post({ type: 'hello', key: rec.key });
     renderAll();
-    if (rec.changes) toast('Back where you left off, with ' + C.plural(rec.changes, 'change') + (rec.unexported ? ' not exported yet.' : ', already exported.'));
+    if (rec.changes && !(opts && opts.quiet)) toast('Back where you left off, with ' + C.plural(rec.changes, 'change') + (rec.unexported ? ' not exported yet.' : ', already exported.'));
   }
 
   // A newly opened file takes its market's slot in the recent list. If that slot holds
@@ -1181,6 +1381,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   async function openFile(file, force) {
     if (!file) return;
+    if (state.view === 'rule' && state.doc) return;
     if (!force && state.doc) {
       // With storage working, the open policy stays in the recent list, so only typed-but-unapplied text is at risk.
       if (recent.db ? pendingInput() : unexported()) {
@@ -1202,6 +1403,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       catch (e) { throw new Error('This file isn\u2019t saved as UTF-8, so accented characters would come out wrong. In Excel, use Save As and choose \u201cCSV UTF-8\u201d, then open it again.'); }
       const parsed = C.importPolicy(text, name);
       state.loading = false;
+      state.view = 'full';
       openParsed(text, name, parsed);
     } catch (e) {
       state.loading = false;
@@ -1237,7 +1439,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
   function renderAll() {
     $('#app').classList.toggle('welcome-mode', !state.doc && !state.loading);
     document.body.classList.toggle('is-welcome', !state.doc && !state.loading);
-    document.title = state.doc ? state.doc.ms.name + ' \u2013 Veer\u010da' : 'Veer\u010da \u2013 Redirects Editor';
+    setTitle();
     renderSource();
     renderMain();
     syncThemeButtons();
@@ -1250,8 +1452,12 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const parts = [];
     // Always the file name: it carries the version (www_ford_hu_v329.csv), for Akamai's files and our exports alike.
     parts.push('<span class="chip" title="' + esc(d.fileName) + '">' + esc(d.fileName) + '</span>');
-    parts.push('<button class="btn" data-action="open-file">Open another file</button>');
-    parts.push('<button class="btn" data-action="close-file">Close</button>');
+    if (state.view === 'rule') {
+      parts.push('<a class="btn" href="' + esc(ruleHref(state.ruleId)) + '" data-action="show-all">All rules</a>');
+    } else {
+      parts.push('<button class="btn" data-action="open-file">Open another file</button>');
+      parts.push('<button class="btn" data-action="close-file">Close</button>');
+    }
     el.innerHTML = parts.join('');
   }
 
@@ -1259,6 +1465,18 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const main = $('#main');
     if (state.loading) { main.innerHTML = '<div class="center"><p class="loading"><span class="spinner"></span>Reading the file\u2026</p></div>'; return; }
     if (!state.doc) { main.innerHTML = startHTML(); return; }
+    if (state.view === 'rule') {
+      // Just the one rule, without the list, search or filters.
+      const ms = activeMs();
+      main.innerHTML = '<section class="rule-page">' +
+        '<div class="rp-head"><nav class="rp-crumbs" aria-label="Breadcrumb">' +
+        '<a href="' + esc(ruleHref(state.ruleId)) + '" data-action="show-all" title="Show all rules">' + esc(ms.name) + '</a>' +
+        '<span class="rp-sep" aria-hidden="true">\u203a</span><span id="rp-pos"></span></nav>' +
+        '<a class="rp-host" href="https://' + esc(ms.host) + '" target="_blank" rel="noopener">' + esc(ms.host) + '</a></div>' +
+        '<div class="glass-strong detail-panel"><div class="detail" id="detail"></div></div></section>';
+      renderDetail();
+      return;
+    }
     main.innerHTML =
       '<section class="market">' +
       '<div class="market-head" id="market-head"></div>' +
@@ -1441,7 +1659,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       const fresh = iss.filter((i) => i.isNew);
       const sev = fresh.some((i) => i.severity === 'error') ? 'error' : fresh.length ? 'warning' : iss.length ? 'known' : '';
       const st = ruleState(ms, r);
-      return '<button class="rr' + (r.id === state.ruleId ? ' sel' : '') + '" data-action="select-rule" data-id="' + esc(r.id) + '"' + (r.id === state.ruleId ? ' aria-current="true"' : '') + '>' +
+      return '<a class="rr' + (r.id === state.ruleId ? ' sel' : '') + '" href="' + esc(ruleHref(r.id, 'rule')) + '" data-action="select-rule" data-id="' + esc(r.id) + '"' + (r.id === state.ruleId ? ' aria-current="true"' : '') + '>' +
         '<span class="rr-pos">' + pos.get(r.id) + '</span>' +
         '<span class="rr-main"><span class="rr-name">' + (r.name ? (inName ? highlight(r.name, q) : esc(r.name)) : '<em>Unnamed rule</em>') + '</span>' +
         '<span class="rr-target">' + (inTarget ? markTarget(shortTarget(r, ms)) : esc(shortTarget(r, ms))) + '</span>' +
@@ -1452,25 +1670,39 @@ dialog[open]{animation:popIn .26s var(--ease)}
         '<span class="rr-count" title="Paths">' + r.paths.length + '</span>' +
         (st !== 'same' ? '<span class="dot" title="' + (st === 'new' ? 'New rule' : 'Changed') + '"></span>' : '') +
         (sev ? '<span class="sev ' + sev + '" title="' + (sev === 'known' ? 'Has problems that were already in the policy' : 'Has problems from your changes') + '"></span>' : '') +
-        '</span></button>';
+        '</span></a>';
     }).join('');
     el.scrollTop = top;
   }
 
+  function setTitle() {
+    syncUrl();
+    const r = state.doc && activeRule();
+    // Only a rule page is named after its rule; the main editor keeps the market's name.
+    document.title = !state.doc ? 'Veer\u010da \u2013 Redirects Editor'
+      : state.view === 'rule' && r ? (r.name || 'Unnamed rule') + ' \u2013 ' + state.doc.ms.name : state.doc.ms.name + ' \u2013 Veer\u010da';
+  }
+
   function renderDetail() {
+    setTitle();
     const ms = activeMs(), el = $('#detail');
     if (!el) return;
     const r = activeRule();
     const panel = el.closest('.detail-panel');
     if (!r) {
       if (panel) panel.classList.remove('editing');
-      el.innerHTML = '<div class="detail-empty"><p>Select a rule to see where it sends visitors.</p></div>';
+      if (state.view === 'rule') {
+        if ($('#rp-pos')) $('#rp-pos').textContent = 'Rule not found';
+        el.innerHTML = '<div class="detail-empty"><div><p>This rule isn\u2019t in the policy anymore. It may have been deleted, here or in another tab.</p>' +
+          '<p><a class="btn" href="' + esc(ruleHref(null)) + '" data-action="show-all">Show all rules</a></p></div></div>';
+      } else el.innerHTML = '<div class="detail-empty"><p>Select a rule to see where it sends visitors.</p></div>';
       return;
     }
     const editing = !!state.editing && state.editing.ruleId === r.id;
     if (panel) panel.classList.toggle('editing', editing);
     const ordered = C.exportOrder(ms.current.rules);
     const pos = ordered.indexOf(r) + 1;
+    if ($('#rp-pos')) $('#rp-pos').textContent = 'Rule ' + fmt(pos) + ' of ' + fmt(ordered.length);
     el.innerHTML =
       '<div class="d-head"><div class="d-title" id="d-title">' + titleHTML(r, editing) + '</div><div class="d-tools">' + toolsHTML(editing) + '</div></div>' +
       '<div class="d-sub" id="d-sub">' + subLine(r, pos, ordered.length) + '</div>' +
@@ -1490,7 +1722,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   function titleHTML(r, editing) {
     if (editing) return '<input type="text" class="d-name" data-draft="name" value="' + esc(state.editing.draft.name) + '" placeholder="Rule name" aria-label="Rule name" spellcheck="false">';
-    return '<h2 class="d-name-text">' + (r.name ? esc(r.name) : '<em>Unnamed rule</em>') + '</h2>';
+    return '<h2 class="d-name-text">' + (r.name ? esc(r.name) : '<em>Unnamed rule</em>') + '</h2>' +
+      (state.view === 'rule' ? '' : '<a class="d-open" href="' + esc(ruleHref(r.id, 'rule')) + '" data-action="open-tab" title="Open in new tab" aria-label="Open this rule in a new tab">' + ICON.newTab + '</a>');
   }
 
   function toolsHTML(editing) {
@@ -1630,7 +1863,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const card = (i) => {
       const actions = [];
       if (i.fix) actions.push('<button class="link" data-action="fix" data-key="' + esc(i.key) + '">' + FIX_LABEL[i.fix] + '</button>');
-      if (i.otherId && i.type !== 'chain') actions.push('<button class="link" data-action="select-rule" data-id="' + esc(i.otherId) + '">Open \u201c' + esc(ruleName(i.otherId)) + '\u201d</button>');
+      if (i.otherId && i.type !== 'chain') actions.push('<a class="link" href="' + esc(ruleHref(i.otherId, 'rule')) + '" data-action="select-rule" data-id="' + esc(i.otherId) + '">Open \u201c' + esc(ruleName(i.otherId)) + '\u201d</a>');
       return '<div class="problem ' + i.severity + (i.isNew ? '' : ' known') + '"><span class="p-icon">' + ICON[i.severity] + '</span><div>' +
         '<p>' + esc(i.message) + '</p>' + (actions.length ? '<div class="p-actions">' + actions.join('') + '</div>' : '') + '</div></div>';
     };
@@ -2068,6 +2301,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
         download(name, C.exportCSV(ms.current), 'text/csv');
         ms.exportedSnap = C.snapshot(ms.current);
         saveNow();
+        broadcastNow();
         save.textContent = 'Downloaded';
         toast('Downloaded ' + name + '. Send it to the Akamai team with the summary.');
       });
@@ -2173,12 +2407,27 @@ dialog[open]{animation:popIn .26s var(--ease)}
   }
 
 
+  // Rules are links: Ctrl/Cmd-click, middle-click and the browser's "Open link in new tab" all work
+  // natively. Make sure the latest changes are saved first, for the tab that's about to open.
+  for (const ev of ['auxclick', 'contextmenu']) document.addEventListener(ev, (e) => { if (e.target.closest('a[data-action]')) saveNow(); });
+
   document.addEventListener('click', (e) => {
     const el = e.target.closest('[data-action]');
     if (!el || el.closest('dialog')) return;
     const a = el.dataset.action;
     const ms = activeMs(), r = activeRule();
+    if (el.tagName === 'A') {
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) { saveNow(); return; }   // the browser opens it in a new tab or window
+      e.preventDefault();
+    }
     switch (a) {
+      case 'open-tab': openInNewTab(state.ruleId); break;
+      case 'show-all': {
+        state.view = 'full';
+        renderAll();
+        const row = $('.rr.sel'); if (row) row.scrollIntoView({ block: 'center' });
+        break;
+      }
       case 'open-file': $('#file-input').click(); break;
       case 'close-file': {
         // Always asks, so a stray click in the corner doesn't throw you out of the policy.
@@ -2321,6 +2570,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     }
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
     if (e.key === '/' && !typing && $('#rule-search')) { e.preventDefault(); $('#rule-search').focus(); return; }
+    if (e.key === ' ' && e.target.classList && e.target.classList.contains('rr')) { e.preventDefault(); e.target.click(); return; }
     if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && e.target.classList && e.target.classList.contains('rr')) {
       e.preventDefault();
       const sib = e.key === 'ArrowDown' ? e.target.nextElementSibling : e.target.previousElementSibling;
@@ -2333,6 +2583,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
   window.addEventListener('beforeunload', (e) => {
     if (!state.doc) return;
     saveNow();
+    if (state.view === 'rule' && recent.db && !recent.inflight && !pendingInput()) return;
     e.preventDefault(); e.returnValue = '';
   });
   window.addEventListener('pagehide', saveNow);
@@ -2447,8 +2698,9 @@ dialog[open]{animation:popIn .26s var(--ease)}
     .observe($('#main'), { childList: true, subtree: true });
 
   applyTheme();
+  const link = linkFromHash();
   renderAll();
-  recentInit();
+  recentInit().then(() => openFromLink(link));
 })();
 
 </script>
