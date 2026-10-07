@@ -266,19 +266,31 @@ body.is-welcome.dragging::after{display:none}
 .rc-foot .btn{height:28px;padding:0 10px;font-size:12.5px}
 .rc-foot .rc-clear{margin-left:auto;color:var(--ink-3)}
 .recent .rc-foot .btn.rc-clear:hover:not(:disabled){color:var(--note-bad-ink);background:var(--note-bad-bg)}
+
+/* export file name: reads as one name, but the policy and the version are separate fields */
+.export-as{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.xa-label{display:block;margin-bottom:6px;font-size:11.5px;font-weight:600;color:var(--ink-3)}
+.xa-row{display:flex;align-items:center;height:36px;padding:0 11px;border-radius:10px;background:var(--field-bg);box-shadow:var(--field-shadow);
+  font-family:var(--mono);font-size:13px;cursor:text;overflow:hidden}
+.xa-row:focus-within{box-shadow:inset 0 0 0 1px rgba(75,151,255,.8),0 0 0 3px rgba(75,151,255,.25)}
+.xa-row input[type=text]{flex:none;height:30px;padding:0 1px;border-radius:5px;background:none;box-shadow:none;font:inherit;min-width:2ch}
+.xa-row input[type=text]:focus{box-shadow:none;background:var(--hit)}
+.xa-row #xa-version{font-weight:600}
+.xa-fix{color:var(--ink-3);white-space:pre}
+.export-as .hint{margin:6px 0 0}
 body.dragging::after{content:"Drop to open the policy";position:fixed;inset:16px;z-index:60;display:grid;place-items:center;border-radius:28px;pointer-events:none;
   background:rgba(6,111,239,.16);box-shadow:inset 0 0 0 2px rgba(75,151,255,.8);font:600 17px var(--font-d);color:var(--ink)}
 
 /* ---------- Market view ---------- */
 .market{flex:1;min-height:0;display:flex;flex-direction:column;gap:var(--gap)}
 .market-head{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px 28px;padding:6px 8px 0}
-.mh-title h1{margin:0;font:600 28px/1.14 var(--font-d);letter-spacing:.004em}
-.mh-title a{color:var(--ink-2);text-decoration:none;font-size:13.5px}
+.mh-title{width:var(--mh-title-w,auto);max-width:100%;min-width:0}
+.mh-title h1{margin:0;font:600 28px/1.14 var(--font-d);letter-spacing:.004em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mh-title a{display:block;color:var(--ink-2);text-decoration:none;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mh-title a:hover{color:var(--link)}
-.mh-when{display:block;margin-top:1px;font-size:12px;color:var(--ink-3)}
 .mh-stats{display:flex;gap:4px}
 .stat{display:flex;flex-direction:column;justify-content:center;padding:4px 12px;border:0;border-radius:12px;background:none;text-align:left;line-height:1.2}
-.stat b{font:600 17px var(--font-d);font-variant-numeric:tabular-nums}
+.stat b{min-width:5.5ch;font:600 17px var(--font-d);font-variant-numeric:tabular-nums}
 .stat span{font-size:12px;color:var(--ink-3)}
 button.stat:hover{background:var(--hover)}
 .mh-problems{display:flex;flex-direction:column;gap:5px;padding-left:18px;border-left:1px solid var(--sep)}
@@ -473,7 +485,7 @@ details.adv summary{padding:2px 0 10px;font-size:13px;font-weight:600;color:var(
 .pl:hover .icon-btn,.pl .icon-btn:focus-visible{opacity:1}
 .d-foot{display:flex;align-items:center;gap:8px;margin-top:24px;padding-top:14px;border-top:1px solid var(--line)}
 .d-foot .note{margin-right:auto;font-size:12.5px;color:var(--ink-3)}
-.d-foot .btn.danger{margin-left:auto}
+.d-foot:empty{display:none}
 
 /* ---------- Dialogs ---------- */
 dialog{width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 48px);padding:0;border:0;border-radius:26px;color:var(--ink);overflow:visible;
@@ -843,9 +855,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
       if (r.regex) return;
       const t = parseTarget(r.redirectURL);
-      if (t && t.noScheme) {
-        add('warning', 'noScheme', 'The redirect address doesn\u2019t start with https://. Depending on how Akamai reads it, visitors could end up on a broken address.', { fix: 'addScheme' });
-      } else if (!t && r.redirectURL.trim() && !/\\\d/.test(r.redirectURL)) {
+      // An address like www.ford.co.uk/page (no https://) is fine: Akamai adds the scheme itself.
+      if (!t && r.redirectURL.trim() && !/\\\d/.test(r.redirectURL)) {
         add('warning', 'oddTarget', 'The redirect address is neither a full address nor a path starting with /.');
       }
       if (!t) return;
@@ -937,7 +948,6 @@ dialog[open]{animation:popIn .26s var(--ease)}
   const $ = (s, el) => (el || document).querySelector(s);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = (n) => n.toLocaleString('en-GB');
-  const fmtDate = (iso) => { const d = new Date(iso); return isNaN(d) ? iso : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); };
   const clone = (o) => JSON.parse(JSON.stringify(o));
   const today = () => new Date().toISOString().slice(0, 10);
 
@@ -1020,7 +1030,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   // A market's slot is keyed by its host, so a newer file for the same market replaces the older one.
   const recentKey = (market, info) => (market.host ? market.host.toLowerCase() : 'policy:' + (info.policy || market.name));
-  const sourceLabel = (d) => (d.info.source === 'akamai' ? d.info.policy + (d.info.version ? ', version ' + d.info.version : '') : d.fileName);
+  const sourceLabel = (d) => d.fileName;
 
   function scheduleSave() {
     clearTimeout(recent.timer);
@@ -1032,16 +1042,17 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const d = state.doc;
     if (!d || !recent.db) return;
     const ms = d.ms, snap = C.snapshot(ms.current);
-    if (d.saved && d.saved.snap === snap && d.saved.exported === ms.exportedSnap) return;
+    const as = JSON.stringify(d.exportAs || null);
+    if (d.saved && d.saved.snap === snap && d.saved.exported === ms.exportedSnap && d.saved.as === as) return;
     const edited = snap !== ms.originalSnap;
     const rec = {
       key: d.key, name: ms.name, host: ms.host, fileName: d.fileName, label: sourceLabel(d), text: d.text,
       current: clone(ms.current), exportedSnap: ms.exportedSnap,
       changes: edited ? (C.diffMarket(ms.original, ms.current).count || 1) : 0,
       unexported: edited && snap !== ms.exportedSnap,
-      openedAt: d.openedAt, savedAt: Date.now(),
+      openedAt: d.openedAt, savedAt: Date.now(), exportAs: d.exportAs || null,
     };
-    d.saved = { snap, exported: ms.exportedSnap };
+    d.saved = { snap, exported: ms.exportedSnap, as };
     recent.items.set(rec.key, rec);
     recentWrite((s) => s.put(rec)).catch(() => {
       if (state.doc === d) d.saved = null;
@@ -1110,6 +1121,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     catch (e) { toast('This saved copy can\u2019t be read anymore. Open the file again instead.', 'error'); return; }
     const d = state.doc, ms = d.ms;
     d.openedAt = rec.openedAt;
+    d.exportAs = rec.exportAs || null;
     ms.current = clone(rec.current);
     ms.exportedSnap = rec.exportedSnap;
     recompute(ms);
@@ -1234,9 +1246,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const d = state.doc;
     if (!d) { el.innerHTML = ''; return; }
     const parts = [];
-    if (d.info.source === 'akamai') {
-      parts.push('<span class="chip"><b>' + esc(d.info.policy) + '</b>' + (d.info.version ? 'version ' + esc(d.info.version) : '') + '</span>');
-    } else parts.push('<span class="chip">' + esc(d.fileName) + '</span>');
+    // Always the file name: it carries the version (www_ford_hu_v329.csv), for Akamai's files and our exports alike.
+    parts.push('<span class="chip" title="' + esc(d.fileName) + '">' + esc(d.fileName) + '</span>');
     parts.push('<button class="btn" data-action="open-file">Open another file</button>');
     parts.push('<button class="btn" data-action="close-file">Close</button>');
     el.innerHTML = parts.join('');
@@ -1274,7 +1285,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       '<div class="mark w-mark">' + ICON.mark + '</div>' +
       '<h1 class="visually-hidden">Veer\u010da, Redirects Editor</h1>' +
       wordmark('w-word') +
-      '<p class="w-sub">Your friendly Redirects Editor</p>' +
+      '<p class="w-sub">Redirects Editor</p>' +
       '<div class="dropzone" data-action="open-file">' + ICON.tray +
       '<button class="btn primary lg" type="button" data-action="open-file">Select a policy from your computer</button>' +
       '<p class="dz-or">or drag the .zip or .csv file here</p></div>' +
@@ -1310,6 +1321,24 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
 
 
+  // The title column is as wide as the longest market name ("Switzerland (DE)" and friends),
+  // so the counts and errors don't shift when you switch markets. Measured, because the
+  // system font differs between Mac and Windows. Unknown policy names that are longer get cut with "…".
+  let titleSized = false;
+  function sizeMarketTitle() {
+    const h1 = $('.mh-title h1');
+    if (titleSized || !h1) return;
+    const cs = getComputedStyle(h1), ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    if (ctx.font.indexOf(cs.fontSize) === -1) ctx.font = cs.fontWeight + ' ' + cs.fontSize + ' system-ui, sans-serif';
+    const spacing = (parseFloat(cs.letterSpacing) || 0);
+    const w = Math.max(...C.MARKETS.map((m) => ctx.measureText(m.name).width + spacing * m.name.length));
+    if (!(w > 0)) return;
+    document.documentElement.style.setProperty('--mh-title-w', Math.ceil(w + 4) + 'px');
+    titleSized = true;
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { titleSized = false; sizeMarketTitle(); });
+
   function renderHead() {
     const ms = activeMs(), el = $('#market-head');
     if (!el) return;
@@ -1319,8 +1348,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const freshErr = fresh.some((i) => i.severity === 'error');
     const known = ms.issues.length - fresh.length;
     el.innerHTML =
-      '<div class="mh-title"><h1>' + esc(ms.name) + '</h1><a href="https://' + esc(ms.host) + '" target="_blank" rel="noopener">' + esc(ms.host) + '</a>' +
-      (state.doc.info.lastUpdate ? '<span class="mh-when">Version last updated ' + esc(fmtDate(state.doc.info.lastUpdate)) + '</span>' : '') + '</div>' +
+      '<div class="mh-title"><h1' + (C.MARKETS.some((m) => m.name === ms.name) ? '' : ' title="' + esc(ms.name) + '"') + '>' + esc(ms.name) + '</h1><a href="https://' + esc(ms.host) + '" target="_blank" rel="noopener">' + esc(ms.host) + '</a>' +
+      '</div>' +
       '<div class="mh-stats">' +
       '<div class="stat"><b>' + fmt(rules.length) + '</b><span>rules</span></div>' +
       '<div class="stat"><b>' + fmt(paths) + '</b><span>paths</span></div>' +
@@ -1340,6 +1369,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       '<button class="btn" data-action="new-rule">New rule</button>' +
       '<button class="btn primary" data-action="review"' + (ms.dirty ? '' : ' disabled') + '>Review and export</button>' +
       '</div>';
+    sizeMarketTitle();
   }
 
   function visibleRules() {
@@ -1451,7 +1481,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   function toolsHTML(editing) {
     if (editing) return '<button class="btn" data-action="cancel-edit">Cancel</button><button class="btn primary" data-action="save-edit">Save</button>';
-    return '<button class="btn" data-action="edit-rule" data-focus="name">' + ICON.pencil + 'Edit</button>';
+    return '<button class="btn danger" data-action="delete-rule">' + ICON.trash + 'Delete rule</button>' +
+      '<button class="btn" data-action="edit-rule" data-focus="name">' + ICON.pencil + 'Edit</button>';
   }
 
   /* ---- editing a rule: changes go into a draft and only apply on Save ---- */
@@ -1572,7 +1603,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   const FIX_LABEL = {
     removePath: 'Remove this path', removeDuplicate: 'Remove the duplicate', removeEmpty: 'Remove empty entries',
-    addScheme: 'Add https://', flatten: 'Send visitors straight to the final address',
+    flatten: 'Send visitors straight to the final address',
     merge: 'Move its paths there and delete this rule',
   };
 
@@ -1687,9 +1718,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   function footHTML(r) {
     const st = ruleState(activeMs(), r);
-    return (st === 'new' ? '<span class="note">Added by you</span>'
-      : st === 'changed' ? '<button class="btn subtle" data-action="revert-rule">Undo all changes to this rule</button>' : '') +
-      '<button class="btn danger" data-action="delete-rule">' + ICON.trash + 'Delete rule</button>';
+    return st === 'new' ? '<span class="note">Added by you</span>'
+      : st === 'changed' ? '<button class="btn subtle" data-action="revert-rule">Undo all changes to this rule</button>' : '';
   }
 
 
@@ -1909,17 +1939,33 @@ dialog[open]{animation:popIn .26s var(--ease)}
     });
   }
 
+  // "www_ford_hu_v329_edited (1).csv" -> "www_ford_hu_v329_edited.csv": drops the copy number browsers add to repeat downloads.
+  const cleanName = (n) => str(n).replace(/\s*\(\d+\)(?=\.[^.]+$|$)/, '');
+  const str = (v) => (v == null ? '' : String(v));
+
   function summaryText(ms, desc) {
-    const info = state.doc.info;
-    const base = info.policy ? info.policy + (info.version ? ', based on version ' + info.version : '') : state.doc.fileName;
-    return 'Redirect changes for ' + ms.host + ' (' + base + '):\n' + desc.lines.map((l) => '- ' + l).join('\n');
+    return 'Redirect changes for ' + ms.host + ' (based on ' + cleanName(state.doc.fileName) + '):\n' + desc.lines.map((l) => '- ' + l).join('\n');
   }
 
-  function exportName() {
-    const info = state.doc.info;
-    if (info.policy && info.version) return info.policy + '_v' + info.version + '_edited.csv';
-    return state.doc.fileName.replace(/\.(csv|zip)$/i, '') + '_edited.csv';
+  // Akamai sends Policy46008Version329.zip; the team sends back www_ford_hu_v331.csv.
+  // The download suggests that second form: the policy name plus a version number, both editable.
+  //   - exported this policy before (same slot)  -> the same name again, for resending a corrected file
+  //   - opened Akamai's file (version N)          -> N + 1
+  //   - opened one of our own files (_vN)        -> N, as it's the same round
+  function exportSuggestion() {
+    const d = state.doc, info = d.info;
+    if (d.exportAs) return Object.assign({ why: 'last' }, d.exportAs);
+    const stem = cleanName(d.fileName).replace(/\.(csv|zip|txt)$/i, '');
+    const ours = stem.match(/^(.+?)_v(\d+)(?:_edited)*$/i);
+    const theirs = stem.match(/^Policy\d+Version(\d+)$/i);
+    const policy = (info.source === 'akamai' && info.policy) || (ours && ours[1]) || (d.ms.host && d.ms.host.replace(/\./g, '_')) || stem;
+    const base = info.version || (theirs && theirs[1]);
+    if (/^\d+$/.test(base || '')) return { policy, version: String(Number(base) + 1), why: 'next', from: base };
+    if (ours) return { policy, version: ours[2], why: 'same' };
+    return { policy, version: '', why: 'none' };
   }
+  const cleanPolicy = (v) => str(v).trim().replace(/[\\/:*?"<>|\s]+/g, '_').replace(/^_+|_+$/g, '');
+  const fileNameFor = (policy, version) => (policy || 'policy') + (version ? '_v' + version : '_edited') + '.csv';
 
   function reviewDialog() {
     const ms = activeMs();
@@ -1928,6 +1974,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const blockers = newErrors(ms);
     const warns = ms.issues.filter((i) => i.isNew && i.severity === 'warning');
     const summary = summaryText(ms, desc);
+    const sug = exportSuggestion();
     openDialog('<h2>Review and export</h2><p>' + esc(desc.headline.charAt(0).toUpperCase() + desc.headline.slice(1)) + '.</p>' +
       '<div class="dlg-body"><ul class="change-list">' + desc.lines.map((l) => '<li>' + esc(l) + '</li>').join('') + '</ul>' +
       (blockers.length ? '<div class="blocker"><b>Fix ' + C.plural(blockers.length, 'problem') + ' from your changes before exporting.</b><ul>' +
@@ -1936,6 +1983,16 @@ dialog[open]{animation:popIn .26s var(--ease)}
       (!blockers.length && warns.length ? '<div class="warnnote">' + C.plural(warns.length, 'warning') + ' from your changes. You can still export, but it\u2019s worth a look.</div>' : '') +
       '<p class="hint">\u201cCopy summary\u201d puts this list on your clipboard, ready to paste into your email to the Akamai team.</p>' +
       '</div>' +
+      '<div class="export-as"><span class="xa-label" id="xa-label">File name</span>' +
+      '<div class="xa-row" role="group" aria-labelledby="xa-label">' +
+      '<input type="text" id="xa-policy" value="' + esc(sug.policy) + '" spellcheck="false" autocomplete="off" aria-label="Policy name">' +
+      '<span class="xa-fix">_v</span>' +
+      '<input type="text" id="xa-version" value="' + esc(sug.version) + '" inputmode="numeric" placeholder="000" spellcheck="false" autocomplete="off" aria-label="Version number">' +
+      '<span class="xa-fix">.csv</span></div>' +
+      '<p class="hint">' + esc(sug.why === 'last' ? 'The same name as your last download of this policy. Change the number if this is a new round.'
+        : sug.why === 'next' ? 'You opened version ' + sug.from + ', so this suggests ' + sug.version + '. Change it if you\u2019re resending a corrected file.'
+        : sug.why === 'same' ? 'The same version as the file you opened. Change it if this is a new round.'
+        : 'Add the version number for this file.') + '</p></div>' +
       '<div class="dlg-actions"><button class="btn danger push" id="rv-discard">Discard changes</button>' +
       '<button class="btn" id="rv-copy">Copy summary</button>' +
       '<button class="btn primary" id="rv-save"' + (blockers.length ? ' disabled' : '') + '>Download CSV</button></div>',
@@ -1960,12 +2017,36 @@ dialog[open]{animation:popIn .26s var(--ease)}
         }
         $('#rv-copy', d).textContent = 'Copied';
       });
-      $('#rv-save', d).addEventListener('click', () => {
-        download(exportName(), C.exportCSV(ms.current), 'text/csv');
+      const pol = $('#xa-policy', d), ver = $('#xa-version', d), save = $('#rv-save', d);
+      // Each part is as wide as its text, so the row reads as one file name.
+      const fit = () => {
+        pol.style.width = Math.max(4, pol.value.length + 0.6) + 'ch';
+        ver.style.width = Math.max(3, ver.value.length + 0.6) + 'ch';
+        save.disabled = !!blockers.length || !cleanPolicy(pol.value);
+        save.textContent = 'Download CSV';
+      };
+      fit();
+      // Start in the version number: it's the part people actually change.
+      ver.focus(); ver.setSelectionRange(ver.value.length, ver.value.length);
+      $('.xa-row', d).addEventListener('mousedown', (e) => { if (e.target.tagName !== 'INPUT') { e.preventDefault(); ver.focus(); ver.select(); } });
+      pol.addEventListener('input', fit);
+      ver.addEventListener('input', () => { const p = ver.selectionStart, v = ver.value.replace(/\D/g, ''); if (v !== ver.value) { ver.value = v; ver.setSelectionRange(p - 1, p - 1); } fit(); });
+      ver.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+        e.preventDefault();
+        ver.value = String(Math.max(1, (Number(ver.value) || 0) + (e.key === 'ArrowUp' ? 1 : -1)));
+        fit();
+      });
+      for (const el of [pol, ver]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !save.disabled) { e.preventDefault(); save.click(); } });
+      save.addEventListener('click', () => {
+        const as = { policy: cleanPolicy(pol.value), version: ver.value.replace(/\D/g, '') };
+        const name = fileNameFor(as.policy, as.version);
+        state.doc.exportAs = as;
+        download(name, C.exportCSV(ms.current), 'text/csv');
         ms.exportedSnap = C.snapshot(ms.current);
         saveNow();
-        $('#rv-save', d).textContent = 'Downloaded';
-        toast('Downloaded ' + exportName() + '. Send it to the Akamai team with the summary.');
+        save.textContent = 'Downloaded';
+        toast('Downloaded ' + name + '. Send it to the Akamai team with the summary.');
       });
     });
   }
@@ -1996,7 +2077,6 @@ dialog[open]{animation:popIn .26s var(--ease)}
     }
     if (issue.fix === 'removePath') r.paths = r.paths.filter((p) => p !== issue.path);
     if (issue.fix === 'removeEmpty') r.paths = r.paths.filter((p) => p !== '');
-    if (issue.fix === 'addScheme') r.redirectURL = 'https://' + r.redirectURL.trim();
     if (issue.fix === 'flatten') r.redirectURL = issue.nextTarget;
     if (issue.fix === 'removeDuplicate') {
       const key = (p) => (r.caseSensitive ? p : p.toLowerCase());
@@ -2078,13 +2158,19 @@ dialog[open]{animation:popIn .26s var(--ease)}
     switch (a) {
       case 'open-file': $('#file-input').click(); break;
       case 'close-file': {
+        // Always asks, so a stray click in the corner doesn't throw you out of the policy.
+        // The message says what happens to the work: kept in the recent list, or lost if this browser can't store it.
         const close = () => { saveNow(); state.doc = null; state.editing = null; state.ruleId = null; state.loadError = ''; renderAll(); };
-        if (recent.db ? pendingInput() : unexported()) {
-          confirmDialog('Close ' + ms.name + '?', recent.db
-            ? 'Text you typed but didn\u2019t apply yet will be lost. Everything else stays in your recent policies.'
-            : 'Your changes haven\u2019t been exported yet. Closing discards them.',
-          'Close', close, { destructive: !recent.db });
-        } else close();
+        const snap = C.snapshot(ms.current);
+        const open = snap !== ms.originalSnap && snap !== ms.exportedSnap;
+        const n = open ? (C.diffMarket(ms.original, ms.current).count || 1) : 0;
+        const typed = pendingInput() ? ' Text you typed but didn\u2019t apply yet will be lost.' : '';
+        let body;
+        if (!recent.db) body = open ? 'Your ' + C.plural(n, 'change') + (n === 1 ? ' hasn\u2019t' : ' haven\u2019t') + ' been exported yet. Closing discards ' + (n === 1 ? 'it.' : 'them.')
+          : 'To keep working on it, you\u2019ll need to open the file again.';
+        else body = (open ? 'Your ' + C.plural(n, 'change') + (n === 1 ? ' hasn\u2019t' : ' haven\u2019t') + ' been exported yet. ' + (n === 1 ? 'It stays' : 'They stay') + ' saved'
+          : 'It stays') + ' in your recent policies on this computer, so you can carry on later from the start screen.' + typed;
+        confirmDialog('Close ' + ms.name + '?', body, 'Close', close, { destructive: !recent.db && (open || !!typed) });
         break;
       }
       case 'open-recent': { const rec = recent.items.get(el.dataset.key); if (rec) restoreRecent(rec); break; }
