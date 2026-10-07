@@ -2306,15 +2306,31 @@ dialog[open]{animation:popIn .26s var(--ease)}
   window.addEventListener('pagehide', saveNow);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveNow(); });
 
-  // drag and drop anywhere on the page
+  // Drag and drop opens a policy only from the start screen. Once a policy is open, a dropped file
+  // is refused (no-entry cursor, no overlay), so a stray drag can't swap it out. Switching files
+  // stays a deliberate step: Close, or Open another file.
   let dragDepth = 0;
   const hasFiles = (e) => e.dataTransfer && [...e.dataTransfer.types].includes('Files');
-  window.addEventListener('dragenter', (e) => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth++; document.body.classList.add('dragging'); });
-  window.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
+  const dropAllowed = () => !state.doc && !state.loading;
+  window.addEventListener('dragenter', (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    if (!dropAllowed()) return;
+    dragDepth++; document.body.classList.add('dragging');
+  });
+  window.addEventListener('dragover', (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();                                   // always, or the browser would open the file in this tab
+    e.dataTransfer.dropEffect = dropAllowed() ? 'copy' : 'none';
+  });
   window.addEventListener('dragleave', () => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) document.body.classList.remove('dragging'); });
   window.addEventListener('drop', (e) => {
     if (!hasFiles(e)) return;
     e.preventDefault(); dragDepth = 0; document.body.classList.remove('dragging');
+    if (!dropAllowed()) {
+      if (state.doc) toast(state.doc.ms.name + ' is open. To work on another file, close it first or use Open another file.', 'error');
+      return;
+    }
     const f = e.dataTransfer.files[0];
     if (f && !/\.(zip|csv|txt|xlsx?)$/i.test(f.name)) { toast('Drop the .zip or .csv file from the Akamai team.', 'error'); return; }
     openFile(f);
