@@ -113,6 +113,7 @@ document.documentElement.dataset.theme = themePref === 'light' || themePref === 
 html,body{height:100%;margin:0}
 body{font:14px/1.45 var(--font);color:var(--ink);background:var(--stage);-webkit-font-smoothing:antialiased;overflow:hidden}
 button,input,textarea{font:inherit;color:inherit}
+button,.btn,.pl-actions,.pl input[type=checkbox],.pl .sev,.pl-head,.paths-tools{-webkit-user-select:none;user-select:none}
 button{cursor:pointer}
 button:disabled{cursor:default}
 :focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
@@ -461,11 +462,56 @@ details.adv summary{padding:2px 0 10px;font-size:13px;font-weight:600;color:var(
 .adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
 .adv-grid .field:first-child{grid-column:1 / -1}
 
-.paths-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.paths-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:10px}
 .paths-head h2{margin:0 !important}
-.paths-head .search{width:210px;margin-left:auto}
-.add-paths{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px}
-.add-paths .btn{height:38px}
+.paths-tools{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+.paths-tools .btn svg{width:13px;height:13px}
+.paths-tools .btn.del:not(:disabled){color:var(--note-bad-ink)}
+.path-box{border-radius:14px;background:var(--well);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.path-box .path-list{border-radius:0;background:none;box-shadow:none}
+.pl-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;min-height:40px;padding:4px 6px 4px 12px;border-bottom:1px solid var(--line)}
+.pl-head .pl-all{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12.5px;font-weight:500;color:var(--ink-2);cursor:pointer}
+.pl-head .pl-all input{width:15px;height:15px;margin:0;accent-color:var(--accent)}
+.pl-selinfo{font-size:12.5px;color:var(--ink-2)}
+.pl-selinfo .link{margin-left:4px;font-size:12.5px}
+.pl-head .search{width:210px;margin-left:auto}
+.pl-head .search input{height:30px}
+.pl-none{margin:0;padding:12px}
+/* add paths dialog */
+.ap-rows{display:flex;flex-direction:column;gap:6px;margin:0 -5px 6px;padding:4px 5px;list-style:none;max-height:46vh;overflow:auto}
+.ap-lead{font-size:13px}
+.ap-row{display:grid;grid-template-columns:minmax(0,1fr) 30px;align-items:center;column-gap:6px}
+.ap-field{display:flex;align-items:center;height:36px;border-radius:10px;background:var(--field-bg);box-shadow:var(--field-shadow);overflow:hidden;cursor:text}
+.ap-field:focus-within{box-shadow:inset 0 0 0 1px rgba(75,151,255,.8),0 0 0 3px rgba(75,151,255,.25)}
+.ap-slash{flex:none;display:grid;place-items:center;align-self:stretch;width:30px;border-right:1px solid var(--line);font-family:var(--mono);font-size:13px;color:var(--ink-3)}
+.ap-field input[type=text].ap-input{flex:1;min-width:0;height:100%;padding:0 10px;border-radius:0;background:none;box-shadow:none;font-family:var(--mono);font-size:12.5px}
+.ap-field input[type=text].ap-input:focus{box-shadow:none}
+.ap-del{justify-self:center;opacity:.55}
+.ap-del:hover,.ap-del:focus-visible{opacity:1}
+.ap-note{grid-column:1/2;font-size:11.5px;line-height:1.35;color:var(--ink-3);padding:3px 0 0 41px}
+.ap-note:empty{display:none}
+.ap-row[data-state=warn] .ap-note{color:var(--note-warn-ink)}
+.ap-row[data-state=bad] .ap-note{color:var(--note-bad-ink)}
+.ap-row[data-state=skip] .ap-input{color:var(--ink-3)}
+.ap-more{height:30px;padding:0 10px;font-size:12.5px}
+.ap-more svg{width:12px;height:12px}
+/* copy the rule's name */
+.d-copy{flex:none;display:grid;place-items:center;width:28px;height:28px;margin:0 2px 0 -6px;border:0;border-radius:50%;background:none;color:var(--ink-3);cursor:pointer;transition:color .15s,background .15s}
+.d-copy:hover{color:var(--link);background:var(--hover)}
+.d-copy.done{color:var(--ok)}
+/* Hidden for now: a selected name now survives redraws. The button and its copy-name action stay, ready to show again. */
+.d-copy{display:none}
+.d-copy svg{width:15px;height:15px}
+/* the settings are the rule's summary: a soft panel with larger values */
+#d-fields:not(.edit-zone) .info-grid{padding:14px 16px;border-radius:16px;background:var(--well);box-shadow:inset 0 0 0 1px var(--line)}
+#d-fields:not(.edit-zone) .info dd{font-size:15px;font-weight:500;line-height:1.35}
+#d-fields:not(.edit-zone) .info dd b{font-weight:700}
+#d-fields:not(.edit-zone) .info dd.mono{font-size:13.5px;font-weight:500}
+#d-fields:not(.edit-zone) .info.wide dd{font-size:14.5px}
+#d-fields:not(.edit-zone) .info dd em{font-weight:400}
+.dd-note{display:block;margin-top:4px;font-family:var(--font);font-size:12.5px;font-weight:400;line-height:1.4;word-break:normal}
+.dd-note .mono{font-size:12px}
+.dd-note.chain{color:var(--note-warn-ink)}
 .selbar{display:flex;align-items:center;gap:4px;margin-bottom:8px;padding:5px 6px 5px 14px;border-radius:14px;background:var(--accent-soft);box-shadow:var(--accent-ring);font-size:13px}
 .selbar span{margin-right:auto;font-weight:500}
 .path-list{margin:0;padding:0;list-style:none;border-radius:14px;background:var(--well);box-shadow:inset 0 0 0 1px var(--line)}
@@ -973,6 +1019,9 @@ dialog[open]{animation:popIn .26s var(--ease)}
     chev: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 3 7.5 6 4.5 9"/></svg>',
     check: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm3.3 5.2-3.9 4.2a.75.75 0 0 1-1.1 0L4.7 8.7a.75.75 0 1 1 1.1-1l1.1 1.2 3.3-3.6a.75.75 0 1 1 1.1 1Z"/></svg>',
     ring: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="5.6"/><path d="M8 5.2v3.3M8 10.6v.1" stroke-linecap="round"/></svg>',
+    plus: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>',
+    move: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5h9M9 3l2.5 2.5L9 8M13.5 10.5h-9M7 8l-2.5 2.5L7 13"/></svg>',
+    copy: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.6"/><path d="M10.5 5.5V3.6a1.1 1.1 0 0 0-1.1-1.1H3.6a1.1 1.1 0 0 0-1.1 1.1v5.8a1.1 1.1 0 0 0 1.1 1.1h1.9"/></svg>',
     newTab: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 8 8"/><path d="M11.5 9.5v3a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3"/></svg>',
     trash: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.8 4.3h10.4M6.4 4.3V2.9h3.2v1.4M4.2 4.3l.6 8.6a1.2 1.2 0 0 0 1.2 1.1h4a1.2 1.2 0 0 0 1.2-1.1l.6-8.6M6.7 7v4.4M9.3 7v4.4"/></svg>',
     ok: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3.5 8.4 2.9 2.9 6.1-6.6"/></svg>',
@@ -1178,14 +1227,11 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const detail = $('#detail'), top = detail ? detail.scrollTop : 0;
     renderHead(); renderList();
     if (after && JSON.stringify(after) !== before) {
-      // The rule shown here changed in another tab: redraw it, keeping anything typed but not added yet.
-      const box = $('#add-paths'), typed = box ? box.value : '';
+      // The rule shown here changed in another tab: redraw it, keeping the focus where it was.
       const focused = document.activeElement && document.activeElement.id;
       state.selected.clear();
       if (state.editing && state.editing.ruleId === selId) toast('This rule was just changed in another tab. Saving your edit will replace those changes.');
       renderDetail();
-      const nb = $('#add-paths');
-      if (nb && typed) { nb.value = typed; nb.dispatchEvent(new Event('input', { bubbles: true })); }
       if (focused) { const f = document.getElementById(focused); if (f) f.focus(); }
       if ($('#detail')) $('#detail').scrollTop = top;
     } else if (after) {
@@ -1417,8 +1463,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
   // a path being edited, or a half-filled New rule form.
   function pendingInput() {
     if (draftChanged()) return true;
-    const ta = document.getElementById('add-paths');
-    if (ta && ta.value.trim()) return true;
+    if ([...document.querySelectorAll('#ap-rows .ap-input')].some((i) => i.value.trim())) return true;
     if (document.querySelector('.pl input.pl-edit')) return true;
     const nr = document.getElementById('nr-form');
     return !!nr && [...nr.querySelectorAll('input[type=text], textarea')].some((i) => i.name !== 'host' && i.value.trim());
@@ -1434,12 +1479,14 @@ dialog[open]{animation:popIn .26s var(--ease)}
   /* ================= rendering ================= */
 
   function renderAll() {
+    const restore = keepNameSelection();
     $('#app').classList.toggle('welcome-mode', !state.doc && !state.loading);
     document.body.classList.toggle('is-welcome', !state.doc && !state.loading);
     setTitle();
     renderSource();
     renderMain();
     syncThemeButtons();
+    restore();
   }
 
   function renderSource() {
@@ -1672,6 +1719,37 @@ dialog[open]{animation:popIn .26s var(--ease)}
     el.scrollTop = top;
   }
 
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; }
+    catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      let ok = false; try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+      ta.remove();
+      return ok;
+    }
+  }
+
+  // If part of the rule's name is selected, keep it selected when the rule is redrawn, for example
+  // after a change in another tab, so it's still there to copy when you come back.
+  function keepNameSelection() {
+    const sel = window.getSelection(), h = document.querySelector('.d-name-text');
+    if (!h || !sel || !sel.rangeCount || sel.isCollapsed) return () => {};
+    const range = sel.getRangeAt(0);
+    if (!h.contains(range.startContainer) || !h.contains(range.endContainer)) return () => {};
+    const pre = document.createRange();
+    pre.selectNodeContents(h); pre.setEnd(range.startContainer, range.startOffset);
+    const start = pre.toString().length, end = start + range.toString().length, text = h.textContent;
+    return () => {
+      const n = document.querySelector('.d-name-text');
+      if (!n || n.textContent !== text || !n.firstChild || n.firstChild.nodeType !== 3) return;
+      const t = n.firstChild, r2 = document.createRange();
+      r2.setStart(t, Math.min(start, t.length)); r2.setEnd(t, Math.min(end, t.length));
+      sel.removeAllRanges(); sel.addRange(r2);
+    };
+  }
+
   function setTitle() {
     syncUrl();
     const r = state.doc && activeRule();
@@ -1697,18 +1775,19 @@ dialog[open]{animation:popIn .26s var(--ease)}
     }
     const editing = !!state.editing && state.editing.ruleId === r.id;
     if (panel) panel.classList.toggle('editing', editing);
+    const restore = keepNameSelection();
     const ordered = C.exportOrder(ms.current.rules);
     const pos = ordered.indexOf(r) + 1;
     if ($('#rp-pos')) $('#rp-pos').textContent = 'Rule ' + fmt(pos) + ' of ' + fmt(ordered.length);
     el.innerHTML =
       '<div class="d-head"><div class="d-title" id="d-title">' + titleHTML(r, editing) + '</div><div class="d-tools">' + toolsHTML(editing) + '</div></div>' +
       '<div class="d-sub" id="d-sub">' + subLine(r, pos, ordered.length) + '</div>' +
-      '<div id="d-route">' + routeHTML(r) + '</div>' +
       '<div id="d-problems">' + problemsHTML(r) + '</div>' +
       '<div class="d-section' + (editing ? ' edit-zone' : '') + '" id="d-fields"><h2>Redirect' + (editing ? '<span class="edit-badge">Editing</span>' : '') + '</h2>' +
       (editing ? fieldsHTML(state.editing.draft) : infoHTML(r)) + '</div>' +
       '<div class="d-section" id="d-paths">' + pathsHTML(r) + '</div>' +
       '<div class="d-foot" id="d-foot">' + footHTML(r) + '</div>';
+    restore();
     if (editing && state.editing.focus) {
       const f = el.querySelector('[data-draft="' + state.editing.focus + '"]');
       state.editing.focus = null;
@@ -1719,7 +1798,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   function titleHTML(r, editing) {
     if (editing) return '<input type="text" class="d-name" data-draft="name" value="' + esc(state.editing.draft.name) + '" placeholder="Rule name" aria-label="Rule name" spellcheck="false">';
-    return '<h2 class="d-name-text">' + (r.name ? esc(r.name) : '<em>Unnamed rule</em>') + '</h2>' +
+    return (r.name ? '<button class="d-copy" type="button" data-action="copy-name" title="Copy rule name" aria-label="Copy rule name">' + ICON.copy + '</button>' : '') +
+      '<h2 class="d-name-text">' + (r.name ? esc(r.name) : '<em>Unnamed rule</em>') + '</h2>' +
       (state.view === 'rule' ? '' : '<a class="d-open" href="' + esc(ruleHref(r.id, 'rule')) + '" data-action="open-tab" title="Open in new tab" aria-label="Open this rule in a new tab">' + ICON.newTab + '</a>');
   }
 
@@ -1801,44 +1881,10 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
 
   function subLine(r, pos, total) {
-    return r.pinLast ? 'Always checked last, after every other rule' : '';
+    const where = state.view === 'rule' ? '' : 'Rule ' + fmt(pos) + ' of ' + fmt(total);
+    return [where, r.pinLast ? 'always checked last, after every other rule' : ''].filter(Boolean).join(', ').replace(/^a/, 'A');
   }
 
-  function routeHTML(r) {
-    const ms = activeMs();
-    const ps = r.paths.filter((p) => p !== '');
-    const shown = ps.length > 4 ? ps.slice(0, 3) : ps;
-    const more = ps.length - shown.length;
-    const chips = shown.map((p) => '<span class="pchip" title="' + esc(p) + '">' + esc(p) + '</span>');
-    if (more) chips.push('<span class="pchip more">and ' + fmt(more) + ' more</span>');
-    if (!chips.length) chips.push('<span class="pchip none">No paths yet</span>');
-    const n = chips.length, rowH = 30, gap = 6, H = n * rowH + (n - 1) * gap, W = 76;
-    const wires = chips.map((_, k) => {
-      const y = k * (rowH + gap) + rowH / 2;
-      return '<path d="M0 ' + y + ' C' + W * 0.5 + ' ' + y + ' ' + W * 0.45 + ' ' + H / 2 + ' ' + (W - 8) + ' ' + H / 2 + '"/>';
-    }).join('');
-    const svg = '<svg class="wires" viewBox="0 0 ' + W + ' ' + H + '" height="' + H + '" preserveAspectRatio="none" aria-hidden="true">' + wires +
-      '<path class="head" d="M' + (W - 9) + ' ' + (H / 2 - 4.5) + ' L' + W + ' ' + H / 2 + ' L' + (W - 9) + ' ' + (H / 2 + 4.5) + 'Z"/></svg>';
-
-    const t = C.parseTarget(r.redirectURL);
-    let host, path, empty = false;
-    if (r.regex) { host = 'Built from the pattern ' + r.regex; path = r.redirectURL || 'No address yet'; }
-    else if (!r.redirectURL) { host = ''; path = 'No redirect address yet'; empty = true; }
-    else if (t && t.host) { host = t.host; path = r.redirectURL.replace(/^(https?:\/\/)?[^/?#]+/i, '') || '/'; }
-    else { host = t ? 'Same site' : ''; path = r.redirectURL; }
-    const meta = [];
-    meta.push(C.STATUS_CODES.includes(r.statusCode) ? r.statusCode + ' ' + C.STATUS_LABELS[r.statusCode] : 'No valid status code');
-    meta.push(r.useQueryString ? 'Keeps query string' : 'Drops query string');
-    if (r.caseSensitive) meta.push('Case-sensitive');
-    const chain = (ms.byRule.get(r.id) || []).find((i) => i.type === 'chain');
-    const next = chain
-      ? '<div class="route-next">Then ' + esc(chain.nextStatus) + ' again to <span class="mono">' + esc(chain.nextTarget) + '</span>, by <button class="link" data-action="select-rule" data-id="' + esc(chain.otherId) + '">' + esc(ruleName(chain.otherId)) + '</button></div>'
-      : '';
-    return '<div class="route" aria-label="Where this rule sends visitors">' +
-      '<div class="route-from">' + chips.join('') + '</div>' + svg +
-      '<div class="route-to"><div class="rt-host">' + esc(host) + '</div><div class="rt-path' + (empty ? ' empty' : '') + '">' + esc(path) + '</div>' +
-      '<div class="rt-meta">' + meta.map((m) => '<span>' + esc(m) + '</span>').join('') + '</div></div>' + next + '</div>';
-  }
 
   function ruleName(id) {
     const r = activeMs().current.rules.find((x) => x.id === id);
@@ -1905,12 +1951,17 @@ dialog[open]{animation:popIn .26s var(--ease)}
       '<input type="checkbox" role="switch" data-toggle="' + field + '"' + (on ? ' checked' : '') + '><span class="sw" aria-hidden="true"></span></label>';
   }
 
+  // The rule's settings, shown prominently: they're the rule's summary now that there's no diagram.
   function infoHTML(r) {
+    const ms = activeMs();
     const kept = [['query', 'query'], ['scheme', 'scheme'], ['matchURL', 'match URL']].filter(([k]) => r[k]);
     const yn = (v) => (v ? 'Yes' : 'No');
+    const chain = (ms.byRule.get(r.id) || []).find((i) => i.type === 'chain');
     return '<dl class="info-grid">' +
       '<div class="info wide"><dt>Redirect URL</dt><dd class="mono">' + (r.redirectURL ? (/^https?:\/\//i.test(r.redirectURL)
-        ? '<a href="' + esc(r.redirectURL) + '" target="_blank" rel="noopener">' + esc(r.redirectURL) + '</a>' : esc(r.redirectURL)) : '<em>None</em>') + '</dd></div>' +
+        ? '<a href="' + esc(r.redirectURL) + '" target="_blank" rel="noopener">' + esc(r.redirectURL) + '</a>' : esc(r.redirectURL)) : '<em>None</em>') +
+        (chain ? '<span class="dd-note chain">Then sent on again (' + esc(chain.nextStatus) + ') to <span class="mono">' + esc(chain.nextTarget) + '</span> by <a class="link" href="' + esc(ruleHref(chain.otherId, 'rule')) + '" data-action="select-rule" data-id="' + esc(chain.otherId) + '">\u201c' + esc(ruleName(chain.otherId)) + '\u201d</a>.</span>' : '') +
+        '</dd></div>' +
       '<div class="info"><dt>Status code</dt><dd>' + (C.STATUS_CODES.includes(r.statusCode) ? '<b>' + r.statusCode + '</b> ' + esc(C.STATUS_LABELS[r.statusCode]) : '<em>None</em>') + '</dd></div>' +
       '<div class="info"><dt>Use query string</dt><dd>' + yn(r.useQueryString) + '</dd></div>' +
       '<div class="info"><dt>Case sensitive</dt><dd>' + yn(r.caseSensitive) + '</dd></div>' +
@@ -1937,14 +1988,6 @@ dialog[open]{animation:popIn .26s var(--ease)}
   }
 
 
-  // "Select all" heads the path list. With a filter typed in, it selects just the matching paths.
-  function selectAllHTML(items) {
-    if (items.length < 2) return '';
-    const n = items.filter(({ idx }) => state.selected.has(idx)).length;
-    const filtered = !!state.pathFilter.trim();
-    return '<li class="pl pl-all"><label><input type="checkbox" data-action="toggle-all-paths"' + (n === items.length ? ' checked' : '') + (n && n < items.length ? ' data-mixed' : '') + '>' +
-      '<span>' + (filtered ? 'Select all ' + fmt(items.length) + ' matching' : 'Select all') + '</span></label></li>';
-  }
 
   function pathsHTML(r) {
     const ms = activeMs();
@@ -1953,20 +1996,148 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const f = state.pathFilter.trim().toLowerCase();
     const items = r.paths.map((p, idx) => ({ p, idx })).filter(({ p }) => !f || p.toLowerCase().includes(f));
     const sel = state.selected.size;
-    return '<div class="paths-head"><h2>Paths <span class="count">' + fmt(r.paths.length) + '</span></h2>' +
-      (r.paths.length > 12 ? '<label class="search">' + ICON.search + '<span class="visually-hidden">Filter paths</span><input type="search" id="path-filter" placeholder="Filter paths" value="' + esc(state.pathFilter) + '" spellcheck="false"></label>' : '') +
-      '</div>' +
-      '<div class="add-paths"><label class="visually-hidden" for="add-paths">Add paths</label><textarea id="add-paths" rows="1" placeholder="Add paths, one per line. Full ' + esc(ms.host) + ' addresses work too." spellcheck="false"></textarea>' +
-      '<button class="btn" data-action="add-paths" disabled>Add</button></div>' +
-      (sel ? '<div class="selbar"><span>' + C.plural(sel, 'path') + ' selected</span><button class="btn subtle" data-action="move-paths">Move to another rule</button><button class="btn danger" data-action="remove-selected">Remove</button><button class="btn subtle" data-action="clear-selection">Clear</button></div>' : '') +
-      (items.length ? '<ul class="path-list">' + selectAllHTML(items) + items.map(({ p, idx }) => {
+    // Everything for paths sits in one bar above the list, like Veera: add, move, remove, filter.
+    const head = '<div class="paths-head"><h2>Paths <span class="count">' + fmt(r.paths.length) + '</span></h2>' +
+      '<div class="paths-tools">' +
+      '<button class="btn" data-action="add-paths-dialog">' + ICON.plus + 'Add paths</button>' +
+      '<button class="btn" data-action="move-paths"' + (sel ? '' : ' disabled') + '>' + ICON.move + 'Move selected</button>' +
+      '<button class="btn del" data-action="remove-selected"' + (sel ? '' : ' disabled') + '>' + ICON.trash + 'Remove selected</button>' +
+      '</div></div>';
+    if (!r.paths.length) return head + '<p class="hint">This rule has no paths yet. Click Add paths to add some.</p>';
+    const n = items.filter(({ idx }) => state.selected.has(idx)).length;
+    const bar = '<div class="pl-head">' +
+      (items.length ? '<label class="pl-all"><input type="checkbox" data-action="toggle-all-paths"' + (items.length && n === items.length ? ' checked' : '') + (n && n < items.length ? ' data-mixed' : '') + '>' +
+        '<span>' + (f ? 'Select all ' + fmt(items.length) + ' matching' : 'Select all') + '</span></label>' : '') +
+      (sel ? '<span class="pl-selinfo">' + C.plural(sel, 'path') + ' selected <button class="link" data-action="clear-selection">Clear</button></span>' : '') +
+      (r.paths.length > 5 ? '<label class="search">' + ICON.search + '<span class="visually-hidden">Filter paths</span><input type="search" id="path-filter" placeholder="Filter paths" value="' + esc(state.pathFilter) + '" spellcheck="false"></label>' : '') +
+      '</div>';
+    return head + '<div class="path-box">' + bar +
+      (items.length ? '<ul class="path-list">' + items.map(({ p, idx }) => {
         const fl = flagged.get(p);
         return '<li class="pl"><input type="checkbox" data-action="toggle-path" data-idx="' + idx + '" aria-label="Select ' + esc(p || 'empty entry') + '"' + (state.selected.has(idx) ? ' checked' : '') + '>' +
           '<span class="pl-text" data-idx="' + idx + '">' + (p === '' ? '<em>Empty entry</em>' : esc(p)) + '</span>' +
           (fl ? '<span class="sev ' + fl + '"></span>' : '') +
           '<span class="pl-actions"><button class="pl-btn" data-action="edit-path-btn" data-idx="' + idx + '" aria-label="Edit ' + esc(p || 'empty entry') + '">' + ICON.pencil + 'Edit</button>' +
           '<button class="pl-btn del" data-action="remove-path" data-idx="' + idx + '" aria-label="Delete ' + esc(p || 'empty entry') + '">' + ICON.trash + 'Delete</button></span></li>';
-      }).join('') + '</ul>' : (r.paths.length ? '<p class="hint">No paths match the filter.</p>' : '<p class="hint">This rule has no paths yet. Add one above.</p>'));
+      }).join('') + '</ul>' : '<p class="hint pl-none">No paths match the filter.</p>') + '</div>';
+  }
+
+  // Adding paths happens in a dialog with one row per path, like Veera. Paste a whole list, or type
+  // a space, and it's split into rows straight away; full addresses become paths. Each row says if
+  // it's already in this rule or in another one. Enter adds, so a single path is just type and Enter.
+  function addPathsDialog(r) {
+    if (!r) return;
+    const ms = activeMs();
+    openDialog('<h2>Add paths</h2>' +
+      '<p class="ap-lead">To \u201c' + esc(r.name || 'Unnamed rule') + '\u201d. One path per row. Paste a list and it\u2019s split into rows; full ' + esc(ms.host) + ' addresses work too.</p>' +
+      '<ul class="ap-rows" id="ap-rows"></ul>' +
+      '<div><button class="btn subtle ap-more" type="button" id="ap-more">' + ICON.plus + 'Another row</button></div>' +
+      '<div class="dlg-actions"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="button" id="ap-add" disabled>Add path</button></div>',
+    (d) => {
+      const list = $('#ap-rows', d), addBtn = $('#ap-add', d);
+      const inputs = () => [...list.querySelectorAll('.ap-input')];
+      const pathOf = (v) => (v.trim() ? C.toPath(v.trim()) : '');
+      const shown = (v) => { const p = C.toPath(v.trim()); return p === '/' ? '/' : p.replace(/^\//, ''); };
+      const addRow = (afterLi, value) => {
+        const li = document.createElement('li');
+        li.className = 'ap-row';
+        li.innerHTML = '<label class="ap-field"><span class="ap-slash" aria-hidden="true">/</span><input type="text" class="ap-input" spellcheck="false" autocomplete="off" aria-label="Path"></label>' +
+          '<button type="button" class="icon-btn small ap-del" title="Remove this row" aria-label="Remove this row">' + ICON.x + '</button><span class="ap-note"></span>';
+        if (afterLi && afterLi.nextSibling) list.insertBefore(li, afterLi.nextSibling); else list.appendChild(li);
+        const inp = li.querySelector('input');
+        inp.value = value || '';
+        return inp;
+      };
+      // Text with spaces or line breaks becomes one row per part.
+      const spread = (inp, text) => {
+        const parts = text.split(/\s+/).filter(Boolean);
+        inp.value = parts.length ? shown(parts[0]) : '';
+        let last = inp;
+        for (const part of parts.slice(1)) last = addRow(last.closest('.ap-row'), shown(part));
+        return last;
+      };
+      const check = () => {
+        const seen = new Set();
+        let ok = 0;
+        for (const inp of inputs()) {
+          const li = inp.closest('.ap-row'), note = li.querySelector('.ap-note');
+          const p = pathOf(inp.value);
+          let msg = '', st = '';
+          if (!p) { /* empty row, ignored */ }
+          else if (/["\s]/.test(p)) { msg = 'Paths can\u2019t contain quote marks.'; st = 'bad'; }
+          else if (r.paths.includes(p)) { msg = 'Already in this rule, so it\u2019s skipped.'; st = 'skip'; }
+          else if (seen.has(p)) { msg = 'Listed twice, so it\u2019s added once.'; st = 'skip'; }
+          else {
+            const o = C.pathOwners(ms.current, p, r);
+            if (o.length) { msg = 'Also in rule ' + o[0].pos + ', \u201c' + (o[0].rule.name || 'Unnamed rule') + '\u201d. Shows under Errors until one copy is gone.'; st = 'warn'; }
+            seen.add(p); ok++;
+          }
+          note.textContent = msg;
+          li.dataset.state = st;
+        }
+        addBtn.disabled = !ok;
+        addBtn.textContent = ok > 1 ? 'Add ' + fmt(ok) + ' paths' : 'Add path';
+      };
+      list.addEventListener('paste', (e) => {
+        const inp = e.target.closest('.ap-input');
+        if (!inp) return;
+        const text = (e.clipboardData || window.clipboardData).getData('text') || '';
+        if (!/\s/.test(text.trim()) && !/^(https?:\/\/|www\.|\/)/i.test(text.trim())) return;   // a plain fragment pastes as usual
+        e.preventDefault();
+        const last = spread(inp, inp.value.slice(0, inp.selectionStart) + text + inp.value.slice(inp.selectionEnd));
+        last.focus(); last.setSelectionRange(last.value.length, last.value.length);
+        check();
+      });
+      list.addEventListener('input', (e) => {
+        const inp = e.target.closest('.ap-input');
+        if (inp && /\s/.test(inp.value.trim())) {
+          const last = spread(inp, inp.value);
+          last.focus(); last.setSelectionRange(last.value.length, last.value.length);
+        }
+        check();
+      });
+      list.addEventListener('focusout', (e) => {
+        const inp = e.target.closest('.ap-input');
+        if (inp && inp.value.trim()) { inp.value = shown(inp.value); check(); }
+      });
+      list.addEventListener('click', (e) => {
+        const del = e.target.closest('.ap-del');
+        if (!del) return;
+        const li = del.closest('.ap-row'), rows = list.children;
+        if (rows.length === 1) { li.querySelector('input').value = ''; li.querySelector('input').focus(); }
+        else { const prev = li.previousElementSibling || li.nextElementSibling; li.remove(); prev.querySelector('input').focus(); }
+        check();
+      });
+      list.addEventListener('keydown', (e) => {
+        const inp = e.target.closest('.ap-input');
+        if (!inp) return;
+        const li = inp.closest('.ap-row');
+        if (e.key === 'Enter') { e.preventDefault(); inp.value = inp.value.trim() ? shown(inp.value) : ''; check(); if (!addBtn.disabled) addBtn.click(); return; }
+        if (e.key === 'ArrowDown' && li.nextElementSibling) { e.preventDefault(); li.nextElementSibling.querySelector('input').focus(); }
+        if (e.key === 'ArrowUp' && li.previousElementSibling) { e.preventDefault(); li.previousElementSibling.querySelector('input').focus(); }
+        if (e.key === 'Backspace' && !inp.value && list.children.length > 1) {
+          e.preventDefault();
+          const prev = li.previousElementSibling || li.nextElementSibling;
+          li.remove(); prev.querySelector('input').focus(); check();
+        }
+      });
+      $('#ap-more', d).addEventListener('click', () => { addRow(list.lastElementChild, '').focus(); });
+      addBtn.addEventListener('click', () => {
+        const fresh = [], dup = [], bad = [], seen = new Set();
+        for (const inp of inputs()) {
+          const p = pathOf(inp.value);
+          if (!p) continue;
+          if (/["\s]/.test(p)) { bad.push(p); continue; }
+          if (r.paths.includes(p) || seen.has(p)) { dup.push(p); continue; }
+          seen.add(p); fresh.push(p);
+        }
+        if (!fresh.length) return;
+        const shared = fresh.filter((p) => C.pathOwners(ms.current, p, r).length);
+        d.close();
+        commitPaths(r, fresh, dup, bad, [], shared);
+      });
+      addRow(null, '').focus();
+    }, { keepOnOutsideClick: true });
   }
 
   function footHTML(r) {
@@ -1988,7 +2159,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       if (r) {
         const ordered = C.exportOrder(ms.current.rules);
         const set = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
-        set('d-route', routeHTML(r)); set('d-problems', problemsHTML(r)); set('d-foot', footHTML(r));
+        set('d-problems', problemsHTML(r)); set('d-foot', footHTML(r));
         set('d-sub', subLine(r, ordered.indexOf(r) + 1, ordered.length));
       }
     }, 180);
@@ -2120,7 +2291,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
               $('#dt-open', d2).focus();
               $('#dt-open', d2).addEventListener('click', () => {
                 d2.close(); d.close(); state.q = ''; state.onlyProblems = false; selectRule(twin.rule.id);
-                const ta = $('#add-paths'); if (ta) { ta.scrollIntoView({ block: 'center' }); ta.focus(); }
+                addPathsDialog(twin.rule);
               });
             });
             return;
@@ -2152,9 +2323,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
           recompute(ms);
           renderMain();
           selectRule(rule.id);
-          const ta = $('#add-paths');
-          if (ta) { ta.scrollIntoView({ block: 'center' }); ta.focus(); }
-          toast('Rule created. Add its paths below.');
+          addPathsDialog(rule);
         });
       }, { keepOnOutsideClick: true });
   }
@@ -2341,19 +2510,6 @@ dialog[open]{animation:popIn .26s var(--ease)}
     changed();
   }
 
-  function addPaths() {
-    const r = activeRule(), ta = $('#add-paths');
-    const lines = ta.value.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
-    const dup = [], bad = [], fresh = [];
-    for (const line of lines) {
-      const p = C.toPath(line);
-      if (/[\s"]/.test(p)) { bad.push(line); continue; }
-      if (r.paths.includes(p) || fresh.includes(p)) { dup.push(p); continue; }
-      fresh.push(p);
-    }
-    const shared = fresh.filter((p) => C.pathOwners(activeMs().current, p, r).length);
-    commitPaths(r, fresh, dup, bad, [], shared);
-  }
 
   function commitPaths(r, take, dup, keepInBox, skippedTaken, shared) {
     const bad = keepInBox.filter((x) => !skippedTaken.includes(x));
@@ -2368,12 +2524,6 @@ dialog[open]{animation:popIn .26s var(--ease)}
       : shared.length + ' of them are in another rule too, so they show under Errors until one copy is gone.');
     if (skippedTaken.length) msg.push(C.plural(skippedTaken.length, 'path') + ' left out because another rule already has ' + (skippedTaken.length === 1 ? 'it' : 'them') + '.');
     if (msg.length) toast(msg.join(' '), bad.length && !added ? 'error' : null);
-    if (keepInBox.length) {
-      const box = $('#add-paths');
-      box.value = keepInBox.join('\n');
-      box.dispatchEvent(new Event('input', { bubbles: true }));
-      box.focus();
-    }
   }
 
   function editPath(btn) {
@@ -2404,6 +2554,20 @@ dialog[open]{animation:popIn .26s var(--ease)}
   }
 
 
+  // Copying a selection that runs across the path list gives just the paths, one per line,
+  // without the checkboxes' labels or the Edit and Delete buttons.
+  document.addEventListener('copy', (e) => {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount || sel.isCollapsed || !e.clipboardData) return;
+    const frag = sel.getRangeAt(0).cloneContents();
+    const rows = [...frag.querySelectorAll('li.pl')];
+    if (!rows.length) return;
+    const lines = rows.map((li) => { const t = li.querySelector('.pl-text'); return (t ? t.textContent : '').trim(); }).filter(Boolean);
+    if (!lines.length) return;
+    e.preventDefault();
+    e.clipboardData.setData('text/plain', lines.join('\n'));
+  });
+
   // Rules are links: Ctrl/Cmd-click, middle-click and the browser's "Open link in new tab" all work
   // natively. Make sure the latest changes are saved first, for the tab that's about to open.
   for (const ev of ['auxclick', 'contextmenu']) document.addEventListener(ev, (e) => { if (e.target.closest('a[data-action]')) saveNow(); });
@@ -2419,6 +2583,16 @@ dialog[open]{animation:popIn .26s var(--ease)}
     }
     switch (a) {
       case 'open-tab': openInNewTab(state.ruleId); break;
+      case 'copy-name': {
+        if (!r || !r.name) break;
+        copyText(r.name).then((ok) => {
+          if (!ok) { toast('The browser didn\u2019t allow copying. Select the name and press Ctrl+C instead.', 'error'); return; }
+          el.innerHTML = ICON.ok; el.classList.add('done');
+          setTimeout(() => { if (el.isConnected) { el.innerHTML = ICON.copy; el.classList.remove('done'); } }, 1400);
+          toast('Copied \u201c' + r.name + '\u201d.');
+        });
+        break;
+      }
       case 'show-all': {
         state.view = 'full';
         renderAll();
@@ -2475,7 +2649,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       case 'draft-bool': state.editing.draft[el.dataset.bool] = el.dataset.v === '1'; renderEditFields(); break;
       case 'edit-path-btn': editPath(el); break;
       case 'fix': { const i = ms.issues.find((x) => x.key === el.dataset.key); if (i) applyFix(i); break; }
-      case 'add-paths': addPaths(); break;
+      case 'add-paths-dialog': addPathsDialog(r); break;
       case 'remove-path': r.paths.splice(Number(el.dataset.idx), 1); changed(); break;
       case 'toggle-path': {
         const i = Number(el.dataset.idx);
@@ -2487,6 +2661,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       }
       case 'clear-selection': state.selected.clear(); $('#d-paths').innerHTML = pathsHTML(r); break;
       case 'toggle-all-paths': {
+        if (!r) break;
         const f = state.pathFilter.trim().toLowerCase();
         r.paths.forEach((p, i) => { if (!f || p.toLowerCase().includes(f)) { if (el.checked) state.selected.add(i); else state.selected.delete(i); } });
         const top = $('#detail').scrollTop;
@@ -2538,12 +2713,6 @@ dialog[open]{animation:popIn .26s var(--ease)}
       const f = $('#path-filter'); f.focus(); f.setSelectionRange(pos, pos);
       return;
     }
-    if (t.id === 'add-paths') {
-      const b = document.querySelector('[data-action="add-paths"]');
-      if (b) b.disabled = !t.value.trim();
-      t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight + 2, 220) + 'px';
-      return;
-    }
     if (t.dataset.draft && state.editing) { state.editing.draft[t.dataset.draft] = t.value; return; }
   });
 
@@ -2559,7 +2728,6 @@ dialog[open]{animation:popIn .26s var(--ease)}
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.target.id === 'add-paths' && e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); if (e.target.value.trim()) addPaths(); return; }
     if (document.querySelector('dialog[open]')) return;
     if (state.editing && e.target.dataset && e.target.dataset.draft) {
       if (e.key === 'Enter') { e.preventDefault(); saveEdit(); return; }
