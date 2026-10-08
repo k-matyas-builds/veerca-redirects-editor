@@ -2228,8 +2228,12 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   function footHTML(r) {
     const st = ruleState(activeMs(), r);
-    return st === 'new' ? '<span class="note">Added by you</span>'
-      : st === 'changed' ? '<button class="btn subtle" data-action="revert-rule">Undo all changes to this rule</button>' : '';
+    if (st === 'new') {
+      const n = movedIn(r).length;
+      return '<span class="note">Added by you</span>' +
+        (n ? '<button class="btn subtle" data-action="revert-rule">Remove this rule and put its ' + C.plural(n, 'path') + ' back</button>' : '');
+    }
+    return st === 'changed' ? '<button class="btn subtle" data-action="revert-rule">Undo all changes to this rule</button>' : '';
   }
 
 
@@ -2588,6 +2592,70 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   /* ================= actions ================= */
 
+  // Paths moved between rules (Move selected, the size split, "Put the other N in …") are undone as
+  // moves, so nothing quietly disappears: undoing a rule gives the paths moved into it back to the rule
+  // they came from, and takes the paths moved out of it back from wherever they went.
+
+  // Paths this rule has now but didn't have in the file, that another rule had and has since lost.
+  function movedIn(r) {
+    const ms = activeMs();
+    const orig = ms.original.rules.find((x) => x.id === r.id);
+    const had = new Set(orig ? orig.paths : []);
+    const out = [];
+    for (const p of r.paths) {
+      if (had.has(p)) continue;
+      for (const o of ms.original.rules) {
+        if (o.id === r.id || !o.paths.includes(p)) continue;
+        const home = ms.current.rules.find((x) => x.id === o.id);
+        if (home && home !== r && !home.paths.includes(p)) { out.push({ path: p, home, idx: o.paths.indexOf(p) }); break; }
+      }
+    }
+    return out;
+  }
+  // Puts paths back into the rule they came from, at their old place in its list where possible.
+  function returnHome(items) {
+    for (const it of items.slice().sort((a, b) => a.idx - b.idx)) it.home.paths.splice(Math.min(it.idx, it.home.paths.length), 0, it.path);
+  }
+  const wentBack = (items) => {
+    const by = new Map();
+    for (const it of items) by.set(it.home, (by.get(it.home) || 0) + 1);
+    return [...by].map(([home, n]) => C.plural(n, 'path') + ' went back to \u201c' + (home.name || 'Unnamed rule') + '\u201d.').join(' ');
+  };
+
+  // "Undo all changes to this rule" for a changed rule, or removing a rule you added.
+  function undoRule(r) {
+    const ms = activeMs();
+    const orig = ms.original.rules.find((x) => x.id === r.id);
+    const back = movedIn(r);
+    const taken = new Map();
+    if (orig) {
+      for (const p of orig.paths) {
+        if (r.paths.includes(p)) continue;
+        for (const z of ms.current.rules) {
+          if (z === r || !z.paths.includes(p)) continue;
+          const zo = ms.original.rules.find((x) => x.id === z.id);
+          if (zo && zo.paths.includes(p)) continue;              // that rule had it in the file too
+          z.paths = z.paths.filter((q) => q !== p);
+          taken.set(z, (taken.get(z) || 0) + 1);
+        }
+      }
+    }
+    returnHome(back);
+    if (orig) ms.current.rules[ms.current.rules.indexOf(r)] = clone(orig);
+    else ms.current.rules = ms.current.rules.filter((x) => x !== r);
+    // a rule you added that's empty now, because its paths went back, goes too
+    const emptied = [...taken.keys()].filter((z) => !z.paths.length && !ms.original.rules.some((x) => x.id === z.id));
+    if (emptied.length) ms.current.rules = ms.current.rules.filter((x) => !emptied.includes(x));
+    if (!orig) { state.ruleId = back.length ? back[0].home.id : null; state.editing = null; }
+    state.selected.clear();
+    changed();
+    const msg = [orig ? 'Undid the changes to \u201c' + (orig.name || 'Unnamed rule') + '\u201d.' : 'Removed \u201c' + (r.name || 'Unnamed rule') + '\u201d.'];
+    if (back.length) msg.push(wentBack(back));
+    for (const [z, n] of taken) if (!emptied.includes(z)) msg.push(C.plural(n, 'path') + ' came back from \u201c' + (z.name || 'Unnamed rule') + '\u201d.');
+    for (const z of emptied) msg.push('\u201c' + (z.name || 'Unnamed rule') + '\u201d was empty after that, so it\u2019s gone too.');
+    toast(msg.join(' '));
+  }
+
   // A second rule for the same address, with the same settings, placed right after the first:
   // "/hilfe" gets "/hilfe (part 2)". Used when a rule's paths near Akamai's size limit.
   function newPartRule(r) {
@@ -2823,21 +2891,34 @@ dialog[open]{animation:popIn .26s var(--ease)}
         break;
       }
       case 'move-paths': moveDialog(); break;
-      case 'revert-rule': {
-        const orig = ms.original.rules.find((x) => x.id === r.id);
-        const i = ms.current.rules.indexOf(r);
-        ms.current.rules[i] = clone(orig);
-        changed();
+      case 'revert-rule': undoRule(r); break;
+      case 'delete-rule': {
+        const del = (putBack) => {
+          if (putBack) returnHome(back);
+          ms.current.rules = ms.current.rules.filter((x) => x !== r);
+          state.ruleId = null; state.editing = null; state.selected.clear();
+          changed();
+          toast('Rule deleted.' + (putBack ? ' ' + wentBack(back) : ''));
+        };
+        const back = movedIn(r);
+        if (!back.length) {
+          confirmDialog('Delete \u201c' + (r.name || 'Unnamed rule') + '\u201d?', 'Its ' + C.plural(r.paths.length, 'path') + ' will stop redirecting once the Akamai team imports your file.', 'Delete rule', () => del(false), { destructive: true });
+          break;
+        }
+        // some of its paths were moved here from other rules: offer to put them back there
+        const homes = [...new Set(back.map((b) => b.home))].map((h) => '\u201c' + esc(h.name || 'Unnamed rule') + '\u201d').join(', ');
+        openDialog('<h2>Delete \u201c' + esc(r.name || 'Unnamed rule') + '\u201d?</h2>' +
+          '<p>' + (back.length === r.paths.length ? 'All ' + C.plural(back.length, 'path') : C.plural(back.length, 'path') + ' of its ' + fmt(r.paths.length)) +
+          ' were moved here from ' + homes + '. They can go back there, or be deleted along with this rule.</p>' +
+          '<div class="dlg-actions"><button class="btn" data-close>Cancel</button><button class="btn destructive" id="dl-all">Delete them too</button>' +
+          '<button class="btn primary" id="dl-back">Delete, and put them back</button></div>',
+        (d) => {
+          $('#dl-back', d).focus();
+          $('#dl-back', d).addEventListener('click', () => { d.close(); del(true); });
+          $('#dl-all', d).addEventListener('click', () => { d.close(); del(false); });
+        });
         break;
       }
-      case 'delete-rule':
-        confirmDialog('Delete \u201c' + (r.name || 'Unnamed rule') + '\u201d?', 'Its ' + C.plural(r.paths.length, 'path') + ' will stop redirecting once the Akamai team imports your file.', 'Delete rule', () => {
-          ms.current.rules = ms.current.rules.filter((x) => x !== r);
-          state.ruleId = null; state.editing = null;
-          changed();
-          toast('Rule deleted.');
-        }, { destructive: true });
-        break;
     }
   });
 
