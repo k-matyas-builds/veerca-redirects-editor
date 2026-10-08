@@ -465,6 +465,11 @@ details.adv summary{padding:2px 0 10px;font-size:13px;font-weight:600;color:var(
 .paths-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:10px}
 .paths-head h2{margin:0 !important}
 .paths-tools{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+.psize{padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.psize.near{color:var(--ink-2);background:var(--well);box-shadow:inset 0 0 0 1px var(--line)}
+.psize.full{color:var(--note-warn-ink);background:var(--note-warn-bg)}
+.psize.over{color:var(--note-bad-ink);background:var(--note-bad-bg)}
+.ap-room{display:block;margin-top:6px;font-weight:600;color:var(--note-warn-ink)}
 .paths-tools .btn svg{width:13px;height:13px}
 .paths-tools .btn.del:not(:disabled){color:var(--note-bad-ink)}
 .path-box{border-radius:14px;background:var(--well);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
@@ -840,12 +845,34 @@ dialog[open]{animation:popIn .26s var(--ease)}
     return [normTarget(r.redirectURL), r.statusCode, r.caseSensitive, r.useQueryString, r.regex, r.query, r.scheme, r.matchURL,
       r.host.trim().toLowerCase().split(/\s+/).filter(Boolean).sort().join(' ')].join('\u0001');
   }
+  // Akamai keeps all of a rule's paths in one cell of at most 8,192 bytes, and refuses the whole
+  // file if any rule goes over (seen on www_ford_de v792). Near that size, a second rule to the same
+  // address is a real need, not a duplicate.
+  const PATHS_MAX = 8192, PATHS_FULL = 8000, PATHS_NOTICE = 7000;
+  const utf8Length = (s) => { let n = 0; for (const ch of s) { const c = ch.codePointAt(0); n += c < 0x80 ? 1 : c < 0x800 ? 2 : c < 0x10000 ? 3 : 4; } return n; };
+  // The path cell exactly as exported: ":" for case-sensitive rules, then the paths, space-separated.
+  const pathsSize = (rule, more) => utf8Length((rule.caseSensitive ? ':' : '') + (more ? rule.paths.concat(more) : rule.paths).join(' '));
+
+  // Another rule with the same address and settings. Prefers one with room for this rule's paths;
+  // if they're all too full to take them, it's returned with full: true (a second rule is fine then).
   function findTwin(market, rule) {
     if (!rule.redirectURL.trim()) return null;
     const k = ruleKey(rule);
     const ordered = exportOrder(market.rules);
-    for (let i = 0; i < ordered.length; i++) if (ordered[i] !== rule && ordered[i].id !== rule.id && ruleKey(ordered[i]) === k) return { rule: ordered[i], pos: i + 1 };
-    return null;
+    let first = null;
+    for (let i = 0; i < ordered.length; i++) {
+      const o = ordered[i];
+      if (o === rule || o.id === rule.id || ruleKey(o) !== k) continue;
+      if (pathsSize(o, rule.paths.filter(Boolean)) <= PATHS_FULL) return { rule: o, pos: i + 1, full: false };
+      if (!first) first = { rule: o, pos: i + 1, full: true };
+    }
+    return first;
+  }
+
+  // Other rules with the same address and settings that have room for these paths, in policy order.
+  function twinsWithRoom(market, rule, paths) {
+    const k = ruleKey(rule);
+    return exportOrder(market.rules).filter((o) => o !== rule && o.id !== rule.id && ruleKey(o) === k && pathsSize(o, paths) <= PATHS_FULL);
   }
 
   /* ---------- checks ---------- */
@@ -857,11 +884,11 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const marketHost = market.host.toLowerCase();
     const knownHosts = new Set([marketHost]);
     ordered.forEach((r) => (hostsOf(r) || []).forEach((h) => knownHosts.add(h)));
-    const nameCount = new Map();
-    ordered.forEach((r) => { const k = r.name.trim(); if (k) nameCount.set(k, (nameCount.get(k) || 0) + 1); });
+    // Rule names must be unique: every rule after the first one with a name is flagged.
+    const firstByName = new Map();
+    ordered.forEach((r, i) => { const k = r.name.trim().toLowerCase(); if (k && !firstByName.has(k)) firstByName.set(k, { rule: r, pos: i + 1 }); });
 
-    const firstByKey = new Map();
-    ordered.forEach((r, i) => { if (r.redirectURL.trim()) { const k = ruleKey(r); if (!firstByKey.has(k)) firstByKey.set(k, { rule: r, pos: i + 1 }); } });
+    const earlierByKey = new Map();   // key -> earlier rules with that address and settings, in order
 
     ordered.forEach((r, i) => {
       const add = (severity, type, message, extra) => {
@@ -876,10 +903,23 @@ dialog[open]{animation:popIn .26s var(--ease)}
       for (const [field, label] of [['name', 'rule name'], ['host', 'hosts'], ['redirectURL', 'redirect address'], ['regex', 'regex'], ['query', 'query'], ['scheme', 'scheme'], ['matchURL', 'match URL']]) {
         if (/["\r\n]/.test(r[field])) add('error', 'chars', 'The ' + label + ' contains a quote mark or a line break, which would break the file.', { path: field });
       }
-      if (r.name.trim() && nameCount.get(r.name.trim()) > 1) add('warning', 'dupName', 'Another rule in this policy has the same name.');
-      const twin = r.redirectURL.trim() && firstByKey.get(ruleKey(r));
-      if (twin && twin.rule !== r) {
-        add('error', 'dupRule', 'This rule sends visitors to the same address as \u201c' + twin.rule.name + '\u201d (rule ' + twin.pos + '), with the same settings, so it isn\u2019t needed. Its paths belong in that rule.',
+      const named = r.name.trim() && firstByName.get(r.name.trim().toLowerCase());
+      if (named && named.rule !== r) add('error', 'dupName', 'Rule ' + named.pos + ' already has this name. Every rule needs a name of its own.', { otherId: named.rule.id });
+      // A duplicate only when its paths would fit into an earlier twin; otherwise it's a needed split.
+      let twin = null;
+      if (r.redirectURL.trim()) {
+        const k = ruleKey(r), list = earlierByKey.get(k) || [];
+        twin = list.find((t) => pathsSize(t.rule, r.paths.filter(Boolean)) <= PATHS_FULL) || null;
+        list.push({ rule: r, pos: i + 1 });
+        earlierByKey.set(k, list);
+      }
+      const size = pathsSize(r);
+      if (size > PATHS_MAX) {
+        add('error', 'tooLong', 'The paths in this rule add up to ' + size.toLocaleString('en-GB') + ' characters. Akamai accepts at most ' + PATHS_MAX.toLocaleString('en-GB') +
+          ' per rule and refuses the whole file otherwise.', { fix: 'split' });
+      }
+      if (twin) {
+        add('warning', 'dupRule', 'This rule sends visitors to the same address as \u201c' + twin.rule.name + '\u201d (rule ' + twin.pos + '), with the same settings, and its paths would fit there.',
           { otherId: twin.rule.id, fix: 'merge' });
       }
 
@@ -998,6 +1038,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
   root.RedirectCore = {
     MARKETS, STATUS_CODES, STATUS_LABELS, CSV_HEAD, normalizeRule, snapshot, exportOrder, newId,
     parseCSV, importPolicy, exportCSV, toPath, pathOwners, findTwin, parseTarget, analyze, diffMarket, describeDiff, plural,
+    pathsSize, twinsWithRoom, PATHS_MAX, PATHS_FULL, PATHS_NOTICE,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
@@ -1325,7 +1366,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     ms.issues = C.analyze(ms.current);
     ms.byRule = new Map();
     for (const i of ms.issues) {
-      i.isNew = !ms.baseline.has(i.key);
+      i.isNew = i.type === 'tooLong' || !ms.baseline.has(i.key);
       if (!ms.byRule.has(i.ruleId)) ms.byRule.set(i.ruleId, []);
       ms.byRule.get(i.ruleId).push(i);
     }
@@ -1840,13 +1881,25 @@ dialog[open]{animation:popIn .26s var(--ease)}
     if (!r) { state.editing = null; renderDetail(); return; }
     const d = Object.assign({}, e.draft, { name: e.draft.name.trim(), redirectURL: e.draft.redirectURL.trim(), regex: e.draft.regex.trim() });
     const candidate = Object.assign(clone(r), d);
+    // 1. Names must be unique. No way around this one.
+    const clash = d.name && ms.current.rules.find((x) => x !== r && x.name.trim().toLowerCase() === d.name.toLowerCase());
+    if (clash) {
+      openDialog('<h2>A rule with this name already exists</h2>' +
+        '<p>\u201c' + esc(clash.name) + '\u201d is rule ' + (C.exportOrder(ms.current.rules).indexOf(clash) + 1) + '. Every rule needs a name of its own, so choose another one.</p>' +
+        '<div class="dlg-actions"><button class="btn primary" data-close>Keep editing</button></div>',
+      (dlg) => { dlg.addEventListener('close', () => { const f = $('[data-draft="name"]'); if (f) { f.focus(); f.select(); } }); });
+      return;
+    }
+    // 2. Another rule already sends visitors to this address with these settings, and has room.
     const twin = C.findTwin(ms.current, candidate);
-    if (twin) {
+    if (twin && !twin.full && !force) {
       openDialog('<h2>This would duplicate an existing rule</h2>' +
         '<p>\u201c' + esc(twin.rule.name || 'Unnamed rule') + '\u201d (rule ' + twin.pos + ') already sends visitors to <span class="mono">' + esc(twin.rule.redirectURL) +
-        '</span> with the same settings. Instead of keeping two identical rules, move this rule\u2019s paths there.</p>' +
-        '<div class="dlg-actions"><button class="btn" data-close>Keep editing</button><button class="btn primary" id="tw-merge">Move the paths there and delete this rule</button></div>',
+        '</span> with the same settings, and has room for this rule\u2019s paths. Usually it\u2019s simpler to keep them in one rule.</p>' +
+        '<div class="dlg-actions"><button class="btn" data-close>Keep editing</button><button class="btn primary" id="tw-merge">Move the paths there and delete this rule</button></div>' +
+        '<p class="override"><button class="link" id="tw-force">I know what I\u2019m doing, save anyway</button></p>',
       (dlg) => {
+        $('#tw-force', dlg).addEventListener('click', () => { dlg.close(); saveEdit(true); });
         $('#tw-merge', dlg).addEventListener('click', () => {
           dlg.close();
           state.editing = null;
@@ -1859,16 +1912,6 @@ dialog[open]{animation:popIn .26s var(--ease)}
           toast('Moved ' + C.plural(moved, 'path') + ' into \u201c' + (twin.rule.name || 'Unnamed rule') + '\u201d and deleted \u201c' + (r.name || 'Unnamed rule') + '\u201d.');
         });
       });
-      return;
-    }
-    const clash = d.name && d.name.toLowerCase() !== r.name.trim().toLowerCase() &&
-      ms.current.rules.find((x) => x !== r && x.name.trim().toLowerCase() === d.name.toLowerCase());
-    if (clash && !force) {
-      openDialog('<h2>A rule with this name already exists</h2>' +
-        '<p>\u201c' + esc(clash.name) + '\u201d already uses this name. Two rules with the same name are easy to mix up.</p>' +
-        '<div class="dlg-actions"><button class="btn primary" data-close>Keep editing</button></div>' +
-        '<p class="override"><button class="link" id="nm-force">I know what I\u2019m doing, save anyway</button></p>',
-      (dlg) => { $('#nm-force', dlg).addEventListener('click', () => { dlg.close(); saveEdit(true); }); });
       return;
     }
     for (const k of DRAFT_FIELDS) r[k] = d[k];
@@ -1895,6 +1938,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     removePath: 'Remove this path', removeDuplicate: 'Remove the duplicate', removeEmpty: 'Remove empty entries',
     flatten: 'Send visitors straight to the final address',
     merge: 'Move its paths there and delete this rule',
+    split: 'Move the extra paths to a second rule',
   };
 
   function problemsHTML(r) {
@@ -1996,9 +2040,15 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const f = state.pathFilter.trim().toLowerCase();
     const items = r.paths.map((p, idx) => ({ p, idx })).filter(({ p }) => !f || p.toLowerCase().includes(f));
     const sel = state.selected.size;
+    // Near Akamai's size limit, show how full the rule is, and offer a second rule for more paths.
+    const size = C.pathsSize(r);
+    const level = size > C.PATHS_MAX ? 'over' : size >= C.PATHS_FULL ? 'full' : size >= C.PATHS_NOTICE ? 'near' : '';
+    const meter = level ? '<span class="psize ' + level + '" title="Akamai accepts at most ' + fmt(C.PATHS_MAX) + ' characters of paths per rule">' +
+      fmt(size) + ' / ' + fmt(C.PATHS_MAX) + ' characters</span>' : '';
     // Everything for paths sits in one bar above the list, like Veera: add, move, remove, filter.
-    const head = '<div class="paths-head"><h2>Paths <span class="count">' + fmt(r.paths.length) + '</span></h2>' +
+    const head = '<div class="paths-head"><h2>Paths <span class="count">' + fmt(r.paths.length) + '</span></h2>' + meter +
       '<div class="paths-tools">' +
+      (level === 'full' || level === 'over' ? '<button class="btn" data-action="continue-rule" title="A second rule to the same address, with the same settings">' + ICON.plus + 'New rule for more paths</button>' : '') +
       '<button class="btn" data-action="add-paths-dialog">' + ICON.plus + 'Add paths</button>' +
       '<button class="btn" data-action="move-paths"' + (sel ? '' : ' disabled') + '>' + ICON.move + 'Move selected</button>' +
       '<button class="btn del" data-action="remove-selected"' + (sel ? '' : ' disabled') + '>' + ICON.trash + 'Remove selected</button>' +
@@ -2025,16 +2075,28 @@ dialog[open]{animation:popIn .26s var(--ease)}
   // Adding paths happens in a dialog with one row per path, like Veera. Paste a whole list, or type
   // a space, and it's split into rows straight away; full addresses become paths. Each row says if
   // it's already in this rule or in another one. Enter adds, so a single path is just type and Enter.
-  function addPathsDialog(r) {
+  // With { newPart: true } the paths go to a new rule right after r, with r's settings ("part 2").
+  function addPathsDialog(r, opts) {
     if (!r) return;
     const ms = activeMs();
-    openDialog('<h2>Add paths</h2>' +
-      '<p class="ap-lead">To \u201c' + esc(r.name || 'Unnamed rule') + '\u201d. One path per row. Paste a list and it\u2019s split into rows; full ' + esc(ms.host) + ' addresses work too.</p>' +
+    const newPart = !!(opts && opts.newPart), fullOne = opts && opts.fullOne;
+    // the rule the rows are checked against: r itself, or the empty part 2 that will be created
+    const into = newPart ? Object.assign({}, r, { id: '(new part)', paths: [] }) : r;
+    const room = C.PATHS_MAX - C.pathsSize(into);
+    openDialog('<h2>' + (newPart ? 'Add paths to a new rule' : 'Add paths') + '</h2>' +
+      '<p class="ap-lead">' + (newPart
+        ? 'A second rule to the same address as \u201c' + esc(r.name || 'Unnamed rule') + '\u201d, with the same settings, placed right after it.'
+        : fullOne ? 'To \u201c' + esc(r.name || 'Unnamed rule') + '\u201d (rule ' + posOf(r) + '). \u201c' + esc(fullOne.name || 'Unnamed rule') + '\u201d is nearly full, and this rule already sends visitors to the same address with the same settings.'
+        : 'To \u201c' + esc(r.name || 'Unnamed rule') + '\u201d.') +
+      ' One path per row. Paste a list and it\u2019s split into rows; full ' + esc(ms.host) + ' addresses work too.' +
+      (!newPart && C.pathsSize(r) >= C.PATHS_NOTICE ? ' <b class="ap-room">Room left in this rule: ' + fmt(Math.max(0, room)) + ' of ' + fmt(C.PATHS_MAX) + ' characters.</b>' : '') + '</p>' +
       '<ul class="ap-rows" id="ap-rows"></ul>' +
       '<div><button class="btn subtle ap-more" type="button" id="ap-more">' + ICON.plus + 'Another row</button></div>' +
-      '<div class="dlg-actions"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="button" id="ap-add" disabled>Add path</button></div>',
+      '<div class="dlg-actions"><button class="btn" type="button" data-close>Cancel</button>' +
+      (newPart ? '' : '<button class="btn" type="button" id="ap-split" hidden></button>') +
+      '<button class="btn primary" type="button" id="ap-add" disabled>Add path</button></div>',
     (d) => {
-      const list = $('#ap-rows', d), addBtn = $('#ap-add', d);
+      const list = $('#ap-rows', d), addBtn = $('#ap-add', d), splitBtn = $('#ap-split', d);
       const inputs = () => [...list.querySelectorAll('.ap-input')];
       const pathOf = (v) => (v.trim() ? C.toPath(v.trim()) : '');
       const shown = (v) => { const p = C.toPath(v.trim()); return p === '/' ? '/' : p.replace(/^\//, ''); };
@@ -2056,27 +2118,46 @@ dialog[open]{animation:popIn .26s var(--ease)}
         for (const part of parts.slice(1)) last = addRow(last.closest('.ap-row'), shown(part));
         return last;
       };
+      // Sorts the rows: paths that fit, paths that don't fit in the rule any more, and ones to skip.
+      const sortRows = () => {
+        const seen = new Set(), fit = [], over = [], dup = [], bad = [];
+        for (const inp of inputs()) {
+          const p = pathOf(inp.value);
+          if (!p) continue;
+          if (/["\s]/.test(p)) bad.push(p);
+          else if (into.paths.includes(p) || seen.has(p)) dup.push(p);
+          else { seen.add(p); (C.pathsSize(into, fit.concat(p)) <= C.PATHS_MAX ? fit : over).push(p); }
+        }
+        return { fit, over, dup, bad };
+      };
       const check = () => {
-        const seen = new Set();
-        let ok = 0;
+        const seen = new Set(), sorted = sortRows();
         for (const inp of inputs()) {
           const li = inp.closest('.ap-row'), note = li.querySelector('.ap-note');
           const p = pathOf(inp.value);
           let msg = '', st = '';
           if (!p) { /* empty row, ignored */ }
           else if (/["\s]/.test(p)) { msg = 'Paths can\u2019t contain quote marks.'; st = 'bad'; }
-          else if (r.paths.includes(p)) { msg = 'Already in this rule, so it\u2019s skipped.'; st = 'skip'; }
+          else if (into.paths.includes(p)) { msg = 'Already in this rule, so it\u2019s skipped.'; st = 'skip'; }
           else if (seen.has(p)) { msg = 'Listed twice, so it\u2019s added once.'; st = 'skip'; }
+          else if (sorted.over.includes(p)) { msg = 'Doesn\u2019t fit: the rule would go over Akamai\u2019s limit of ' + fmt(C.PATHS_MAX) + ' characters.'; st = 'bad'; seen.add(p); }
           else {
-            const o = C.pathOwners(ms.current, p, r);
+            const o = C.pathOwners(ms.current, p, into);
             if (o.length) { msg = 'Also in rule ' + o[0].pos + ', \u201c' + (o[0].rule.name || 'Unnamed rule') + '\u201d. Shows under Errors until one copy is gone.'; st = 'warn'; }
-            seen.add(p); ok++;
+            seen.add(p);
           }
           note.textContent = msg;
           li.dataset.state = st;
         }
+        const ok = sorted.fit.length;
         addBtn.disabled = !ok;
         addBtn.textContent = ok > 1 ? 'Add ' + fmt(ok) + ' paths' : 'Add path';
+        if (splitBtn) {
+          const t = sorted.over.length && overflowTarget(r, sorted.over);
+          splitBtn.hidden = !sorted.over.length;
+          splitBtn.textContent = 'Put the other ' + fmt(sorted.over.length) + ' in ' + (t ? 'rule ' + posOf(t) : 'a new rule');
+          splitBtn.title = t ? '\u201c' + (t.name || 'Unnamed rule') + '\u201d already sends visitors to the same address, with the same settings, and has room.' : 'A second rule to the same address, with the same settings, right after this one.';
+        }
       };
       list.addEventListener('paste', (e) => {
         const inp = e.target.closest('.ap-input');
@@ -2122,20 +2203,25 @@ dialog[open]{animation:popIn .26s var(--ease)}
         }
       });
       $('#ap-more', d).addEventListener('click', () => { addRow(list.lastElementChild, '').focus(); });
-      addBtn.addEventListener('click', () => {
-        const fresh = [], dup = [], bad = [], seen = new Set();
-        for (const inp of inputs()) {
-          const p = pathOf(inp.value);
-          if (!p) continue;
-          if (/["\s]/.test(p)) { bad.push(p); continue; }
-          if (r.paths.includes(p) || seen.has(p)) { dup.push(p); continue; }
-          seen.add(p); fresh.push(p);
-        }
-        if (!fresh.length) return;
-        const shared = fresh.filter((p) => C.pathOwners(ms.current, p, r).length);
+      const commit = (withOverflow) => {
+        const { fit, over, dup, bad } = sortRows();
+        if (!fit.length && !(withOverflow && over.length)) return;
         d.close();
-        commitPaths(r, fresh, dup, bad, [], shared);
-      });
+        const target = newPart ? newPartRule(r) : r;
+        const shared = fit.filter((p) => C.pathOwners(ms.current, p, target).length);
+        let part = null, isNew = false;
+        if (withOverflow && over.length) {
+          part = overflowTarget(target, over);
+          if (!part) { part = newPartRule(target); isNew = true; }
+          part.paths.push(...over);
+        }
+        commitPaths(target, fit, dup, bad, [], shared);
+        if (newPart || part) selectRule((part || target).id);
+        if (part) toast('Added ' + C.plural(fit.length, 'path') + ' to \u201c' + (target.name || 'Unnamed rule') + '\u201d and ' + C.plural(over.length, 'path') + ' to ' + (isNew ? 'the new rule ' : '') + '\u201c' + part.name + '\u201d.');
+        else if (over.length) toast('Added ' + C.plural(fit.length, 'path') + '. ' + C.plural(over.length, 'path') + ' didn\u2019t fit and ' + (over.length === 1 ? 'was' : 'were') + ' left out.', 'error');
+      };
+      addBtn.addEventListener('click', () => commit(false));
+      if (splitBtn) splitBtn.addEventListener('click', () => commit(true));
       addRow(null, '').focus();
     }, { keepOnOutsideClick: true });
   }
@@ -2278,37 +2364,55 @@ dialog[open]{animation:popIn .26s var(--ease)}
         form.addEventListener('input', check);
         form.name.focus();
         $('#nr-create', d).addEventListener('click', () => {
+          // 1. Names must be unique. No way around this one.
+          const wanted = form.name.value.trim().toLowerCase();
+          const same = C.exportOrder(ms.current.rules).find((x) => x.name.trim().toLowerCase() === wanted);
+          if (same) {
+            const pos = C.exportOrder(ms.current.rules).indexOf(same) + 1;
+            openDialog('<h2>A rule with this name already exists</h2>' +
+              '<p>\u201c' + esc(same.name) + '\u201d is rule ' + pos + ' and sends visitors to <span class="mono">' + esc(same.redirectURL) + '</span>. ' +
+              'Every rule needs a name of its own: choose another name, or open that rule to add paths to it.</p>' +
+              '<div class="dlg-actions"><button class="btn" id="dn-rename">Change the name</button><button class="btn primary" id="dn-open">Open existing rule instead</button></div>',
+            (d2) => {
+              $('#dn-rename', d2).focus();
+              $('#dn-rename', d2).addEventListener('click', () => { d2.close(); form.name.focus(); form.name.select(); });
+              $('#dn-open', d2).addEventListener('click', () => { d2.close(); d.close(); state.q = ''; state.onlyProblems = false; selectRule(same.id); });
+            });
+            return;
+          }
+          // 2. Another rule already sends visitors to this address with these settings.
           const twin = C.findTwin(ms.current, C.normalizeRule({
             host: ms.host, redirectURL: form.redirectURL.value.trim(), regex: form.regex.value.trim(), statusCode: Number(picked.statusCode),
             caseSensitive: picked.caseSensitive === '1', useQueryString: picked.useQueryString === '1',
           }));
-          if (twin) {
-            openDialog('<h2>This rule already exists</h2>' +
+          if (twin && twin.full && d.dataset.twinOk !== '1') {
+            // nearly at Akamai's size limit: a second rule is the right thing
+            const full = C.pathsSize(twin.rule);
+            openDialog('<h2>This rule already exists, but it\u2019s nearly full</h2>' +
               '<p>\u201c' + esc(twin.rule.name || 'Unnamed rule') + '\u201d (rule ' + twin.pos + ') already sends visitors to <span class="mono">' + esc(twin.rule.redirectURL) +
-              '</span> with the same settings. Add your paths to it instead of creating a second rule.</p>' +
-              '<div class="dlg-actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="dt-open">Open existing rule instead</button></div>',
+              '</span> with the same settings. Its paths come to ' + fmt(full) + ' of the ' + fmt(C.PATHS_MAX) + ' characters Akamai accepts per rule, so a second rule for more paths is fine.</p>' +
+              '<div class="dlg-actions"><button class="btn" data-close>Cancel</button><button class="btn" id="dt-open">Open existing rule</button><button class="btn primary" id="dt-second">Create a second rule</button></div>',
+            (d2) => {
+              $('#dt-second', d2).focus();
+              $('#dt-open', d2).addEventListener('click', () => { d2.close(); d.close(); state.q = ''; state.onlyProblems = false; selectRule(twin.rule.id); });
+              $('#dt-second', d2).addEventListener('click', () => { d2.close(); d.dataset.twinOk = '1'; $('#nr-create', d).click(); });
+            });
+            return;
+          }
+          if (twin && !twin.full && d.dataset.twinOk !== '1') {
+            // there's room in the existing rule: suggest it, but allow a second rule
+            openDialog('<h2>A rule for this address already exists</h2>' +
+              '<p>\u201c' + esc(twin.rule.name || 'Unnamed rule') + '\u201d (rule ' + twin.pos + ') already sends visitors to <span class="mono">' + esc(twin.rule.redirectURL) +
+              '</span> with the same settings, and has room for more paths. Usually it\u2019s simpler to add your paths there.</p>' +
+              '<div class="dlg-actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="dt-open">Add paths to the existing rule</button></div>' +
+              '<p class="override"><button class="link" id="dt-force">I know what I\u2019m doing, create anyway</button></p>',
             (d2) => {
               $('#dt-open', d2).focus();
               $('#dt-open', d2).addEventListener('click', () => {
                 d2.close(); d.close(); state.q = ''; state.onlyProblems = false; selectRule(twin.rule.id);
                 addPathsDialog(twin.rule);
               });
-            });
-            return;
-          }
-          const wanted = form.name.value.trim().toLowerCase();
-          const same = C.exportOrder(ms.current.rules).find((x) => x.name.trim().toLowerCase() === wanted);
-          if (same && !d.dataset.forced) {
-            const pos = C.exportOrder(ms.current.rules).indexOf(same) + 1;
-            openDialog('<h2>A rule with this name already exists</h2>' +
-              '<p>\u201c' + esc(same.name) + '\u201d is rule ' + pos + ' and sends visitors to <span class="mono">' + esc(same.redirectURL) + '</span>. ' +
-              'To add paths to it, open it instead of creating a second rule with the same name.</p>' +
-              '<div class="dlg-actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="dn-open">Open existing rule instead</button></div>' +
-              '<p class="override"><button class="link" id="dn-force">I know what I\u2019m doing, create anyway</button></p>',
-            (d2) => {
-              $('#dn-open', d2).focus();
-              $('#dn-open', d2).addEventListener('click', () => { d2.close(); d.close(); state.q = ''; state.onlyProblems = false; selectRule(same.id); });
-              $('#dn-force', d2).addEventListener('click', () => { d2.close(); d.dataset.forced = '1'; $('#nr-create', d).click(); });
+              $('#dt-force', d2).addEventListener('click', () => { d2.close(); d.dataset.twinOk = '1'; $('#nr-create', d).click(); });
             });
             return;
           }
@@ -2317,7 +2421,9 @@ dialog[open]{animation:popIn .26s var(--ease)}
             redirectURL: form.redirectURL.value.trim(), regex: form.regex.value.trim(), statusCode: Number(picked.statusCode),
             caseSensitive: picked.caseSensitive === '1', useQueryString: picked.useQueryString === '1',
           });
-          ms.current.rules.push(rule);
+          // a second rule for the same address goes right after the first; any other new rule goes at the end
+          if (twin && d.dataset.twinOk === '1') ms.current.rules.splice(ms.current.rules.indexOf(twin.rule) + 1, 0, rule);
+          else ms.current.rules.push(rule);
           d.close();
           state.ruleId = rule.id; state.q = ''; state.onlyProblems = false;
           recompute(ms);
@@ -2482,10 +2588,43 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   /* ================= actions ================= */
 
+  // A second rule for the same address, with the same settings, placed right after the first:
+  // "/hilfe" gets "/hilfe (part 2)". Used when a rule's paths near Akamai's size limit.
+  function newPartRule(r) {
+    const ms = activeMs();
+    const base = (r.name || 'Unnamed rule').replace(/\s*\(part \d+\)$/i, '');
+    const names = new Set(ms.current.rules.map((x) => x.name));
+    let n = 2;
+    while (names.has(base + ' (part ' + n + ')')) n++;
+    const part = Object.assign(clone(r), { id: C.newId(), name: base + ' (part ' + n + ')', paths: [], pinLast: false });
+    let at = ms.current.rules.indexOf(r) + 1;
+    while (at < ms.current.rules.length && /\(part \d+\)$/i.test(ms.current.rules[at].name) && ms.current.rules[at].name.indexOf(base) === 0) at++;
+    ms.current.rules.splice(at, 0, part);
+    return part;
+  }
+
+  // Where paths that don't fit in r go: a rule that already sends visitors to the same address with
+  // the same settings and has room for them, or else (null) a new "part" rule.
+  const overflowTarget = (r, paths) => C.twinsWithRoom(activeMs().current, r, paths)[0] || null;
+  const posOf = (rule) => C.exportOrder(activeMs().current.rules).indexOf(rule) + 1;
+
   function applyFix(issue) {
     const ms = activeMs();
     const r = ms.current.rules.find((x) => x.id === issue.ruleId);
     if (!r) return;
+    if (issue.fix === 'split') {
+      const moving = [];
+      while (r.paths.length > 1 && C.pathsSize(r) > C.PATHS_FULL) moving.unshift(r.paths.pop());
+      const twin = overflowTarget(r, moving);
+      const dest = twin || newPartRule(r);
+      dest.paths.push(...moving);
+      changed();
+      selectRule(dest.id);
+      toast('Moved ' + C.plural(moving.length, 'path') + ' to ' + (twin
+        ? '\u201c' + (dest.name || 'Unnamed rule') + '\u201d (rule ' + posOf(dest) + '), which already sends visitors to the same address.'
+        : 'the new rule \u201c' + dest.name + '\u201d, right after \u201c' + (r.name || 'Unnamed rule') + '\u201d.'));
+      return;
+    }
     if (issue.fix === 'merge') {
       const target = ms.current.rules.find((x) => x.id === issue.otherId);
       if (!target) return;
@@ -2650,6 +2789,12 @@ dialog[open]{animation:popIn .26s var(--ease)}
       case 'edit-path-btn': editPath(el); break;
       case 'fix': { const i = ms.issues.find((x) => x.key === el.dataset.key); if (i) applyFix(i); break; }
       case 'add-paths-dialog': addPathsDialog(r); break;
+      case 'continue-rule': {
+        const twin = overflowTarget(r, []);
+        if (twin) { selectRule(twin.id); addPathsDialog(twin, { fullOne: r }); }
+        else addPathsDialog(r, { newPart: true });
+        break;
+      }
       case 'remove-path': r.paths.splice(Number(el.dataset.idx), 1); changed(); break;
       case 'toggle-path': {
         const i = Number(el.dataset.idx);
