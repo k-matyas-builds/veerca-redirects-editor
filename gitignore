@@ -1,0 +1,12 @@
+# Policy files must never be committed: they belong to the Akamai team's workflow, not to this repo.
+*.csv
+*.zip
+*.xlsx
+*.xls
+
+# OS and editor clutter
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
