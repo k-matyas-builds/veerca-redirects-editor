@@ -439,7 +439,6 @@ input.d-name:focus{background:var(--field-bg);box-shadow:inset 0 0 0 1px rgba(75
 .p-actions .link{font-size:12.5px}
 
 .field-row{display:flex;flex-wrap:wrap;gap:0 28px}
-.field-row > .field:last-child{flex:1 1 140px;min-width:140px}
 .field-row.two{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
 .ro{display:flex;align-items:center;height:36px;padding:0 11px;border-radius:10px;background:var(--well);color:var(--ink-2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .hint.kept{margin:-4px 0 6px}
@@ -471,7 +470,7 @@ details.adv[open] .adv-state{display:none}
 .tip-btn{width:16px;height:16px;padding:0;border:0;border-radius:50%;background:none;display:inline-grid;place-items:center;color:var(--ink-3);cursor:help}
 .tip-btn svg{width:14px;height:14px}
 .tip-btn:hover,.tip-btn:focus-visible,.tip.show .tip-btn{color:var(--ink)}
-.tip-box{position:absolute;left:-8px;bottom:calc(100% + 8px);z-index:30;width:250px;padding:10px 12px;border-radius:12px;
+.tip-box{position:absolute;left:-8px;bottom:calc(100% + 8px);z-index:30;width:max-content;max-width:290px;padding:10px 12px;border-radius:12px;
   background:var(--solid-glass);box-shadow:inset 0 0 0 1px var(--sep),0 10px 28px -8px rgba(0,0,0,.45);
   font-size:12.5px;line-height:1.5;font-weight:400;color:var(--ink);text-align:left;white-space:normal;
   display:none;pointer-events:none}
@@ -1980,11 +1979,12 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   // What the two toggles and Advanced settings do, in the team's own words. Shown as tooltips.
   const TIPS = {
-    caseSensitive: 'Yes is the default. The redirect only works for the exact casing of the URL. With No, any casing redirects.',
-    useQueryString: 'Yes is the default. Anything after the rule\u2019s URL, such as ?vehicleCode=\u2026 in forms, is passed on to the new URL automatically.',
-    statusCode: '301 is the default for Akamai redirects. The others are rarely used in regular BAU work, so only change it if specifically requested.',
-    regex: 'Not used in regular BAU work.',
+    caseSensitive: 'The redirect only works if the URL uses this exact casing. No allows any casing (e.g. s-max or S-MAX). Yes is the default.',
+    useQueryString: 'Anything added after the original URL (e.g. ?vehicleCode=\u2026 in forms) is automatically passed on to the new URL. Yes is the default.',
+    statusCode: '301 is the standard for Akamai redirects. Other status codes are rarely used in BAU work, so only change this if specifically requested.',
+    regex: 'Regex is not used in regular BAU work.',
   };
+
   function tipHTML(key, label) {
     return '<span class="tip"><button type="button" class="tip-btn" aria-label="About ' + esc(label) + '">' + ICON.info + '</button>' +
       '<span class="tip-box" role="tooltip">' + esc(TIPS[key]) + '</span></span>';
@@ -2045,10 +2045,11 @@ dialog[open]{animation:popIn .26s var(--ease)}
         '</dd></div>' +
       '<div class="info"><dt>Case sensitive</dt><dd>' + yn(r.caseSensitive) + '</dd></div>' +
       '<div class="info"><dt>Use query string</dt><dd>' + yn(r.useQueryString) + '</dd></div>' +
-      '<div class="info"><dt>Host</dt><dd class="mono">' + (r.host ? esc(r.host) : '<em>Every host</em>') + '</dd></div>' +
-      // The usual 301 and no regex stay out of sight; anything else is shown so it never hides.
-      (r.statusCode !== 301 ? '<div class="info"><dt>Status code</dt><dd>' + (C.STATUS_CODES.includes(r.statusCode) ? '<b>' + r.statusCode + '</b> ' + esc(C.STATUS_LABELS[r.statusCode]) : '<em>None</em>') + '</dd></div>' : '') +
+      // Status code stays visible as a quick confirmation; regex only shows when one is set.
+      '<div class="info"><dt>Status code</dt><dd>' + (C.STATUS_CODES.includes(r.statusCode) ? '<b>' + r.statusCode + '</b> ' + esc(C.STATUS_LABELS[r.statusCode]) : '<em>None</em>') + '</dd></div>' +
       (r.regex ? '<div class="info"><dt>Regex</dt><dd class="mono">' + esc(r.regex) + '</dd></div>' : '') +
+      // Host isn't editable and is already in the header, so it only shows when it isn't the market's own host.
+      (r.host !== ms.host ? '<div class="info"><dt>Host</dt><dd class="mono">' + (r.host ? esc(r.host) : '<em>Every host</em>') + '</dd></div>' : '') +
       '</dl>' +
       (kept.length ? '<p class="hint kept">Also matches on ' + kept.map(([k, l]) => l + ' \u201c' + esc(r[k]) + '\u201d').join(', ') + '. Kept exactly as in the file.</p>' : '');
   }
@@ -2061,9 +2062,9 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const open = e && typeof e.advOpen === 'boolean' ? e.advOpen : nonDefault;
     return '<label class="field"><span>Redirect URL</span><input type="text" class="mono" data-draft="redirectURL" value="' + esc(r.redirectURL) + '" placeholder="https://' + esc(ms.host) + '/\u2026" spellcheck="false"></label>' +
       '<div class="field-row">' +
-      '<div class="field">' + fieldLabel('Case sensitive', 'caseSensitive') + ynSeg('caseSensitive', r.caseSensitive) + '</div>' +
-      '<div class="field">' + fieldLabel('Use query string', 'useQueryString') + ynSeg('useQueryString', r.useQueryString) + '</div>' +
-      '<div class="field"><span>Host</span><div class="ro mono" title="' + esc(activeRule().host) + '">' + (activeRule().host ? esc(activeRule().host) : 'Every host') + '</div></div>' +
+      '<div class="field">' + fieldLabel('Case sensitive', 'caseSensitive') + '<div>' + ynSeg('caseSensitive', r.caseSensitive) + '</div></div>' +
+      '<div class="field">' + fieldLabel('Use query string', 'useQueryString') + '<div>' + ynSeg('useQueryString', r.useQueryString) + '</div></div>' +
+      (activeRule().host !== ms.host ? '<div class="field"><span>Host</span><div class="ro mono" title="' + esc(activeRule().host) + '">' + (activeRule().host ? esc(activeRule().host) : 'Every host') + '</div></div>' : '') +
       '</div>' +
       advHTML('<div class="adv-grid">' +
         '<div class="field">' + fieldLabel('Status code', 'statusCode') + statusPicker(r.statusCode, null, 'draft-status') + '</div>' +
