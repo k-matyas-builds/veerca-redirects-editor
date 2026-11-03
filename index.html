@@ -439,7 +439,7 @@ input.d-name:focus{background:var(--field-bg);box-shadow:inset 0 0 0 1px rgba(75
 .p-actions .link{font-size:12.5px}
 
 .field-row{display:flex;flex-wrap:wrap;gap:0 28px}
-.field-row > .field:first-child{min-width:252px}
+.field-row > .field:last-child{flex:1 1 140px;min-width:140px}
 .field-row.two{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
 .ro{display:flex;align-items:center;height:36px;padding:0 11px;border-radius:10px;background:var(--well);color:var(--ink-2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .hint.kept{margin:-4px 0 6px}
@@ -458,9 +458,25 @@ input.d-name:focus{background:var(--field-bg);box-shadow:inset 0 0 0 1px rgba(75
 @keyframes spOut{from{clip-path:inset(0 100% 0 0 round 999px);opacity:.3}to{clip-path:inset(0 0 0 0 round 999px);opacity:1}}
 .switches{margin:4px 0 6px}
 details.adv{margin-top:6px;padding-top:10px;border-top:1px solid var(--line)}
-details.adv summary{padding:2px 0 10px;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer}
-.adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
-.adv-grid .field:first-child{grid-column:1 / -1}
+details.adv summary{list-style:none;display:flex;align-items:center;gap:8px;padding:2px 0 10px;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer}
+details.adv summary::-webkit-details-marker{display:none}
+details.adv summary svg{width:12px;height:12px;flex:none;color:var(--ink-3);transition:transform .2s var(--ease)}
+details.adv[open] > summary svg{transform:rotate(90deg)}
+details.adv summary:hover{color:var(--ink)}
+.adv-state{margin-left:auto;font-weight:400;font-size:12px;color:var(--ink-3)}
+details.adv[open] .adv-state{display:none}
+.adv-grid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 18px}
+.adv-grid .field:first-child{min-width:264px}
+.tip{position:relative;display:inline-flex;vertical-align:middle;margin-left:5px}
+.tip-btn{width:16px;height:16px;padding:0;border:0;border-radius:50%;background:none;display:inline-grid;place-items:center;color:var(--ink-3);cursor:help}
+.tip-btn svg{width:14px;height:14px}
+.tip-btn:hover,.tip-btn:focus-visible,.tip.show .tip-btn{color:var(--ink)}
+.tip-box{position:absolute;left:-8px;bottom:calc(100% + 8px);z-index:30;width:250px;padding:10px 12px;border-radius:12px;
+  background:var(--solid-glass);box-shadow:inset 0 0 0 1px var(--sep),0 10px 28px -8px rgba(0,0,0,.45);
+  font-size:12.5px;line-height:1.5;font-weight:400;color:var(--ink);text-align:left;white-space:normal;
+  display:none;pointer-events:none}
+.tip.flip .tip-box{left:auto;right:-8px}
+.tip:hover .tip-box,.tip:focus-within .tip-box,.tip.show .tip-box{display:block}
 
 .paths-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:10px}
 .paths-head h2{margin:0 !important}
@@ -1057,6 +1073,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
   const ICON = {
     tray: '<svg class="dz-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 5v13.5M10.5 13 16 18.5 21.5 13"/><path d="M5 19.5v3.5A4 4 0 0 0 9 27h14a4 4 0 0 0 4-4v-3.5"/></svg>',
     pencil: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2.6 13.4 5 5.6 12.8 2.5 13.5l.7-3.1z"/><path d="M9.6 4 12 6.4"/></svg>',
+    info: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 7.3v3.4M8 5.2v.1"/></svg>',
     chev: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 3 7.5 6 4.5 9"/></svg>',
     check: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm3.3 5.2-3.9 4.2a.75.75 0 0 1-1.1 0L4.7 8.7a.75.75 0 1 1 1.1-1l1.1 1.2 3.3-3.6a.75.75 0 1 1 1.1 1Z"/></svg>',
     ring: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="5.6"/><path d="M8 5.2v3.3M8 10.6v.1" stroke-linecap="round"/></svg>',
@@ -1961,6 +1978,26 @@ dialog[open]{animation:popIn .26s var(--ease)}
   }
 
 
+  // What the two toggles and Advanced settings do, in the team's own words. Shown as tooltips.
+  const TIPS = {
+    caseSensitive: 'Yes is the default. The redirect only works for the exact casing of the URL. With No, any casing redirects.',
+    useQueryString: 'Yes is the default. Anything after the rule\u2019s URL, such as ?vehicleCode=\u2026 in forms, is passed on to the new URL automatically.',
+    statusCode: '301 is the default for Akamai redirects. The others are rarely used in regular BAU work, so only change it if specifically requested.',
+    regex: 'Not used in regular BAU work.',
+  };
+  function tipHTML(key, label) {
+    return '<span class="tip"><button type="button" class="tip-btn" aria-label="About ' + esc(label) + '">' + ICON.info + '</button>' +
+      '<span class="tip-box" role="tooltip">' + esc(TIPS[key]) + '</span></span>';
+  }
+  function fieldLabel(text, key) { return '<span>' + text + tipHTML(key, text.toLowerCase()) + '</span>'; }
+  function advSummaryText(code, regex) {
+    const c = Number(code);
+    return (C.STATUS_CODES.includes(c) ? c + ' ' + C.STATUS_LABELS[c] : 'No status code') + (String(regex || '').trim() ? ', regex set' : ', no regex');
+  }
+  function advHTML(inner, open, summary) {
+    return '<details class="adv"' + (open ? ' open' : '') + '><summary>' + ICON.chev + 'Advanced settings<span class="adv-state">' + esc(summary) + '</span></summary>' + inner + '</details>';
+  }
+
   function statusPicker(code, name, action) {
     const valid = C.STATUS_CODES.includes(code);
     return '<div class="sp"' + (name ? ' data-name="' + name + '"' : '') + '>' +
@@ -2006,11 +2043,12 @@ dialog[open]{animation:popIn .26s var(--ease)}
         ? '<a href="' + esc(r.redirectURL) + '" target="_blank" rel="noopener">' + esc(r.redirectURL) + '</a>' : esc(r.redirectURL)) : '<em>None</em>') +
         (chain ? '<span class="dd-note chain">Then sent on again (' + esc(chain.nextStatus) + ') to <span class="mono">' + esc(chain.nextTarget) + '</span> by <a class="link" href="' + esc(ruleHref(chain.otherId, 'rule')) + '" data-action="select-rule" data-id="' + esc(chain.otherId) + '">\u201c' + esc(ruleName(chain.otherId)) + '\u201d</a>.</span>' : '') +
         '</dd></div>' +
-      '<div class="info"><dt>Status code</dt><dd>' + (C.STATUS_CODES.includes(r.statusCode) ? '<b>' + r.statusCode + '</b> ' + esc(C.STATUS_LABELS[r.statusCode]) : '<em>None</em>') + '</dd></div>' +
-      '<div class="info"><dt>Use query string</dt><dd>' + yn(r.useQueryString) + '</dd></div>' +
       '<div class="info"><dt>Case sensitive</dt><dd>' + yn(r.caseSensitive) + '</dd></div>' +
-      '<div class="info"><dt>Regex</dt><dd class="mono">' + (r.regex ? esc(r.regex) : '<em>None</em>') + '</dd></div>' +
+      '<div class="info"><dt>Use query string</dt><dd>' + yn(r.useQueryString) + '</dd></div>' +
       '<div class="info"><dt>Host</dt><dd class="mono">' + (r.host ? esc(r.host) : '<em>Every host</em>') + '</dd></div>' +
+      // The usual 301 and no regex stay out of sight; anything else is shown so it never hides.
+      (r.statusCode !== 301 ? '<div class="info"><dt>Status code</dt><dd>' + (C.STATUS_CODES.includes(r.statusCode) ? '<b>' + r.statusCode + '</b> ' + esc(C.STATUS_LABELS[r.statusCode]) : '<em>None</em>') + '</dd></div>' : '') +
+      (r.regex ? '<div class="info"><dt>Regex</dt><dd class="mono">' + esc(r.regex) + '</dd></div>' : '') +
       '</dl>' +
       (kept.length ? '<p class="hint kept">Also matches on ' + kept.map(([k, l]) => l + ' \u201c' + esc(r[k]) + '\u201d').join(', ') + '. Kept exactly as in the file.</p>' : '');
   }
@@ -2018,16 +2056,19 @@ dialog[open]{animation:popIn .26s var(--ease)}
   function fieldsHTML(r) {
     const ms = activeMs();
     const kept = [];
+    const e = state.editing;
+    const nonDefault = r.statusCode !== 301 || !!String(r.regex || '').trim();
+    const open = e && typeof e.advOpen === 'boolean' ? e.advOpen : nonDefault;
     return '<label class="field"><span>Redirect URL</span><input type="text" class="mono" data-draft="redirectURL" value="' + esc(r.redirectURL) + '" placeholder="https://' + esc(ms.host) + '/\u2026" spellcheck="false"></label>' +
       '<div class="field-row">' +
-      '<div class="field"><span>Status code</span>' + statusPicker(r.statusCode, null, 'draft-status') + '</div>' +
-      '<div class="field"><span>Use query string</span>' + ynSeg('useQueryString', r.useQueryString) + '</div>' +
-      '<div class="field"><span>Case sensitive</span>' + ynSeg('caseSensitive', r.caseSensitive) + '</div>' +
-      '</div>' +
-      '<div class="field-row two">' +
-      '<label class="field"><span>Regex</span><input type="text" class="mono" data-draft="regex" value="' + esc(r.regex) + '" placeholder="None" spellcheck="false"></label>' +
+      '<div class="field">' + fieldLabel('Case sensitive', 'caseSensitive') + ynSeg('caseSensitive', r.caseSensitive) + '</div>' +
+      '<div class="field">' + fieldLabel('Use query string', 'useQueryString') + ynSeg('useQueryString', r.useQueryString) + '</div>' +
       '<div class="field"><span>Host</span><div class="ro mono" title="' + esc(activeRule().host) + '">' + (activeRule().host ? esc(activeRule().host) : 'Every host') + '</div></div>' +
       '</div>' +
+      advHTML('<div class="adv-grid">' +
+        '<div class="field">' + fieldLabel('Status code', 'statusCode') + statusPicker(r.statusCode, null, 'draft-status') + '</div>' +
+        '<label class="field">' + fieldLabel('Regex', 'regex') + '<input type="text" class="mono" data-draft="regex" value="' + esc(r.regex) + '" placeholder="None" spellcheck="false"></label>' +
+        '</div>', open, advSummaryText(r.statusCode, r.regex)) +
       (kept.length ? '<p class="hint kept">Also matches on ' + kept.map(([k, l]) => l + ' \u201c' + esc(r[k]) + '\u201d').join(', ') + '. Kept exactly as in the file.</p>' : '');
   }
 
@@ -2327,25 +2368,30 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   function newRuleDialog() {
     const ms = activeMs();
+    // Yes is preselected on both: it's what the team always uses.
     const yn = (name) => '<div class="seg" role="radiogroup" data-name="' + name + '">' +
-      '<button type="button" role="radio" aria-checked="false" data-value="1">Yes</button>' +
+      '<button type="button" role="radio" aria-checked="true" data-value="1">Yes</button>' +
       '<button type="button" role="radio" aria-checked="false" data-value="0">No</button></div>';
     openDialog(
       '<h2>New rule</h2><p>You add its paths next, in the rule\u2019s details.</p>' +
       '<form id="nr-form" class="dlg-body" autocomplete="off"><div class="nr-grid">' +
       '<label class="field full"><span>Rule name</span><input type="text" name="name" placeholder="For example the ticket number" spellcheck="false"></label>' +
       '<label class="field full"><span>Redirect URL</span><input type="text" name="redirectURL" class="mono" placeholder="https://' + esc(ms.host) + '/\u2026" spellcheck="false"></label>' +
-      '<label class="field"><span>Regex</span><input type="text" name="regex" class="mono" placeholder="Optional" spellcheck="false"></label>' +
-      '<div class="field"><span>Status code</span><div>' + statusPicker(0, 'statusCode') + '</div></div>' +
-      '<div class="field"><span>Use query string</span><div>' + yn('useQueryString') + '</div></div>' +
-      '<div class="field"><span>Case sensitive</span><div>' + yn('caseSensitive') + '</div></div>' +
+      '<div class="field">' + fieldLabel('Case sensitive', 'caseSensitive') + '<div>' + yn('caseSensitive') + '</div></div>' +
+      '<div class="field">' + fieldLabel('Use query string', 'useQueryString') + '<div>' + yn('useQueryString') + '</div></div>' +
+      '<div class="full">' + advHTML('<div class="adv-grid">' +
+        '<div class="field">' + fieldLabel('Status code', 'statusCode') + '<div>' + statusPicker(301, 'statusCode') + '</div></div>' +
+        '<label class="field">' + fieldLabel('Regex', 'regex') + '<input type="text" name="regex" class="mono" placeholder="Optional" spellcheck="false"></label>' +
+        '</div>', false, advSummaryText(301, '')) + '</div>' +
       '</div><p class="form-msg" id="nr-msg" role="alert"></p></form>' +
-      '<div class="dlg-actions"><span class="hint push" id="nr-hint">Everything except Regex is required.</span><button class="btn" data-close>Cancel</button><button class="btn primary" id="nr-create" disabled>Add rule</button></div>',
+      '<div class="dlg-actions"><span class="hint push" id="nr-hint">Rule name and Redirect URL are required.</span><button class="btn" data-close>Cancel</button><button class="btn primary" id="nr-create" disabled>Add rule</button></div>',
       (d) => {
         const form = $('#nr-form', d);
-        const picked = {};
+        const picked = { statusCode: '301', caseSensitive: '1', useQueryString: '1' };
+        const advState = () => { const el = $('.adv-state', d); if (el) el.textContent = advSummaryText(picked.statusCode, form.regex.value); };
         const check = () => {
-          const ok = form.name.value.trim() && form.redirectURL.value.trim() && ['statusCode', 'caseSensitive', 'useQueryString'].every((k) => k in picked);
+          advState();
+          const ok = form.name.value.trim() && form.redirectURL.value.trim();
           $('#nr-create', d).disabled = !ok;
           $('#nr-hint', d).hidden = !!ok;
         };
@@ -3024,7 +3070,36 @@ dialog[open]{animation:popIn .26s var(--ease)}
     }
     if (!e.target.closest('.sp')) closePickers();
   });
+  // Tooltips: flip to the left when they'd run off the right edge; tap or click toggles them (touch has no hover).
+  function placeTip(tip) {
+    tip.classList.remove('flip');
+    const box = tip.querySelector('.tip-box');
+    const host = tip.closest('dialog, #detail') || document.body;
+    const lim = Math.min(host.getBoundingClientRect().right, innerWidth) - 8;
+    const prev = box.style.cssText;
+    box.style.cssText = 'display:block;visibility:hidden';
+    if (box.getBoundingClientRect().right > lim) tip.classList.add('flip');
+    box.style.cssText = prev;
+  }
+  document.addEventListener('mouseover', (e) => { const t = e.target.closest && e.target.closest('.tip'); if (t) placeTip(t); });
+  document.addEventListener('focusin', (e) => { const t = e.target.closest && e.target.closest('.tip'); if (t) placeTip(t); });
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.tip-btn');
+    document.querySelectorAll('.tip.show').forEach((t) => { if (!btn || t !== btn.parentElement) t.classList.remove('show'); });
+    if (btn) { const t = btn.parentElement; placeTip(t); t.classList.toggle('show'); }
+  });
+  // Remember whether Advanced settings is open while a rule is being edited (the fields re-render on every toggle).
+  document.addEventListener('toggle', (e) => {
+    const det = e.target;
+    if (!det.matches || !det.matches('details.adv')) return;
+    if (state.editing && det.closest('#d-fields')) state.editing.advOpen = det.open;
+    if (!det.open && state.editing && det.closest('#d-fields')) {
+      const sum = det.querySelector('.adv-state');
+      if (sum) sum.textContent = advSummaryText(state.editing.draft.statusCode, state.editing.draft.regex);
+    }
+  }, true);
   document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') document.querySelectorAll('.tip.show').forEach((t) => t.classList.remove('show'));
     if (e.key !== 'Escape') return;
     const open = document.querySelector('.sp.open');
     if (!open) return;
