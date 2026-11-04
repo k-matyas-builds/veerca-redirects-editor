@@ -1074,10 +1074,10 @@ dialog[open]{animation:popIn .26s var(--ease)}
 (function () {
   'use strict';
   const C = window.RedirectCore;
-  // Bump the version and date when you ship; the start-screen footer shows them. APP_HISTORY is just a changelog kept here for reference.
-  const APP_VERSION = '1.1.0';
-  const APP_UPDATED = '3 Nov 2026';
+  // Bump the version when you ship; the start-screen footer shows it. APP_HISTORY is just a changelog kept here for reference.
+  const APP_VERSION = '1.2.0';
   const APP_HISTORY = [
+    ['1.2.0', '4 Nov 2026', 'Warns when opening the same or an older version than your saved one; shows the exported file name'],
     ['1.1.0', '3 Nov 2026', 'Advanced settings and tooltips on rules, bigger header, possum glint, version footer'],
     ['1.0.0', '9 Oct 2026', 'First release, published on GitHub'],
     ['0.x', '5 Oct 2026', 'Early builds, tested and refined in small steps'],
@@ -1469,7 +1469,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
   // A newly opened file takes its market's slot in the recent list. The slot is known by its latest name:
   // the exported one if it was exported, else the file it was opened from.
   // - A LOWER version than the slot always asks (going back in time), edited or not, exported or not.
-  // - The SAME version asks when the slot holds edits, so a re-upload doesn't quietly bring them back or drop them.
+  // - The SAME version (also "v834 (1)", "v834 (2)") asks too, unless the slot is untouched and the file is identical,
+  //   where both choices would give the same result.
   // - A NEWER version just opens, unless the saved edits were never exported: then it asks first.
   function openParsed(text, fileName, parsed) {
     const prev = recent.items.get(recentKey(parsed.market, parsed.info));
@@ -1479,7 +1480,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const older = sv != null && nv != null && nv < sv;
     const edited = prev.changes > 0;
     const same = !older && sameOrOlder(savedName, fileName);
-    if (!older && !(same && edited) && !(edited && prev.unexported)) {
+    if (!older && !(same && (edited || prev.text !== text)) && !(edited && prev.unexported)) {
       if (prev.text === text && !edited) restoreRecent(prev, parsed); else openDoc(text, fileName, parsed);
       return;
     }
@@ -1487,7 +1488,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
       : 'You last had ' + esc(savedName) + ' open ' + esc(relTime(prev.savedAt, true)) + '.';
     let title, note;
     if (older) { title = 'This file is older than your saved version'; note = 'You\u2019re opening v' + nv + ', and your latest is v' + sv + '.'; }
-    else if (same) { title = 'You already have edits to this policy'; note = 'This file is the same version, so using it brings back anything you removed.'; }
+    else if (same && edited) { title = 'You already have edits to this policy'; note = 'This file is the same version, so using it brings back anything you removed.'; }
+    else if (same) { title = 'You already have this version'; note = 'This file has the same version number, but its content is different.'; }
     else { title = 'Replace your unexported changes?'; note = 'This is a newer version, and opening it replaces them.'; }
     const lose = edited && prev.unexported;
     renderAll();
@@ -1664,7 +1666,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       '<p class="dz-or">or drag the .zip or .csv file here</p></div>' +
       '<p class="form-msg" role="alert">' + esc(state.loadError) + '</p>' +
       list +
-      '<div class="w-foot"><span class="w-ver">Veer\u010da <b>v' + APP_VERSION + '</b> \u00b7 Updated ' + APP_UPDATED + '</span></div>' +
+      '<div class="w-foot"><span class="w-ver">Veer\u010da <b>v' + APP_VERSION + '</b></span></div>' +
       '</section>';
   }
 
