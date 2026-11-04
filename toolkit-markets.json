@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "updated": "2026-11-04",
+  "note": "true = market has moved to Cloud AEM; the toolkit blocks Workflow Creator for it. Keys are the market codes from the Workflow Creator Market dropdown. Edit a value, commit, done.",
+
+  "migrated": {
+    "ATDE": false,
+    "BE": false,
+    "CH": false,
+    "CSCZ": false,
+    "DEDE": false,
+    "ELGR": false,
+    "ENGB": false,
+    "ESES": false,
+    "FIFI": false,
+    "FOE": false,
+    "FRFR": false,
+    "HUHU": false,
+    "IEIE": false,
+    "ITIT": false,
+    "LULU": false,
+    "NLNL": false,
+    "NONO": true,
+    "PLPL": false,
+    "PTPT": false,
+    "RORO": true
+  }
+}
