@@ -1175,7 +1175,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   // A market's slot is keyed by its host, so a newer file for the same market replaces the older one.
   const recentKey = (market, info) => (market.host ? market.host.toLowerCase() : 'policy:' + (info.policy || market.name));
-  const sourceLabel = (d) => d.fileName;
+  // After an export the policy is known by its new name (www_ford_hu_v331.csv), not the file it was opened from.
+  const sourceLabel = (d) => (d.exportAs ? fileNameFor(d.exportAs.policy, d.exportAs.version) : d.fileName);
 
   function scheduleSave() {
     clearTimeout(recent.timer);
@@ -1452,31 +1453,54 @@ dialog[open]{animation:popIn .26s var(--ease)}
     if (rec.changes && !(opts && opts.quiet)) toast('Back where you left off, with ' + C.plural(rec.changes, 'change') + (rec.unexported ? ' not exported yet.' : ', already exported.'));
   }
 
-  // A newly opened file takes its market's slot in the recent list. If that slot only holds the
-  // untouched file, there is nothing to lose. If it holds edits (exported or not), ask first:
-  // otherwise re-opening the original quietly brings back the edited version, or silently replaces it.
+  // "www_ford_co_uk_v842 (2).csv" -> base "www_ford_co_uk_v842", version 842. Browsers add " (1)", " (2)" to repeated downloads.
+  function fileVersion(name) {
+    const base = String(name || '').replace(/\.[^.]+$/, '').replace(/(\s*\(\d+\))+$/, '').trim();
+    const m = base.match(/(?:^|[_\-\s.])v(\d+)(?=$|[_\-\s.])/i);
+    return { base: base.toLowerCase(), v: m ? parseInt(m[1], 10) : null };
+  }
+  // Is this file the same version as the saved one, or an older one? (Without version numbers: the same file name.)
+  function sameOrOlder(savedName, newName) {
+    const a = fileVersion(savedName), b = fileVersion(newName);
+    if (a.v != null && b.v != null) return b.v <= a.v;
+    return !!a.base && a.base === b.base;
+  }
+
+  // A newly opened file takes its market's slot in the recent list. The slot is known by its latest name:
+  // the exported one if it was exported, else the file it was opened from.
+  // - A LOWER version than the slot always asks (going back in time), edited or not, exported or not.
+  // - The SAME version asks when the slot holds edits, so a re-upload doesn't quietly bring them back or drop them.
+  // - A NEWER version just opens, unless the saved edits were never exported: then it asks first.
   function openParsed(text, fileName, parsed) {
     const prev = recent.items.get(recentKey(parsed.market, parsed.info));
-    const edited = prev && prev.changes > 0;
-    if (!edited) {
-      if (prev && prev.text === text) restoreRecent(prev, parsed); else openDoc(text, fileName, parsed);
+    if (!prev) { openDoc(text, fileName, parsed); return; }
+    const savedName = prev.label || prev.fileName;
+    const sv = fileVersion(savedName).v, nv = fileVersion(fileName).v;
+    const older = sv != null && nv != null && nv < sv;
+    const edited = prev.changes > 0;
+    const same = !older && sameOrOlder(savedName, fileName);
+    if (!older && !(same && edited) && !(edited && prev.unexported)) {
+      if (prev.text === text && !edited) restoreRecent(prev, parsed); else openDoc(text, fileName, parsed);
       return;
     }
-    const same = prev.text === text;
-    const what = esc(prev.name) + ' ' + esc(relTime(prev.savedAt, true)) + ', ' + (prev.unexported ? 'not exported yet' : 'already exported');
+    const status = edited ? 'You made ' + C.plural(prev.changes, 'change') + ' to ' + esc(prev.name) + ' ' + esc(relTime(prev.savedAt, true)) + ', ' + (prev.unexported ? 'not exported yet' : 'already exported') + '.'
+      : 'You last had ' + esc(savedName) + ' open ' + esc(relTime(prev.savedAt, true)) + '.';
+    let title, note;
+    if (older) { title = 'This file is older than your saved version'; note = 'You\u2019re opening v' + nv + ', and your latest is v' + sv + '.'; }
+    else if (same) { title = 'You already have edits to this policy'; note = 'This file is the same version, so using it brings back anything you removed.'; }
+    else { title = 'Replace your unexported changes?'; note = 'This is a newer version, and opening it replaces them.'; }
+    const lose = edited && prev.unexported;
     renderAll();
-    openDialog('<h2>' + (same ? 'You already have edits to this policy' : 'Replace your saved version?') + '</h2>' +
-      '<p>You made ' + C.plural(prev.changes, 'change') + ' to ' + what + '. ' +
-      (same ? 'This file is the original those changes were made on, so using it brings back anything you removed.'
-            : 'This file is different from the one you started from.') + '</p>' +
-      '<p>Open your saved version, or start again from the file you just chose' + (prev.unexported ? '? That drops the changes you haven\u2019t exported.' : '?') + '</p>' +
+    openDialog('<h2>' + title + '</h2>' +
+      '<p>' + status + ' ' + esc(note) + '</p>' +
+      '<p>Open your saved version, or use the file you just chose' + (lose ? '? That drops the changes you haven\u2019t exported.' : '?') + '</p>' +
       '<div class="dlg-actions"><button class="btn" data-close>Cancel</button>' +
       '<button class="btn" id="rp-saved">Open saved version</button>' +
-      '<button class="btn' + (prev.unexported ? ' destructive' : '') + '" id="rp-replace">Use my new file</button></div>',
+      '<button class="btn' + (lose ? ' destructive' : '') + '" id="rp-replace">Use my new file</button></div>',
     (dl) => {
-      const sv = $('#rp-saved', dl);
-      sv.focus();
-      sv.addEventListener('click', () => { dl.close(); restoreRecent(prev); });
+      const sb = $('#rp-saved', dl);
+      sb.focus();
+      sb.addEventListener('click', () => { dl.close(); restoreRecent(prev); });
       $('#rp-replace', dl).addEventListener('click', () => { dl.close(); openDoc(text, fileName, parsed); });
     });
   }
@@ -1580,7 +1604,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     if (!d) { el.innerHTML = ''; return; }
     const parts = [];
     // Always the file name: it carries the version (www_ford_hu_v329.csv), for Akamai's files and our exports alike.
-    parts.push('<span class="chip" title="' + esc(d.fileName) + '">' + esc(d.fileName) + '</span>');
+    parts.push('<span class="chip" title="' + esc(sourceLabel(d)) + '">' + esc(sourceLabel(d)) + '</span>');
     if (state.view === 'rule') {
       parts.push('<a class="btn" href="' + esc(ruleHref(state.ruleId)) + '" data-action="show-all">All rules</a>');
     } else {
@@ -2654,6 +2678,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
         ms.exportedSnap = C.snapshot(ms.current);
         saveNow();
         broadcastNow();
+        renderSource();
         save.textContent = 'Downloaded';
         toast('Downloaded ' + name + '. Send it to the Akamai team with the summary.');
       });
