@@ -1452,25 +1452,32 @@ dialog[open]{animation:popIn .26s var(--ease)}
     if (rec.changes && !(opts && opts.quiet)) toast('Back where you left off, with ' + C.plural(rec.changes, 'change') + (rec.unexported ? ' not exported yet.' : ', already exported.'));
   }
 
-  // A newly opened file takes its market's slot in the recent list. If that slot holds
-  // the very same file, carry on with its edits; if it holds changes that were never
-  // exported, ask before replacing them.
+  // A newly opened file takes its market's slot in the recent list. If that slot only holds the
+  // untouched file, there is nothing to lose. If it holds edits (exported or not), ask first:
+  // otherwise re-opening the original quietly brings back the edited version, or silently replaces it.
   function openParsed(text, fileName, parsed) {
     const prev = recent.items.get(recentKey(parsed.market, parsed.info));
-    if (prev && prev.text === text) { restoreRecent(prev, parsed); return; }
-    if (!prev || !prev.unexported) { openDoc(text, fileName, parsed); return; }
+    const edited = prev && prev.changes > 0;
+    if (!edited) {
+      if (prev && prev.text === text) restoreRecent(prev, parsed); else openDoc(text, fileName, parsed);
+      return;
+    }
+    const same = prev.text === text;
+    const what = esc(prev.name) + ' ' + esc(relTime(prev.savedAt, true)) + ', ' + (prev.unexported ? 'not exported yet' : 'already exported');
     renderAll();
-    openDialog('<h2>Replace your unexported changes?</h2>' +
-      '<p>You last worked on ' + esc(prev.name) + ' ' + esc(relTime(prev.savedAt, true)) + ' and have ' + C.plural(prev.changes, 'change') +
-      ' you haven\u2019t exported. Opening this file replaces them.</p>' +
+    openDialog('<h2>' + (same ? 'You already have edits to this policy' : 'Replace your saved version?') + '</h2>' +
+      '<p>You made ' + C.plural(prev.changes, 'change') + ' to ' + what + '. ' +
+      (same ? 'This file is the original those changes were made on, so using it brings back anything you removed.'
+            : 'This file is different from the one you started from.') + '</p>' +
+      '<p>Open your saved version, or start again from the file you just chose' + (prev.unexported ? '? That drops the changes you haven\u2019t exported.' : '?') + '</p>' +
       '<div class="dlg-actions"><button class="btn" data-close>Cancel</button>' +
-      '<button class="btn" id="rp-saved">Open saved copy</button>' +
-      '<button class="btn destructive" id="rp-replace">Replace</button></div>',
+      '<button class="btn" id="rp-saved">Open saved version</button>' +
+      '<button class="btn' + (prev.unexported ? ' destructive' : '') + '" id="rp-replace">Use my new file</button></div>',
     (dl) => {
-      $('#rp-saved', dl).addEventListener('click', () => { dl.close(); restoreRecent(prev); });
-      const rp = $('#rp-replace', dl);
-      rp.focus();
-      rp.addEventListener('click', () => { dl.close(); openDoc(text, fileName, parsed); });
+      const sv = $('#rp-saved', dl);
+      sv.focus();
+      sv.addEventListener('click', () => { dl.close(); restoreRecent(prev); });
+      $('#rp-replace', dl).addEventListener('click', () => { dl.close(); openDoc(text, fileName, parsed); });
     });
   }
 
