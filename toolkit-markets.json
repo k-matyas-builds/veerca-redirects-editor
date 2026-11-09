@@ -5,7 +5,7 @@
 
   "migrated": {
     "ATDE": false,
-    "BE": false,
+    "BE": true,
     "CH": false,
     "CSCZ": false,
     "DADK": true,
