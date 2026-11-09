@@ -1,13 +1,14 @@
 {
   "schema": 1,
-  "updated": "2026-11-04",
-  "note": "true = market has moved to Cloud AEM; the toolkit blocks Workflow Creator for it. Keys are the market codes from the Workflow Creator Market dropdown. Edit a value, commit, done.",
+  "updated": "2026-11-09",
+  "note": "true = market has moved to Cloud AEM. The toolkit then disables the Jira Workflow Creator button on that market's tickets AND stands the Sites Switcher aside for its URLs. One flag, both effects. Edit a value, commit, done; installs pick it up within the hour.",
 
   "migrated": {
     "ATDE": false,
     "BE": false,
     "CH": false,
     "CSCZ": false,
+    "DADK": false,
     "DEDE": false,
     "ELGR": false,
     "ENGB": false,
@@ -23,6 +24,7 @@
     "NONO": true,
     "PLPL": false,
     "PTPT": false,
-    "RORO": false
+    "RORO": true,
+    "SVSE": false
   }
 }
