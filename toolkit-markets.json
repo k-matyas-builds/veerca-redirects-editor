@@ -8,7 +8,7 @@
     "BE": false,
     "CH": false,
     "CSCZ": false,
-    "DADK": false,
+    "DADK": true,
     "DEDE": false,
     "ELGR": false,
     "ENGB": false,
@@ -24,7 +24,7 @@
     "NONO": true,
     "PLPL": false,
     "PTPT": false,
-    "RORO": true,
-    "SVSE": false
+    "RORO": false,
+    "SVSE": true
   }
 }
