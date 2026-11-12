@@ -487,6 +487,14 @@ details.adv[open] .adv-state{display:none}
   display:none;pointer-events:none}
 .tip.flip .tip-box{left:auto;right:-8px}
 .tip:hover .tip-box,.tip:focus-within .tip-box,.tip.show .tip-box{display:block}
+/* encoded-path glyph: its tooltip lives on <body>, so the path list's rounded clipping can't cut it off */
+.pl-glyph{display:inline-grid;place-items:center;width:18px;height:18px;margin-left:8px;padding:0;border:0;border-radius:6px;vertical-align:middle;
+  background:var(--btn-bg);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink-3);font:500 11px/1 var(--font);cursor:help}
+.pl-glyph:hover,.pl-glyph:focus-visible,.pl-glyph.on{color:var(--accent);background:var(--accent-soft)}
+#glyph-tip{position:fixed;left:0;top:0;z-index:200;max-width:min(560px,calc(100vw - 24px));padding:8px 11px;border-radius:10px;
+  background:var(--solid-glass);box-shadow:inset 0 0 0 1px var(--sep),0 10px 28px -8px rgba(0,0,0,.45);
+  font:12px/1.5 var(--mono);color:var(--ink);word-break:break-all;pointer-events:none;opacity:0;visibility:hidden}
+#glyph-tip.show{opacity:1;visibility:visible}
 
 .paths-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:10px}
 .paths-head h2{margin:0 !important}
@@ -693,7 +701,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
   function normalizeRule(r) {
     return {
       id: str(r.id), name: str(r.name), host: str(r.host),
-      paths: Array.isArray(r.paths) ? r.paths.map(str) : [],
+      paths: Array.isArray(r.paths) ? r.paths.map((x) => encodeNonAscii(str(x))) : [],
       redirectURL: str(r.redirectURL), statusCode: Number(r.statusCode) || 0,
       caseSensitive: !!r.caseSensitive, useQueryString: !!r.useQueryString,
       regex: str(r.regex), query: str(r.query), scheme: str(r.scheme), matchURL: str(r.matchURL),
@@ -756,11 +764,13 @@ dialog[open]{animation:popIn .26s var(--ease)}
       if (!head.includes(need)) throw new Error('This doesn\u2019t look like a redirect policy: there\u2019s no \u201c' + need + '\u201d column.');
     }
     const extraCols = head.filter((h) => h && !CSV_HEAD.includes(h));
+    let encodedPaths = 0;
     const rules = rows.slice(1).map((row, n) => {
       const get = (col) => { const i = head.indexOf(col); return i < 0 ? '' : str(row[i]); };
       let path = get('path');
       const cs = path.startsWith(':');
       if (cs) path = path.slice(1);
+      encodedPaths += path.split(' ').filter((x) => /[^\x00-\x7f]/.test(x)).length;
       const extra = {};
       for (const c of extraCols) extra[c] = get(c);
       return normalizeRule({
@@ -787,7 +797,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
         source: Object.keys(meta).length ? 'akamai' : 'csv',
         policy, version: meta['Version'] || '', policyId: meta['Policy ID'] || '',
         description: meta['Description'] || '', lastUpdate: meta['Last Update'] || '',
-        delimiter, extraCols, pinnedMoved: !!ts && rules[rules.length - 1] !== ts,
+        delimiter, extraCols, pinnedMoved: !!ts && rules[rules.length - 1] !== ts, encodedPaths,
       },
     };
   }
@@ -799,14 +809,31 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const extras = (market.extraCols || []).filter((c) => market.rules.some((r) => str(r.extra[c]) !== ''));
     const rows = [CSV_HEAD.concat(extras)];
     for (const r of exportOrder(market.rules)) {
-      const p = r.paths.join(' ');
+      // Always percent-encoded, whatever was typed or pasted: Akamai matches the path as the browser sends it.
+      const p = r.paths.map(encodeNonAscii).join(' ');
       rows.push([r.name, r.host, r.caseSensitive ? ':' + p : p, r.query, r.scheme, r.matchURL, r.regex,
-        r.useQueryString ? '1' : '', r.redirectURL, String(r.statusCode)].concat(extras.map((c) => r.extra[c])));
+        r.useQueryString ? '1' : '', encodeNonAscii(r.redirectURL), String(r.statusCode)].concat(extras.map((c) => r.extra[c])));
     }
     return '\ufeff' + rows.map((row) => row.map(cell).join(',')).join('\n');
   }
 
   /* ---------- input helpers ---------- */
+
+  // Akamai matches the path as the browser sends it: UTF-8, percent-encoded (ü is %C3%BC, ă is %C4%83, α is %CE%B1).
+  // Only characters outside plain ASCII are touched, so existing %XX sequences are never encoded twice.
+  // Text is put in composed form first: a Mac can hand over "u" + a separate accent, which would encode differently.
+  function encodeNonAscii(p) {
+    let s = str(p);
+    if (!/[^\x00-\x7f]/.test(s)) return s;
+    try { s = s.normalize('NFC'); } catch (e) { /* keep as is */ }
+    return s.replace(/[^\x00-\x7f]+/g, (run) => { try { return encodeURIComponent(run); } catch (e) { return run; } });
+  }
+
+  // The reverse, for showing paths: only runs of bytes that are part of a multi-byte character (%C3%BC and the like)
+  // are turned back into letters. %20, %23 and other plain-ASCII escapes stay as they are, since they mean something.
+  function prettyPath(p) {
+    return str(p).replace(/(?:%[89a-f][0-9a-f])+/gi, (run) => { try { return decodeURIComponent(run); } catch (e) { return run; } });
+  }
 
   function toPath(raw) {
     let s = str(raw).trim();
@@ -814,7 +841,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const m = s.match(/^(?:https?:\/\/)?((?:www|[a-z0-9-]+)\.[a-z0-9.-]+\.[a-z]{2,})(\/.*)?$/i);
     if (m && (/^https?:\/\//i.test(s) || /^www\./i.test(s))) s = m[2] || '/';
     if (!s.startsWith('/')) s = '/' + s;
-    return s;
+    return encodeNonAscii(s);
   }
 
   function parseTarget(url) {
@@ -839,7 +866,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       const hosts = hostsOf(r);
       for (const p of r.paths) {
         if (!isPlain(p)) continue;
-        const k = p.toLowerCase();
+        const k = encodeNonAscii(p).toLowerCase();
         if (!idx.has(k)) idx.set(k, []);
         idx.get(k).push({ i, rule: r, path: p, cs: r.caseSensitive, hosts });
       }
@@ -852,14 +879,15 @@ dialog[open]{animation:popIn .26s var(--ease)}
   function pathOwners(market, path, rule) {
     const out = [];
     if (!path) return out;
-    const lp = path.toLowerCase();
+    const ep = encodeNonAscii(path), lp = ep.toLowerCase();
     const rh = hostsOf(rule);
     exportOrder(market.rules).forEach((r, i) => {
       if (r === rule) return;
       const h = hostsOf(r);
       if (rh && h && !rh.some((x) => h.includes(x))) return;
       for (const q of r.paths) {
-        if (q === path || (q.toLowerCase() === lp && !(r.caseSensitive && rule.caseSensitive))) { out.push({ rule: r, pos: i + 1, path: q }); return; }
+        const eq = encodeNonAscii(q);
+        if (eq === ep || (eq.toLowerCase() === lp && !(r.caseSensitive && rule.caseSensitive))) { out.push({ rule: r, pos: i + 1, path: q }); return; }
       }
     });
     return out;
@@ -955,26 +983,26 @@ dialog[open]{animation:popIn .26s var(--ease)}
       for (const p of r.paths) {
         if (p === '') { empty++; continue; }
         if (/[\s"]/.test(p)) {
-          add('error', 'pathChars', p + ' contains a space, tab or quote mark. Paths are separated by spaces in the file, so it would split in two.', { path: p, fix: 'removePath' });
+          add('error', 'pathChars', prettyPath(p) + ' contains a space, tab or quote mark. Paths are separated by spaces in the file, so it would split in two.', { path: p, fix: 'removePath' });
         } else if (!p.startsWith('/')) {
-          add('warning', 'pathSlash', '\u201c' + p + '\u201d doesn\u2019t start with /. It may be the leftover half of a path that contained a space.', { path: p, fix: 'removePath' });
+          add('warning', 'pathSlash', '\u201c' + prettyPath(p) + '\u201d doesn\u2019t start with /. It may be the leftover half of a path that contained a space.', { path: p, fix: 'removePath' });
         }
-        const k = r.caseSensitive ? p : p.toLowerCase();
-        if (seen.has(k)) add('warning', 'pathTwice', p + ' is listed twice in this rule.', { path: p, fix: 'removeDuplicate' });
+        const ep = encodeNonAscii(p), k = r.caseSensitive ? ep : ep.toLowerCase();
+        if (seen.has(k)) add('warning', 'pathTwice', prettyPath(p) + ' is listed twice in this rule.', { path: p, fix: 'removeDuplicate' });
         seen.add(k);
 
         if (!r.regex && isPlain(p)) {
           const rh = hostsOf(r);
-          for (const e of idx.get(p.toLowerCase()) || []) {
+          for (const e of idx.get(ep.toLowerCase()) || []) {
             if (e.i >= i) break;
             const covers = !e.hosts || (rh && rh.every((h) => e.hosts.includes(h)));
             if (!covers) continue;
-            if (!e.cs || (r.caseSensitive && e.path === p)) {
-              add('error', 'shadowed', p + ' never takes effect: the rule \u201c' + e.rule.name + '\u201d comes earlier and already handles it.',
+            if (!e.cs || (r.caseSensitive && encodeNonAscii(e.path) === ep)) {
+              add('error', 'shadowed', prettyPath(p) + ' never takes effect: the rule \u201c' + e.rule.name + '\u201d comes earlier and already handles it.',
                 { path: p, otherId: e.rule.id, fix: 'removePath' });
               issues.push({ severity: 'warning', type: 'overlap', ruleId: e.rule.id, path: p, otherId: r.id,
                 key: 'overlap|' + e.rule.id + '|' + p + '|' + r.id,
-                message: p + ' is also listed in \u201c' + r.name + '\u201d further down, where it never takes effect.' });
+                message: prettyPath(p) + ' is also listed in \u201c' + r.name + '\u201d further down, where it never takes effect.' });
               break;
             }
           }
@@ -995,7 +1023,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       const sameHost = !t.host || (rh ? rh.includes(targetHost) : targetHost === marketHost);
       if (sameHost) {
         const self = r.paths.find((p) => isPlain(p) && (r.caseSensitive ? p === t.path : p.toLowerCase() === t.path.toLowerCase()));
-        if (self) add('error', 'loop', self + ' sends visitors to its own address, so they would bounce in a loop.', { path: self, fix: 'removePath' });
+        if (self) add('error', 'loop', prettyPath(self) + ' sends visitors to its own address, so they would bounce in a loop.', { path: self, fix: 'removePath' });
       }
       if (!knownHosts.has(targetHost)) return;
       for (const e of idx.get(t.path.toLowerCase()) || []) {
@@ -1064,7 +1092,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
   root.RedirectCore = {
     MARKETS, STATUS_CODES, STATUS_LABELS, CSV_HEAD, normalizeRule, snapshot, exportOrder, newId,
-    parseCSV, importPolicy, exportCSV, toPath, pathOwners, findTwin, parseTarget, analyze, diffMarket, describeDiff, plural,
+    parseCSV, importPolicy, exportCSV, toPath, encodeNonAscii, prettyPath, pathOwners, findTwin, parseTarget, analyze, diffMarket, describeDiff, plural,
     pathsSize, twinsWithRoom, PATHS_MAX, PATHS_FULL, PATHS_NOTICE,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
@@ -1075,8 +1103,9 @@ dialog[open]{animation:popIn .26s var(--ease)}
   'use strict';
   const C = window.RedirectCore;
   // Bump the version when you ship; the start-screen footer shows it. APP_HISTORY is just a changelog kept here for reference.
-  const APP_VERSION = '1.2.0';
+  const APP_VERSION = '1.4.0';
   const APP_HISTORY = [
+    ['1.4.0', '12 Nov 2026', 'Paths with special characters (German, Greek, Romanian and so on) are shown as readable text with a glyph that reveals the encoded form; storage and every export are always percent-encoded'],
     ['1.2.0', '4 Nov 2026', 'Warns when opening the same or an older version than your saved one; shows the exported file name'],
     ['1.1.0', '3 Nov 2026', 'Advanced settings and tooltips on rules, bigger header, possum glint, version footer'],
     ['1.0.0', '9 Oct 2026', 'First release, published on GitHub'],
@@ -1430,6 +1459,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
     const notes = [];
     if (info.delimiter === ';') notes.push('This file uses semicolons, as Excel saves it in some regional settings. The export uses commas, like Veera\u2019s.');
     if (info.extraCols.length) notes.push('Columns the tool doesn\u2019t edit are kept as they are: ' + info.extraCols.join(', ') + '.');
+    if (info.encodedPaths) notes.push(C.plural(info.encodedPaths, 'path') + ' had special characters and ' + (info.encodedPaths === 1 ? 'was' : 'were') + ' encoded, so Akamai matches ' + (info.encodedPaths === 1 ? 'it' : 'them') + '. Exports always use the encoded form.');
     if (info.pinnedMoved) notes.push('The trailing-slash rule wasn\u2019t last in this file. The export puts it last, as Veera did.');
     if (notes.length && !(opts && opts.quiet)) toast(notes.join(' '));
   }
@@ -1445,6 +1475,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       d.openedAt = rec.openedAt;
       d.exportAs = rec.exportAs || null;
       ms.current = clone(rec.current);
+      for (const r of ms.current.rules) r.paths = r.paths.map(C.encodeNonAscii);
       ms.exportedSnap = rec.exportedSnap;
       recompute(ms);
     } finally { sync.muted--; }
@@ -1764,8 +1795,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
       if ((state.scope === 'all' || state.scope === 'name') && r.name.toLowerCase().includes(q)) hit = true;
       if ((state.scope === 'all' || state.scope === 'target') && r.redirectURL.toLowerCase().includes(q)) hit = true;
       if (state.scope === 'all' || state.scope === 'path') {
-        const p = r.paths.find((x) => x.toLowerCase().includes(qPath));
-        if (p) { hit = true; pathHit = p; }
+        const p = r.paths.find((x) => x.toLowerCase().includes(qPath) || C.prettyPath(x).toLowerCase().includes(qPath));
+        if (p) { hit = true; pathHit = C.prettyPath(p); }
       }
       if (hit) rows.push({ r, pathHit, qPath });
     }
@@ -1775,8 +1806,8 @@ dialog[open]{animation:popIn .26s var(--ease)}
   function shortTarget(r, ms) {
     const t = C.parseTarget(r.redirectURL);
     if (!r.redirectURL) return 'No redirect address yet';
-    if (t && t.host && (t.host === ms.host.toLowerCase() || r.host.toLowerCase().split(/\s+/).includes(t.host))) return t.path + r.redirectURL.replace(/^[^?#]*/, '');
-    return r.redirectURL;
+    if (t && t.host && (t.host === ms.host.toLowerCase() || r.host.toLowerCase().split(/\s+/).includes(t.host))) return C.prettyPath(t.path + r.redirectURL.replace(/^[^?#]*/, ''));
+    return C.prettyPath(r.redirectURL);
   }
 
   // Marks every occurrence of q (case-insensitive) in text.
@@ -2130,12 +2161,21 @@ dialog[open]{animation:popIn .26s var(--ease)}
 
 
 
+  // Paths are stored and exported percent-encoded (k%C3%BChlmittel) but shown as people read them (kühlmittel).
+  // A small glyph next to a path with special characters shows the encoded form on hover.
+  const ENC_GLYPH = '\u7801';
+  function pathCell(p) {
+    const pretty = C.prettyPath(p), enc = C.encodeNonAscii(p);
+    if (!/[^\x00-\x7f]/.test(pretty)) return esc(p);
+    return esc(pretty) + '<button type="button" class="pl-glyph" data-enc="' + esc(enc) + '" aria-label="Encoded form: ' + esc(enc) + '">' + ENC_GLYPH + '</button>';
+  }
+
   function pathsHTML(r) {
     const ms = activeMs();
     const flagged = new Map();
     for (const i of ms.byRule.get(r.id) || []) if (i.path && i.type !== 'chars') flagged.set(i.path, i.isNew ? i.severity : 'known');
     const f = state.pathFilter.trim().toLowerCase();
-    const items = r.paths.map((p, idx) => ({ p, idx })).filter(({ p }) => !f || p.toLowerCase().includes(f));
+    const items = r.paths.map((p, idx) => ({ p, idx })).filter(({ p }) => !f || p.toLowerCase().includes(f) || C.prettyPath(p).toLowerCase().includes(f));
     const sel = state.selected.size;
     // Near Akamai's size limit, show how full the rule is, and offer a second rule for more paths.
     const size = C.pathsSize(r);
@@ -2161,11 +2201,11 @@ dialog[open]{animation:popIn .26s var(--ease)}
     return head + '<div class="path-box">' + bar +
       (items.length ? '<ul class="path-list">' + items.map(({ p, idx }) => {
         const fl = flagged.get(p);
-        return '<li class="pl"><input type="checkbox" data-action="toggle-path" data-idx="' + idx + '" aria-label="Select ' + esc(p || 'empty entry') + '"' + (state.selected.has(idx) ? ' checked' : '') + '>' +
-          '<span class="pl-text" data-idx="' + idx + '">' + (p === '' ? '<em>Empty entry</em>' : esc(p)) + '</span>' +
+        return '<li class="pl"><input type="checkbox" data-action="toggle-path" data-idx="' + idx + '" aria-label="Select ' + esc(C.prettyPath(p) || 'empty entry') + '"' + (state.selected.has(idx) ? ' checked' : '') + '>' +
+          '<span class="pl-text" data-idx="' + idx + '">' + (p === '' ? '<em>Empty entry</em>' : pathCell(p)) + '</span>' +
           (fl ? '<span class="sev ' + fl + '"></span>' : '') +
-          '<span class="pl-actions"><button class="pl-btn" data-action="edit-path-btn" data-idx="' + idx + '" aria-label="Edit ' + esc(p || 'empty entry') + '">' + ICON.pencil + 'Edit</button>' +
-          '<button class="pl-btn del" data-action="remove-path" data-idx="' + idx + '" aria-label="Delete ' + esc(p || 'empty entry') + '">' + ICON.trash + 'Delete</button></span></li>';
+          '<span class="pl-actions"><button class="pl-btn" data-action="edit-path-btn" data-idx="' + idx + '" aria-label="Edit ' + esc(C.prettyPath(p) || 'empty entry') + '">' + ICON.pencil + 'Edit</button>' +
+          '<button class="pl-btn del" data-action="remove-path" data-idx="' + idx + '" aria-label="Delete ' + esc(C.prettyPath(p) || 'empty entry') + '">' + ICON.trash + 'Delete</button></span></li>';
       }).join('') + '</ul>' : '<p class="hint pl-none">No paths match the filter.</p>') + '</div>';
   }
 
@@ -2196,7 +2236,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       const list = $('#ap-rows', d), addBtn = $('#ap-add', d), splitBtn = $('#ap-split', d);
       const inputs = () => [...list.querySelectorAll('.ap-input')];
       const pathOf = (v) => (v.trim() ? C.toPath(v.trim()) : '');
-      const shown = (v) => { const p = C.toPath(v.trim()); return p === '/' ? '/' : p.replace(/^\//, ''); };
+      const shown = (v) => { const p = C.prettyPath(C.toPath(v.trim())); return p === '/' ? '/' : p.replace(/^\//, ''); };
       const addRow = (afterLi, value) => {
         const li = document.createElement('li');
         li.className = 'ap-row';
@@ -2845,7 +2885,7 @@ dialog[open]{animation:popIn .26s var(--ease)}
       '<button class="icon-btn small pl-ok" type="button" title="Save path" aria-label="Save path">' + ICON.ok + '</button>' +
       '<button class="icon-btn small" type="button" title="Cancel" aria-label="Cancel">' + ICON.x + '</button>';
     const input = li.querySelector('input');
-    input.value = old;
+    input.value = C.prettyPath(old);
     input.focus(); input.select();
     const save = () => {
       const p = C.toPath(input.value);
@@ -3127,6 +3167,32 @@ dialog[open]{animation:popIn .26s var(--ease)}
     }
     if (!e.target.closest('.sp')) closePickers();
   });
+  // The encoded form of a path, shown above (or below) its glyph on hover, focus or tap.
+  const gtip = document.createElement('div');
+  gtip.id = 'glyph-tip'; gtip.setAttribute('role', 'tooltip');
+  document.body.appendChild(gtip);
+  let gtipFor = null;
+  function showGlyphTip(btn) {
+    hideGlyphTip();
+    gtipFor = btn; btn.classList.add('on');
+    gtip.textContent = btn.dataset.enc;
+    gtip.classList.add('show');
+    const r = btn.getBoundingClientRect(), w = gtip.offsetWidth, h = gtip.offsetHeight;
+    gtip.style.left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8) + 'px';
+    gtip.style.top = (r.top - h - 8 < 8 ? r.bottom + 8 : r.top - h - 8) + 'px';
+  }
+  function hideGlyphTip() {
+    if (gtipFor) gtipFor.classList.remove('on');
+    gtipFor = null; gtip.classList.remove('show');
+  }
+  const glyphOf = (e) => e.target.closest && e.target.closest('.pl-glyph');
+  document.addEventListener('mouseover', (e) => { const g = glyphOf(e); if (g) showGlyphTip(g); else if (gtipFor) hideGlyphTip(); });
+  document.addEventListener('focusin', (e) => { const g = glyphOf(e); if (g) showGlyphTip(g); });
+  document.addEventListener('focusout', (e) => { if (glyphOf(e)) hideGlyphTip(); });
+  document.addEventListener('click', (e) => { const g = glyphOf(e); if (g) { if (gtipFor === g && gtip.classList.contains('show') && e.detail === 0) hideGlyphTip(); else showGlyphTip(g); } });
+  document.addEventListener('scroll', hideGlyphTip, true);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideGlyphTip(); });
+
   // Tooltips: flip to the left when they'd run off the right edge; tap or click toggles them (touch has no hover).
   function placeTip(tip) {
     tip.classList.remove('flip');
