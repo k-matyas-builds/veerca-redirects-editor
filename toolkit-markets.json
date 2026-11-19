@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "updated": "2026-11-09",
+  "note": "true = market has moved to Cloud AEM. The toolkit then disables the Jira Workflow Creator button on that market's tickets AND stands the Sites Switcher aside for its URLs. One flag, both effects. Edit a value, commit, done; installs pick it up within the hour.",
+
+  "migrated": {
+    "ATDE": true,
+    "BE": true,
+    "CH": true,
+    "CSCZ": false,
+    "DADK": true,
+    "DEDE": true,
+    "ELGR": false,
+    "ENGB": true,
+    "ESES": true,
+    "FIFI": true,
+    "FOE": true,
+    "FRFR": true,
+    "HUHU": false,
+    "IEIE": true,
+    "ITIT": true,
+    "LULU": false,
+    "NLNL": true,
+    "NONO": true,
+    "PLPL": false,
+    "PTPT": false,
+    "RORO": false,
+    "SVSE": true
+  }
+}
